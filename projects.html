@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Проекты - Influence Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-blue': '#002247',
+                        'brand-blue-medium': '#034AA6',
+                        'brand-blue-soft': '#2977E2',
+                        'brand-white': '#F0F0F0',
+                        'brand-black': '#000000'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        @keyframes fade-in { from { opacity: 0; transform: scale(0.98);} to { opacity: 1; transform: scale(1);} }
+        .animate-fade-in { animation: fade-in 0.2s; }
+    </style>
+</head>
+<body class="bg-white">
+    <div id="site-header"></div>
+    <!-- Hero Section -->
+    <section class="bg-gray-50 py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl lg:text-5xl font-bold text-black mb-6">Наши проекты</h1>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Портфолио работ, которые демонстрируют наш подход к созданию уникальных брендов
+                </p>
+            </div>
+            <div id="projects-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+        </div>
+    </section>
+    <!-- Модальное окно -->
+    <div id="project-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl lg:max-w-4xl p-0 relative animate-fade-in">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <h3 id="modal-title" class="text-2xl font-bold"></h3>
+                <button id="modal-close" class="text-gray-400 hover:text-black text-3xl leading-none px-2">&times;</button>
+            </div>
+            <!-- Body (scrollable) -->
+            <div class="px-6 py-6 space-y-6 overflow-y-auto max-h-[75vh]">
+                <img id="modal-img" src="" alt="" class="w-full max-h-96 object-cover rounded-xl" />
+                <p id="modal-desc" class="text-gray-700 text-lg leading-relaxed"></p>
+            </div>
+        </div>
+            </div>
+            
+    <script>
+        const defaultProjects = [
+            { img: 'img/img1.jpg', title: 'Название проекта', description: 'Описание проекта. Современный дизайн, уникальный стиль, эффективная реализация.' },
+            { img: 'img/img2.png', title: 'Название проекта', description: 'Описание проекта. Креативные решения, индивидуальный подход, результат для клиента.' },
+            { img: 'img/img3.jpg', title: 'Название проекта', description: 'Описание проекта. Эстетика, функциональность, рост бренда.' },
+            { img: 'img/img4.png', title: 'Название проекта', description: 'Описание проекта. Эффективная стратегия, рост продаж, узнаваемость.' }
+        ];
+        function renderProjects(projects) {
+            document.getElementById('projects-list').innerHTML = projects.map((p, i) => `
+                <div class="group bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-start">
+                    <img src="${p.img}" alt="${p.title}" class="w-full h-56 object-contain bg-gray-50 rounded-xl mb-6" />
+                    <h3 class="text-xl font-bold text-black mb-3">${p.title}</h3>
+                    <p class="text-gray-600 mb-4 line-clamp-3">${p.description}</p>
+                    <button class="mt-auto px-6 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200" onclick="openModal(${i})">Читать</button>
+                </div>
+            `).join('');
+        }
+        let projectsData = [];
+        fetch('/api/projects')
+            .then(r => r.json())
+            .then(data => {
+                projectsData = (Array.isArray(data) && data.length > 0) ? data : defaultProjects;
+                renderProjects(projectsData);
+            })
+            .catch(() => {
+                projectsData = defaultProjects;
+                renderProjects(projectsData);
+            });
+        window.openModal = function(idx) {
+            const p = projectsData[idx];
+            document.getElementById('modal-img').src = p.img;
+            document.getElementById('modal-title').textContent = p.title;
+            document.getElementById('modal-desc').textContent = p.description;
+            const modal = document.getElementById('project-modal');
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        };
+        function closeProjectModal() {
+            document.getElementById('project-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+        document.getElementById('modal-close').onclick = closeProjectModal;
+        document.getElementById('project-modal').onclick = function(e) {
+            if (e.target === this) closeProjectModal();
+        };
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeProjectModal();
+        });
+    </script>
+
+    <div id="site-footer"></div>
+    <script>
+        fetch('components/header.html').then(r => r.text()).then(t => document.getElementById('site-header').innerHTML = t);
+        fetch('components/footer.html').then(r => r.text()).then(t => document.getElementById('site-footer').innerHTML = t);
+    </script>
+</body>
+</html> 

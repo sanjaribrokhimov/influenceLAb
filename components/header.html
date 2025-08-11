@@ -1,0 +1,69 @@
+<nav class="fixed top-0 w-full bg-white/90 backdrop-blur-md shadow-sm border-b border-gray-100 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+            <div class="flex items-center">
+                <img src="img/logoName.png" alt="Influence Lab Logo" class="w-64 h-auto" style="max-width:350px;" />
+            </div>
+            <div class="hidden md:block">
+                <div class="ml-10 flex items-baseline space-x-8">
+                    <a href="index.html" class="text-black hover:text-brand-blue-medium px-3 py-2 text-sm font-medium transition-colors duration-200">Главная</a>
+                    <a href="about.html" class="text-gray-600 hover:text-black px-3 py-2 text-sm font-medium transition-colors duration-200">О компании</a>
+                    <a href="projects.html" class="text-gray-600 hover:text-black px-3 py-2 text-sm font-medium transition-colors duration-200">Проекты</a>
+                    <a href="blog.html" class="text-gray-600 hover:text-black px-3 py-2 text-sm font-medium transition-colors duration-200">Блог</a>
+                    <a href="contact.html" class="bg-brand-blue text-white hover:bg-brand-blue-medium px-4 py-2 rounded-xl shadow-sm text-sm font-semibold transition-all duration-200 border border-brand-blue">Связаться</a>
+                </div>
+            </div>
+            <!-- Mobile menu button -->
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-black hover:text-gray-600 focus:outline-none" aria-label="Открыть меню">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- Mobile menu overlay -->
+    <div id="mobile-menu-overlay" class="fixed inset-0 bg-black bg-opacity-40 z-40 hidden transition-opacity duration-300"></div>
+    <!-- Mobile menu panel -->
+    <div id="mobile-menu" class="fixed top-0 right-0 w-4/5 max-w-xs h-full bg-white shadow-lg z-50 transform translate-x-full transition-transform duration-300 flex flex-col p-8 space-y-6 md:hidden">
+        <div class="flex justify-between items-center mb-8">
+            <img src="img/logoName.png" alt="Influence Lab Logo" class="w-64 h-auto" style="max-width:350px;" />
+            <button id="mobile-menu-close" class="text-black hover:text-gray-600 focus:outline-none" aria-label="Закрыть меню">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <a href="index.html" class="block text-lg font-medium text-black py-2 hover:text-brand-blue-soft transition-colors">Главная</a>
+        <a href="projects.html" class="block text-lg font-medium text-gray-700 py-2 hover:text-brand-blue-soft transition-colors">Проекты</a>
+        <a href="about.html" class="block text-lg font-medium text-gray-700 py-2 hover:text-brand-blue-soft transition-colors">О компании</a>
+        <a href="blog.html" class="block text-lg font-medium text-gray-700 py-2 hover:text-brand-blue-soft transition-colors">Блог</a>
+        <a href="contact.html" class="block text-lg font-medium text-gray-700 py-2 hover:text-brand-blue-soft transition-colors">Связаться</a>
+    </div>
+</nav>
+<script>
+    // Мобильное меню логика
+    const menuBtn = document.getElementById('mobile-menu-button');
+    const menu = document.getElementById('mobile-menu');
+    const overlay = document.getElementById('mobile-menu-overlay');
+    const closeBtn = document.getElementById('mobile-menu-close');
+    function openMenu() {
+        menu.classList.remove('translate-x-full');
+        menu.classList.add('translate-x-0');
+        overlay.classList.remove('hidden');
+        overlay.classList.add('block');
+    }
+    function closeMenu() {
+        menu.classList.add('translate-x-full');
+        menu.classList.remove('translate-x-0');
+        overlay.classList.add('hidden');
+        overlay.classList.remove('block');
+    }
+    menuBtn.addEventListener('click', openMenu);
+    closeBtn.addEventListener('click', closeMenu);
+    overlay.addEventListener('click', closeMenu);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeMenu();
+    });
+</script> 

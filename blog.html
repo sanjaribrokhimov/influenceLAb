@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Блог - Influence Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-blue': '#002247',
+                        'brand-blue-medium': '#034AA6',
+                        'brand-blue-soft': '#2977E2',
+                        'brand-white': '#F0F0F0',
+                        'brand-black': '#000000'
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'slide-up': 'slideUp 0.8s ease-out',
+                        'fade-in': 'fadeIn 1s ease-out',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(50px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Приклеиваем футер к низу при малом контенте */
+        #site-footer { margin-top: auto; }
+    </style>
+</head>
+<body class="bg-white min-h-screen flex flex-col">
+    <div id="site-header"></div>
+    <section class="bg-gray-50 py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+          <h1 class="text-4xl lg:text-5xl font-bold text-black mb-6">Блог</h1>
+          <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+            Полезные статьи, новости и кейсы от Influence Lab
+                </p>
+            </div>
+        <div id="blog-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+        </div>
+    </section>
+    <!-- Модальное окно -->
+    <div id="blog-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl lg:max-w-4xl p-0 relative animate-fade-in">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <h3 id="blog-modal-title" class="text-2xl font-bold"></h3>
+          <button id="blog-modal-close" class="text-gray-400 hover:text-black text-3xl leading-none px-2">&times;</button>
+        </div>
+        <!-- Body (scrollable) -->
+        <div class="px-6 py-6 space-y-6 overflow-y-auto max-h-[75vh]">
+          <img id="blog-modal-img" src="" alt="" class="w-full max-h-96 object-cover rounded-xl" />
+          <p id="blog-modal-desc" class="text-gray-700 text-lg leading-relaxed"></p>
+        </div>
+                </div>
+            </div>
+    <style>
+    @keyframes fade-in { from { opacity: 0; transform: scale(0.98);} to { opacity: 1; transform: scale(1);} }
+    .animate-fade-in { animation: fade-in 0.2s; }
+    </style>
+    <script>
+    const defaultBlog = [
+      {
+        img: 'img/img1.jpg',
+        title: 'Как выбрать блогера для рекламы?',
+        description: 'Пошаговая инструкция для бизнеса: на что обращать внимание и как не ошибиться с выбором.'
+      },
+      {
+        img: 'img/img2.png',
+        title: 'Тренды digital-маркетинга 2024',
+        description: 'Самые актуальные инструменты и подходы для продвижения бренда в интернете.'
+      },
+      {
+        img: 'img/img3.jpg',
+        title: 'Автоматизация бизнеса: кейсы',
+        description: 'Как IT-решения помогают экономить время и увеличивать прибыль компаниям.'
+      },
+      {
+        img: 'img/img4.png',
+        title: 'Ошибки в работе с блогерами',
+        description: 'Разбираем типичные ошибки и даём советы, как их избежать для максимального результата.'
+      }
+    ];
+    function renderBlog(posts) {
+      document.getElementById('blog-list').innerHTML = posts.map((p, i) => `
+        <div class="group bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-center">
+          <img src="${p.img}" alt="${p.title}" class="w-full h-56 object-cover rounded-xl mb-6" />
+          <h3 class="text-xl font-bold text-black mb-4">${p.title}</h3>
+          <p class="text-gray-600 mb-4 text-center line-clamp-3">${p.description}</p>
+          <button class="px-6 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200" onclick="openBlogModal(${i})">Читать</button>
+        </div>
+      `).join('');
+    }
+    let blogData = [];
+    fetch('/api/blog')
+      .then(r => r.json())
+      .then(data => {
+        blogData = (Array.isArray(data) && data.length > 0) ? data : defaultBlog;
+        renderBlog(blogData);
+      })
+      .catch(() => {
+        blogData = defaultBlog;
+        renderBlog(blogData);
+      });
+    // Переопределяем функции открытия/закрытия модалки для лучшего UX
+    window.openBlogModal = function(idx) {
+      const p = blogData[idx];
+      document.getElementById('blog-modal-img').src = p.img;
+      document.getElementById('blog-modal-title').textContent = p.title;
+      document.getElementById('blog-modal-desc').textContent = p.description;
+      const modal = document.getElementById('blog-modal');
+      modal.classList.remove('hidden');
+      // Блокируем скролл фона
+      document.body.style.overflow = 'hidden';
+    };
+    function closeBlogModal() {
+      document.getElementById('blog-modal').classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+    document.getElementById('blog-modal-close').onclick = closeBlogModal;
+    document.getElementById('blog-modal').onclick = function(e) {
+      if (e.target === this) closeBlogModal();
+    };
+    // Закрытие по Esc
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeBlogModal();
+    });
+    </script>
+    <div id="site-footer"></div>
+    <script>
+      fetch('components/header.html').then(r => r.text()).then(t => document.getElementById('site-header').innerHTML = t);
+      fetch('components/footer.html').then(r => r.text()).then(t => document.getElementById('site-footer').innerHTML = t);
+    </script>
+</body>
+</html> 

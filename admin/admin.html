@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админка Influence Lab</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .modal-bg { background: rgba(0,0,0,0.5); }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Login Form -->
+  <div id="login-section" class="flex items-center justify-center min-h-screen">
+    <form id="login-form" class="bg-white p-8 rounded-xl shadow-xl w-full max-w-xs space-y-6">
+      <h2 class="text-2xl font-bold text-center mb-4">Вход в админку</h2>
+      <input type="text" id="login" placeholder="Логин" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-brand-blue-soft" required>
+      <div class="relative mt-2">
+        <input type="password" id="password" placeholder="Пароль" class="w-full px-4 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-brand-blue-soft" required>
+        <button type="button" id="toggle-password" tabindex="-1" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700" style="display:none;">
+          <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.75-7.5 9.75-7.5 9.75 7.5 9.75 7.5-3.75 7.5-9.75 7.5S2.25 12 2.25 12z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+          </svg>
+        </button>
+      </div>
+      <button type="submit" class="w-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:from-blue-600 hover:to-blue-800 transition-all duration-200">Войти</button>
+      <div id="login-error" class="text-red-500 text-sm text-center hidden">Неверный логин или пароль</div>
+    </form>
+  </div>
+
+  <!-- Admin Panel -->
+  <div id="admin-section" class="hidden px-4 py-8 max-w-5xl mx-auto">
+    <div class="sticky top-0 bg-gray-50 z-10 mb-8 border-b pb-4">
+      <div class="flex justify-between items-center">
+        <h1 id="admin-title" class="text-3xl font-bold">Админка</h1>
+        <div class="flex gap-2 items-center">
+          <button id="add-btn" class="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white px-6 py-2 rounded-lg font-semibold shadow hover:from-blue-600 hover:to-blue-800 transition-all duration-200">+ Пост</button>
+          <button id="add-project-btn" class="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white px-6 py-2 rounded-lg font-semibold shadow hover:from-blue-600 hover:to-blue-800 transition-all duration-200">+ Проект</button>
+          <button id="logout-btn" class="ml-2 px-4 py-2 rounded-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition">Выйти</button>
+        </div>
+      </div>
+      <div class="mt-4 flex gap-2">
+        <button id="tab-blog" class="px-4 py-2 rounded-full bg-blue-100 text-blue-700 font-semibold">Блог</button>
+        <button id="tab-projects" class="px-4 py-2 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300">Проекты</button>
+      </div>
+    </div>
+
+    <div id="blog-section">
+      <div id="blog-list" class="space-y-4"></div>
+    </div>
+
+    <div id="projects-section" class="hidden">
+      <div id="projects-list" class="space-y-4"></div>
+    </div>
+  </div>
+
+  <!-- Modal (Add/Edit) -->
+  <div id="modal-bg" class="modal-bg fixed inset-0 z-40 flex items-center justify-center hidden">
+    <div class="bg-white rounded-xl shadow-xl p-8 w-full max-w-md relative">
+      <button id="modal-close" class="absolute top-3 right-3 text-gray-400 hover:text-black text-2xl">&times;</button>
+      <h2 id="modal-title" class="text-xl font-bold mb-4">Добавить пост</h2>
+      <form id="modal-form" class="space-y-4">
+        <input type="hidden" id="modal-id">
+        <input type="hidden" id="modal-img-old">
+        <div>
+          <label class="block mb-1 font-semibold">Картинка (файл)</label>
+          <input type="file" id="modal-img" class="w-full px-4 py-2 border rounded-lg" accept="image/*">
+          <div id="img-preview" class="mt-2"></div>
+        </div>
+        <div>
+          <label class="block mb-1 font-semibold">Заголовок</label>
+          <input type="text" id="modal-title-input" class="w-full px-4 py-2 border rounded-lg" required>
+        </div>
+        <div>
+          <label class="block mb-1 font-semibold">Описание</label>
+          <textarea id="modal-desc" class="w-full px-4 py-2 border rounded-lg" rows="3" required></textarea>
+        </div>
+        <button id="modal-save-btn" type="submit" class="w-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-blue-800 transition-all duration-200">Сохранить</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // --- AUTH ---
+    const loginSection = document.getElementById('login-section');
+    const adminSection = document.getElementById('admin-section');
+    const loginForm = document.getElementById('login-form');
+    const loginError = document.getElementById('login-error');
+    // --- localStorage auth check ---
+    if (localStorage.getItem('isAdmin') === '1') {
+      loginSection.classList.add('hidden');
+      adminSection.classList.remove('hidden');
+      loadBlog();
+      loadProjects();
+    }
+    // --- Password eye toggle ---
+    const passwordInput = document.getElementById('password');
+    const togglePasswordBtn = document.getElementById('toggle-password');
+    const eyeIcon = document.getElementById('eye-icon');
+    // Показать кнопку только если есть значение
+    passwordInput.addEventListener('input', () => {
+      togglePasswordBtn.style.display = passwordInput.value ? 'block' : 'none';
+    });
+    togglePasswordBtn.addEventListener('click', () => {
+      const type = passwordInput.type === 'password' ? 'text' : 'password';
+      passwordInput.type = type;
+      // Меняем иконку (можно добавить закрытый глаз, если нужно)
+      eyeIcon.innerHTML = type === 'password'
+        ? `<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.75-7.5 9.75-7.5 9.75 7.5 9.75 7.5-3.75 7.5-9.75 7.5S2.25 12 2.25 12z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />`
+        : `<path stroke-linecap="round" stroke-linejoin="round" d="M3 3l18 18M2.25 12s3.75-7.5 9.75-7.5c2.28 0 4.36.6 6.18 1.6M21.75 12s-3.75 7.5-9.75 7.5c-2.28 0-4.36-.6-6.18-1.6" />`;
+    });
+    loginForm.onsubmit = (e) => {
+      e.preventDefault();
+      const login = document.getElementById('login').value.trim();
+      const pass = document.getElementById('password').value;
+      if (login === 'infadmin' && pass === 'infadmin123') {
+        loginSection.classList.add('hidden');
+        adminSection.classList.remove('hidden');
+        localStorage.setItem('isAdmin', '1');
+        loadBlog();
+        loadProjects();
+      } else {
+        loginError.classList.remove('hidden');
+      }
+    };
+
+    // --- BLOG CRUD ---
+    const blogList = document.getElementById('blog-list');
+    function blogCard(post) {
+      return `<div class="bg-white rounded-xl shadow flex flex-col md:flex-row items-center md:items-start gap-6 p-4">
+        <img src="${post.img}" alt="img" class="w-32 h-32 object-cover rounded-lg border">
+        <div class="flex-1">
+          <div class="font-bold text-lg mb-1">${post.title}</div>
+          <div class="text-gray-600 mb-2">${post.description}</div>
+          <div class="flex gap-2">
+            <button onclick="editBlog(${post.id})" class="px-4 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500">Редактировать</button>
+            <button onclick="deleteBlog(${post.id})" class="px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600">Удалить</button>
+          </div>
+        </div>
+      </div>`;
+    }
+    function loadBlog() {
+      fetch('/api/blog').then(r=>r.json()).then(posts => {
+        blogList.innerHTML = posts.length ? posts.map(blogCard).join('') : '<div class="text-gray-400 text-center">Нет постов</div>';
+      });
+    }
+    window.editBlog = function(id) {
+      fetch(`/api/blog/${id}`).then(r=>r.json()).then(post => {
+        openModal('Редактировать пост', post, 'blog');
+      });
+    }
+    window.deleteBlog = function(id) {
+      if (!confirm('Удалить пост?')) return;
+      fetch(`/api/blog/${id}`, {method:'DELETE'}).then(()=>loadBlog());
+    }
+
+    // --- PROJECTS CRUD ---
+    const projectsList = document.getElementById('projects-list');
+    function projectCard(item) {
+      return `<div class="bg-white rounded-xl shadow flex flex-col md:flex-row items-center md:items-start gap-6 p-4">
+        <img src="${item.img}" alt="img" class="w-32 h-32 object-cover rounded-lg border">
+        <div class="flex-1">
+          <div class="font-bold text-lg mb-1">${item.title}</div>
+          <div class="text-gray-600 mb-2">${item.description}</div>
+          <div class="flex gap-2">
+            <button onclick="editProject(${item.id})" class="px-4 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500">Редактировать</button>
+            <button onclick="deleteProject(${item.id})" class="px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600">Удалить</button>
+          </div>
+        </div>
+      </div>`;
+    }
+    function loadProjects() {
+      fetch('/api/projects').then(r=>r.json()).then(items => {
+        projectsList.innerHTML = items.length ? items.map(projectCard).join('') : '<div class="text-gray-400 text-center">Нет проектов</div>';
+      });
+    }
+    window.editProject = function(id) {
+      fetch(`/api/projects/${id}`).then(r=>r.json()).then(item => {
+        openModal('Редактировать проект', item, 'projects');
+      });
+    }
+    window.deleteProject = function(id) {
+      if (!confirm('Удалить проект?')) return;
+      fetch(`/api/projects/${id}`, {method:'DELETE'}).then(()=>loadProjects());
+    }
+
+    // --- MODAL ---
+    const modalBg = document.getElementById('modal-bg');
+    const modalForm = document.getElementById('modal-form');
+    const modalTitle = document.getElementById('modal-title');
+    const modalId = document.getElementById('modal-id');
+    const modalImg = document.getElementById('modal-img');
+    const modalImgOld = document.getElementById('modal-img-old');
+    const modalTitleInput = document.getElementById('modal-title-input');
+    const modalDesc = document.getElementById('modal-desc');
+    const imgPreview = document.getElementById('img-preview');
+    let modalContext = 'blog'; // 'blog' | 'projects'
+    // Предпросмотр картинки
+    modalImg.onchange = function() {
+      imgPreview.innerHTML = '';
+      if (this.files && this.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          imgPreview.innerHTML = `<img src="${e.target.result}" class="max-h-24 rounded-lg border mx-auto">`;
+        };
+        reader.readAsDataURL(this.files[0]);
+      }
+    };
+    document.getElementById('add-btn').onclick = () => openModal('Добавить пост', null, 'blog');
+    document.getElementById('add-project-btn').onclick = () => openModal('Добавить проект', null, 'projects');
+    document.getElementById('modal-close').onclick = closeModal;
+    modalBg.onclick = (e) => { if (e.target === modalBg) closeModal(); };
+    function openModal(title, post, context) {
+      modalContext = context || 'blog';
+      modalTitle.textContent = title;
+      modalId.value = post ? post.id : '';
+      imgPreview.innerHTML = post && post.img ? `<img src="${post.img}" class="max-h-24 rounded-lg border mx-auto">` : '';
+      modalImg.value = '';
+      modalImgOld.value = post && post.img ? post.img : '';
+      modalTitleInput.value = post ? post.title : '';
+      modalDesc.value = post ? post.description : '';
+      // Меняем текст кнопки
+      document.getElementById('modal-save-btn').textContent = post ? 'Сохранить' : 'Добавить';
+      modalBg.classList.remove('hidden');
+    }
+    function closeModal() {
+      modalBg.classList.add('hidden');
+      modalForm.reset();
+    }
+    modalForm.onsubmit = (e) => {
+      e.preventDefault();
+      const id = modalId.value;
+      const formData = new FormData();
+      const fileInput = modalImg;
+      if (fileInput.files[0]) {
+        formData.append('img', fileInput.files[0]);
+      }
+      // Передаем старый путь, чтобы сервер сохранил его, если новое изображение не выбрано
+      formData.append('imgOld', modalImgOld.value || '');
+      formData.append('title', modalTitleInput.value);
+      formData.append('description', modalDesc.value);
+      const base = modalContext === 'projects' ? '/api/projects' : '/api/blog';
+      if (id) {
+        // PUT: если файл не выбран, не отправлять img
+        fetch(`${base}/${id}`, {
+          method: 'POST', // используем POST для multipart (или PATCH, если сервер поддерживает)
+          body: formData
+        }).then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          closeModal(); 
+          modalContext === 'projects' ? loadProjects() : loadBlog();
+        }).catch(error => {
+          console.error('Error:', error);
+          alert('Ошибка при сохранении. Попробуйте еще раз.');
+        });
+      } else {
+        // POST: файл обязателен
+        if (!fileInput.files[0]) {
+          alert('Пожалуйста, выберите картинку!');
+          return;
+        }
+        fetch(base, {
+          method: 'POST',
+          body: formData
+        }).then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          closeModal(); 
+          modalContext === 'projects' ? loadProjects() : loadBlog();
+        }).catch(error => {
+          console.error('Error:', error);
+          alert('Ошибка при добавлении. Попробуйте еще раз.');
+        });
+      }
+    };
+
+    // --- Tabs switch ---
+    const tabBlog = document.getElementById('tab-blog');
+    const tabProjects = document.getElementById('tab-projects');
+    const blogSection = document.getElementById('blog-section');
+    const projectsSection = document.getElementById('projects-section');
+    function setTab(tab) {
+      if (tab === 'blog') {
+        blogSection.classList.remove('hidden');
+        projectsSection.classList.add('hidden');
+        tabBlog.classList.add('bg-blue-100','text-blue-700');
+        tabBlog.classList.remove('bg-gray-200','text-gray-700');
+        tabProjects.classList.add('bg-gray-200','text-gray-700');
+        tabProjects.classList.remove('bg-blue-100','text-blue-700');
+      } else {
+        projectsSection.classList.remove('hidden');
+        blogSection.classList.add('hidden');
+        tabProjects.classList.add('bg-blue-100','text-blue-700');
+        tabProjects.classList.remove('bg-gray-200','text-gray-700');
+        tabBlog.classList.add('bg-gray-200','text-gray-700');
+        tabBlog.classList.remove('bg-blue-100','text-blue-700');
+      }
+    }
+    tabBlog.onclick = () => setTab('blog');
+    tabProjects.onclick = () => setTab('projects');
+    // начальная вкладка
+    setTab('blog');
+
+    // --- LOGOUT ---
+    document.getElementById('logout-btn').onclick = () => {
+      localStorage.removeItem('isAdmin');
+      adminSection.classList.add('hidden');
+      loginSection.classList.remove('hidden');
+      loginForm.reset();
+    };
+  </script>
+</body>
+</html> 

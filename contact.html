@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Связаться - Influence Lab</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: { 'brand-blue': '#002247','brand-blue-medium': '#034AA6','brand-blue-soft': '#2977E2','brand-white': '#F0F0F0','brand-black': '#000000' } } } }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style> body { font-family: 'Inter', sans-serif; } </style>
+</head>
+<body class="bg-white">
+  <div id="site-header"></div>
+
+  <!-- Hero -->
+  <section class="bg-gray-50 py-20">
+    <div class="max-w-3xl mx-auto px-4 text-center">
+      <h1 class="text-4xl lg:text-5xl font-bold text-black mb-4">Связаться с нами</h1>
+      <p class="text-lg text-gray-600">Оставьте заявку — свяжемся в течение 24 часов и обсудим ваш проект</p>
+    </div>
+  </section>
+
+  <!-- Contact Form -->
+  <section class="py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+        <!-- Form (Left) -->
+        <div>
+          <form id="contact-form" class="space-y-5 bg-white p-8 rounded-2xl shadow border border-gray-100">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Имя *</label>
+              <input id="name" type="text" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue-soft focus:border-transparent" placeholder="Ваше имя">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Телефон *</label>
+              <input id="phone" type="tel" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue-soft focus:border-transparent" placeholder="Например: +998 90 000 00 00">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Кратко о задаче *</label>
+              <textarea id="description" rows="6" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue-soft focus:border-transparent" placeholder="Расскажите о проекте"></textarea>
+            </div>
+            <div class="flex items-start space-x-3">
+              <input id="agree" type="checkbox" required class="mt-1 h-4 w-4 text-brand-blue-soft focus:ring-brand-blue-soft border-gray-300 rounded">
+              <label for="agree" class="text-sm text-gray-600">Согласен на обработку персональных данных</label>
+            </div>
+            <button type="submit" class="w-full bg-brand-blue-soft hover:bg-brand-blue-medium text-white py-4 rounded-lg font-semibold transition-colors">Отправить заявку</button>
+            <div id="form-success" class="hidden text-green-600 text-sm">Заявка отправлена! Мы скоро свяжемся.</div>
+            <div id="form-error" class="hidden text-red-600 text-sm">Ошибка отправки. Попробуйте позже.</div>
+          </form>
+        </div>
+        <!-- Contacts (Right) -->
+        <div class="space-y-6">
+          <h2 class="text-3xl font-bold text-black">Контактная информация</h2>
+          <div class="space-y-6">
+            <div class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <div class="w-12 h-12 bg-brand-blue-soft rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              </div>
+              <div>
+                <div class="text-lg font-semibold text-black">Email</div>
+                <p class="text-gray-600"><a href="mailto:prosmm2001@gmail.com" class="hover:underline">prosmm2001@gmail.com</a></p>
+              </div>
+            </div>
+            <div class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <div class="w-12 h-12 bg-brand-blue-medium rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+              </div>
+              <div>
+                <div class="text-lg font-semibold text-black">Телефон</div>
+                <p class="text-gray-600"><a href="tel:+998910441757" class="hover:underline">+998 91 044-17-57</a></p>
+              </div>
+            </div>
+            <div class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <div class="w-12 h-12 bg-sky-500 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M9.036 15.787l-.375 5.297c.537 0 .77-.23 1.048-.507l2.516-2.414 5.213 3.814c.956.529 1.637.252 1.901-.885l3.447-16.14.001-.001c.306-1.423-.514-1.977-1.44-1.63L1.39 9.7c-1.39.54-1.369 1.316-.237 1.667l5.73 1.787L18.86 6.27c.592-.389 1.13-.173.687.216L9.036 15.787z"/></svg>
+              </div>
+              <div>
+                <div class="text-lg font-semibold text-black">Telegram</div>
+                <p class="text-gray-600"><a href="https://t.me/influencelab_1757" target="_blank" class="hover:underline">@influencelab_1757</a></p>
+              </div>
+            </div>
+            <div class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <div class="w-12 h-12 bg-brand-blue rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              </div>
+              <div>
+                <div class="text-lg font-semibold text-black">Адрес</div>
+                <p class="text-gray-600">Тошкент, Ш. Беруний 13 Б</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="bg-gray-50 py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-bold text-black mb-3">Часто задаваемые вопросы</h2>
+        <p class="text-gray-600">Ответы на популярные вопросы о нашей работе</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+          <h3 class="text-lg font-semibold text-black mb-2">Сколько времени занимает проект?</h3>
+          <p class="text-gray-600">Срок зависит от задач: экспресс — 1-2 недели, полный пакет — 3-6 недель.</p>
+        </div>
+        <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+          <h3 class="text-lg font-semibold text-black mb-2">Как мы общаемся?</h3>
+          <p class="text-gray-600">Удобные каналы: Telegram, звонки и e‑mail. Прозрачно на каждом этапе.</p>
+        </div>
+        <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+          <h3 class="text-lg font-semibold text-black mb-2">Какие форматы предоставляем?</h3>
+          <p class="text-gray-600">Передаём готовые материалы и нужные исходники, согласно задачам проекта.</p>
+        </div>
+        <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+          <h3 class="text-lg font-semibold text-black mb-2">Есть поддержка после сдачи?</h3>
+          <p class="text-gray-600">Да, мы остаёмся на связи и помогаем с внедрением и вопросами.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="site-footer"></div>
+  <script>
+    fetch('components/header.html').then(r => r.text()).then(t => document.getElementById('site-header').innerHTML = t);
+    fetch('components/footer.html').then(r => r.text()).then(t => document.getElementById('site-footer').innerHTML = t);
+
+    // API submit
+    const form = document.getElementById('contact-form');
+    const okEl = document.getElementById('form-success');
+    const errEl = document.getElementById('form-error');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      okEl.classList.add('hidden');
+      errEl.classList.add('hidden');
+      const payload = {
+        name: document.getElementById('name').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        description: document.getElementById('description').value.trim()
+      };
+      try {
+        const res = await fetch('/api/form', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error('fail');
+        okEl.classList.remove('hidden');
+        form.reset();
+      } catch (_) {
+        errEl.classList.remove('hidden');
+      }
+    });
+  </script>
+</body>
+</html> 

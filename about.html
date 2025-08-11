@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>О компании - Influence Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-blue': '#002247',
+                        'brand-blue-medium': '#034AA6',
+                        'brand-blue-soft': '#2977E2',
+                        'brand-white': '#F0F0F0',
+                        'brand-black': '#000000'
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'slide-up': 'slideUp 0.8s ease-out',
+                        'fade-in': 'fadeIn 1s ease-out',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(50px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-text {
+            background: linear-gradient(135deg, #002247 0%, #2977E2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        /* Ограничение текста на 3 строки */
+        .clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    </style>
+</head>
+<body class="bg-white">
+    <div id="site-header"></div>
+    <script>
+        fetch('components/header.html').then(r => r.text()).then(t => document.getElementById('site-header').innerHTML = t);
+    </script>
+
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-br from-gray-50 to-gray-100 py-32">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+
+            <h1 class="text-5xl lg:text-6xl font-black text-black mb-6">
+                Influence Lab — <span class="gradient-text">креативное агентство инфлюенсер-маркетинга</span>
+            </h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                Помогаем брендам выстраивать сильную коммуникацию с аудиторией через блогеров и лидеров мнений. Разрабатываем стратегические кампании «под ключ»: от подбора подходящих инфлюенсеров до креатива, запуска и аналитики.
+            </p>
+        </div>
+    </section>
+
+    <!-- About Company -->
+    <section class="py-20 bg-white">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+            <div>
+                <h2 class="text-3xl font-bold text-black mb-6">О компании</h2>
+                <p class="text-lg text-gray-600 mb-6">
+                    Influence Lab — это команда, которая знает, как превратить блогеров в ваших амбассадоров и донести ценность продукта до нужной аудитории. С нами сотрудничают бренды, которым важна не просто реклама, а реальный отклик, вовлеченность и рост продаж.
+                </p>
+                <ul class="space-y-4 text-base text-gray-700">
+                    <li><span class="font-bold text-brand-blue">•</span> Стратегические кампании «под ключ»</li>
+                    <li><span class="font-bold text-brand-blue">•</span> Креатив, запуск и аналитика</li>
+                    <li><span class="font-bold text-brand-blue">•</span> Работаем с брендами, которым важен результат</li>
+                </ul>
+            </div>
+            <div>
+                <img src="img/logocart.png" alt="Project Logo" class="h-80 w-full object-contain flex items-center justify-center" />
+            </div>
+        </div>
+    </section>
+
+    <!-- Problems & Solutions -->
+    <section class="py-20 bg-gray-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-black mb-10 text-center">Проблемы клиентов и наши решения</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div>
+                    <h3 class="text-xl font-semibold text-brand-blue mb-4">Проблемы клиентов</h3>
+                    <ul class="list-disc pl-6 space-y-2 text-gray-700">
+                        <li>Отсутствие креативности в рекламе (блогер делает на отвали)</li>
+                        <li>Трудности в профессиональной коммуникации: незнание ТЗ, налогообложения, правовых аспектов, политики брендов</li>
+                        <li>Проблемы с оплатой по перечислению (блогеры хотят наличкой/на карту)</li>
+                        <li>Подбор неэффективных блогеров</li>
+                        <li>Проблемы работы с региональными блогерами</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-brand-blue-soft mb-4">Наши решения</h3>
+                    <ul class="list-disc pl-6 space-y-2 text-gray-700">
+                        <li>Пишем и дорабатываем сценарий рекламы вместе с блогером</li>
+                        <li>Объясняем блогеру все аспекты интеграции, сопровождаем от сценария до готового материала</li>
+                        <li>Берём на себя все вопросы с оплатой — вы просто перечисляете нам на расчётный счёт</li>
+                        <li>Делаем подборку правильных блогеров, часто дешевле и эффективнее</li>
+                        <li>В базе — ответственные и раскрученные региональные блогеры</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Roadmap -->
+    <section class="py-20 bg-white">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-black mb-10 text-center">Дорожная карта проекта</h2>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-8 text-center">
+                <div>
+                    <div class="w-16 h-16 mx-auto rounded-full bg-brand-blue-soft text-white flex items-center justify-center text-2xl font-bold mb-4">1</div>
+                    <div class="font-semibold mb-2">Брифинг</div>
+                    <div class="text-gray-600 text-sm">Объяснение проекта и переговоры</div>
+                </div>
+                <div>
+                    <div class="w-16 h-16 mx-auto rounded-full bg-brand-blue-medium text-white flex items-center justify-center text-2xl font-bold mb-4">2</div>
+                    <div class="font-semibold mb-2">Сбор таблицы</div>
+                    <div class="text-gray-600 text-sm">Подбор блогеров и сбор информации</div>
+                </div>
+                <div>
+                    <div class="w-16 h-16 mx-auto rounded-full bg-brand-blue text-white flex items-center justify-center text-2xl font-bold mb-4">3</div>
+                    <div class="font-semibold mb-2">Утверждение</div>
+                    <div class="text-gray-600 text-sm">Выбор и утверждение блогеров</div>
+                </div>
+                <div>
+                    <div class="w-16 h-16 mx-auto rounded-full bg-orange-400 text-white flex items-center justify-center text-2xl font-bold mb-4">4</div>
+                    <div class="font-semibold mb-2">Реализация</div>
+                    <div class="text-gray-600 text-sm">Сценарии, съёмки, утверждение, публикация</div>
+                </div>
+                <div>
+                    <div class="w-16 h-16 mx-auto rounded-full bg-green-500 text-white flex items-center justify-center text-2xl font-bold mb-4">5</div>
+                    <div class="font-semibold mb-2">Отчетность</div>
+                    <div class="text-gray-600 text-sm">Подготовка отчёта по метрикам</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Наши проекты (динамически из API) -->
+    <section class="py-24 bg-gray-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+          <div class="inline-flex items-center px-4 py-2 bg-brand-blue-soft/10 text-brand-blue-soft rounded-full text-sm font-medium mb-6">
+            Наши проекты
+          </div>
+          <h2 class="text-4xl lg:text-5xl font-bold text-black mb-6">
+            <span class="gradient-text">Наши проекты</span>
+          </h2>
+          <p class="text-xl text-gray-600 max-w-2xl mx-auto">Примеры реализованных кейсов для наших клиентов</p>
+        </div>
+        <div id="projects-list" class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12"></div>
+        <div class="text-center">
+          <a href="projects.html" class="inline-block px-10 py-4 bg-brand-blue-soft text-white rounded-xl font-semibold hover:bg-brand-blue-medium transition-all duration-200 text-lg shadow-lg">Подробнее</a>
+        </div>
+      </div>
+    </section>
+    <script>
+        const defaultProjects = [
+          {
+            img: 'img/img1.jpg',
+            title: 'Название проекта',
+            description: 'Описание проекта. Современный дизайн, уникальный стиль, эффективная реализация.'
+          },
+          {
+            img: 'img/img2.png',
+            title: 'Название проекта',
+            description: 'Описание проекта. Креативные решения, индивидуальный подход, результат для клиента.'
+          },
+          {
+            img: 'img/img3.jpg',
+            title: 'Название проекта',
+            description: 'Описание проекта. Эстетика, функциональность, рост бренда.'
+          },
+          {
+            img: 'img/img4.png',
+            title: 'Название проекта',
+            description: 'Описание проекта. Эффективная стратегия, рост продаж, узнаваемость.'
+          }
+        ];
+        fetch('/api/projects')
+          .then(r => r.json())
+          .then(data => {
+            const projects = (Array.isArray(data) && data.length > 0) ? data.slice(0, 4) : defaultProjects;
+            document.getElementById('projects-list').innerHTML = projects.map(p => `
+              <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-center">
+                <img src="${p.img}" alt="${p.title}" class="w-full h-48 object-cover rounded-xl mb-6" />
+                <h3 class="text-xl font-bold text-black mb-4">${p.title}</h3>
+                <p class="text-gray-600 mb-6 text-center clamp-3">${p.description}</p>
+              </div>
+            `).join('');
+          })
+          .catch(() => {
+            document.getElementById('projects-list').innerHTML = defaultProjects.map(p => `
+              <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-center">
+                <img src="${p.img}" alt="${p.title}" class="w-full h-48 object-cover rounded-xl mb-6" />
+                <h3 class="text-xl font-bold text-black mb-4">${p.title}</h3>
+                <p class="text-gray-600 mb-6 text-center clamp-3">${p.description}</p>
+              </div>
+            `).join('');
+          });
+    </script>
+
+    <div id="site-footer"></div>
+    <script>
+        fetch('components/footer.html').then(r => r.text()).then(t => document.getElementById('site-footer').innerHTML = t);
+    </script>
+</body>
+</html> 
