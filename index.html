@@ -111,7 +111,23 @@
     <!-- Header include -->
     <div id="site-header"></div>
     <script>
-        fetch('components/header.html').then(r => r.text()).then(t => document.getElementById('site-header').innerHTML = t);
+      const loadHeader = async () => {
+        const html = await fetch('components/header.html').then(r => r.text());
+        document.getElementById('site-header').innerHTML = html;
+        const menuBtn = document.getElementById('mobile-menu-button');
+        const menu = document.getElementById('mobile-menu');
+        const overlay = document.getElementById('mobile-menu-overlay');
+        const closeBtn = document.getElementById('mobile-menu-close');
+        if (menuBtn && menu && overlay && closeBtn) {
+          const openMenu = () => { menu.classList.remove('translate-x-full'); menu.classList.add('translate-x-0'); overlay.classList.remove('hidden'); overlay.classList.add('block'); };
+          const closeMenu = () => { menu.classList.add('translate-x-full'); menu.classList.remove('translate-x-0'); overlay.classList.add('hidden'); overlay.classList.remove('block'); };
+          menuBtn.addEventListener('click', openMenu);
+          closeBtn.addEventListener('click', closeMenu);
+          overlay.addEventListener('click', closeMenu);
+          document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
+        }
+      };
+      loadHeader();
     </script>
 
     <!-- Hero Section -->
