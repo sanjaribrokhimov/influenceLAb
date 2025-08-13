@@ -68,11 +68,15 @@
                 <h3 id="modal-title" class="text-2xl font-bold"></h3>
                 <button id="modal-close" class="text-gray-400 hover:text-black text-3xl leading-none px-2">&times;</button>
             </div>
-            <!-- Body (scrollable) -->
-            <div class="px-6 py-6 space-y-6 overflow-y-auto max-h-[75vh]">
-                <img id="modal-img" src="" alt="" class="w-full max-h-96 object-cover rounded-xl" />
-                <p id="modal-desc" class="text-gray-700 text-lg leading-relaxed"></p>
-            </div>
+                         <!-- Body (scrollable) -->
+             <div class="px-6 py-6 space-y-6 overflow-y-auto max-h-[75vh]">
+                 <div class="space-y-3">
+                   <img id="project-modal-main" src="" alt="" class="w-full max-h-96 object-cover rounded-xl" />
+                   <div id="project-modal-thumbs" class="grid grid-cols-5 gap-2"></div>
+                 </div>
+                 <p id="modal-desc" class="text-gray-700 text-lg leading-relaxed"></p>
+                 <div id="project-modal-links" class="space-y-2"></div>
+             </div>
         </div>
             </div>
             
@@ -83,15 +87,21 @@
             { img: 'img/img3.jpg', title: 'Название проекта', description: 'Описание проекта. Эстетика, функциональность, рост бренда.' },
             { img: 'img/img4.png', title: 'Название проекта', description: 'Описание проекта. Эффективная стратегия, рост продаж, узнаваемость.' }
         ];
-        function renderProjects(projects) {
-            document.getElementById('projects-list').innerHTML = projects.map((p, i) => `
-                <div class="group bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-start">
-                    <img src="${p.img}" alt="${p.title}" class="w-full h-56 object-contain bg-gray-50 rounded-xl mb-6" />
-                    <h3 class="text-xl font-bold text-black mb-3">${p.title}</h3>
-                    <p class="text-gray-600 mb-4 line-clamp-3">${p.description}</p>
-                    <button class="mt-auto px-6 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200" onclick="openModal(${i})">Читать</button>
-                </div>
-            `).join('');
+                 function renderProjects(projects) {
+            document.getElementById('projects-list').innerHTML = projects.map((p, i) => {
+                const cover = (Array.isArray(p.images) && p.images.length) ? p.images[0] : (p.img || 'img/img1.jpg');
+                const linksHtml = (Array.isArray(p.links) && p.links.length) ? `<div class=\"w-full flex flex-wrap gap-2 mt-2\">${p.links.slice(0,3).map(u => `<a href=\"${u}\" target=\"_blank\" class=\"inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-sm\">Link</a>`).join('')}</div>` : '';
+                return `
+                <div class=\"group bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-start\">
+                    <img src=\"${cover}\" alt=\"${p.title}\" class=\"w-full h-56 object-contain bg-gray-50 rounded-xl mb-6\" />
+                    <div class=\"w-full flex items-center gap-3 mb-2\">
+                      <h3 class=\"text-xl font-bold text-black\">${p.title}</h3>
+                    </div>
+                    <p class=\"text-gray-600 mb-4 line-clamp-3\">${p.description}</p>
+                    ${linksHtml}
+                    <button class=\"mt-auto px-6 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200\" onclick=\"openModal(${i})\">Читать</button>
+                </div>`;
+            }).join('');
         }
         let projectsData = [];
         fetch('/api/projects')
@@ -106,9 +116,17 @@
             });
         window.openModal = function(idx) {
             const p = projectsData[idx];
-            document.getElementById('modal-img').src = p.img;
+            const images = (Array.isArray(p.images) && p.images.length) ? p.images.slice(0,10) : (p.img ? [p.img] : []);
             document.getElementById('modal-title').textContent = p.title;
             document.getElementById('modal-desc').textContent = p.description;
+            const main = document.getElementById('project-modal-main');
+            const thumbs = document.getElementById('project-modal-thumbs');
+            main.src = images[0] || '';
+            thumbs.innerHTML = images.map((src, i) => `<img data-i=\"${i}\" src=\"${src}\" class=\"h-16 w-full object-cover rounded border cursor-pointer\">`).join('');
+            thumbs.querySelectorAll('img').forEach(img => img.onclick = () => { main.src = img.src; });
+            const linksBox = document.getElementById('project-modal-links');
+            const links = Array.isArray(p.links) ? p.links.slice(0,5) : [];
+            linksBox.innerHTML = links.length ? `<div class=\"flex flex-wrap gap-2\">${links.map(u => `<a href=\"${u}\" target=\"_blank\" class=\"inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-sm\">Link</a>`).join('')}</div>` : '';
             const modal = document.getElementById('project-modal');
             modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';

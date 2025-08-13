@@ -18,10 +18,12 @@ import (
 )
 
 type BlogPost struct {
-	ID          int    `json:"id"`
-	Img         string `json:"img"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
+	ID          int      `json:"id"`
+	Img         string   `json:"img"`
+	Images      []string `json:"images"`
+	Title       string   `json:"title"`
+	Description string   `json:"description"`
+	Links       []string `json:"links"`
 }
 
 type FormRequest struct {
@@ -31,10 +33,12 @@ type FormRequest struct {
 }
 
 type Project struct {
-	ID          int    `json:"id"`
-	Img         string `json:"img"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
+	ID          int      `json:"id"`
+	Img         string   `json:"img"`
+	Images      []string `json:"images"`
+	Title       string   `json:"title"`
+	Description string   `json:"description"`
+	Links       []string `json:"links"`
 }
 
 var db *sql.DB
@@ -126,6 +130,45 @@ func initDB() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	// Ensure new columns exist
+	if err := ensureColumn("blog", "images", "TEXT"); err != nil {
+		log.Fatal(err)
+	}
+	if err := ensureColumn("blog", "links", "TEXT"); err != nil {
+		log.Fatal(err)
+	}
+	if err := ensureColumn("projects", "images", "TEXT"); err != nil {
+		log.Fatal(err)
+	}
+	if err := ensureColumn("projects", "links", "TEXT"); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ensureColumn(table string, column string, columnType string) error {
+	rows, err := db.Query("PRAGMA table_info(" + table + ")")
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	present := false
+	for rows.Next() {
+		var cid int
+		var name, ctype string
+		var notnull, pk int
+		var dflt sql.NullString
+		if err := rows.Scan(&cid, &name, &ctype, &notnull, &dflt, &pk); err == nil {
+			if name == column {
+				present = true
+				break
+			}
+		}
+	}
+	if present {
+		return nil
+	}
+	_, err = db.Exec(fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s %s", table, column, columnType))
+	return err
 }
 
 func saveUploadedFile(file multipart.File, handler *multipart.FileHeader) (string, error) {
@@ -147,6 +190,50 @@ func saveUploadedFile(file multipart.File, handler *multipart.FileHeader) (strin
 	// Публичный URL относительно корня сайта
 	urlPath := "/" + filepath.ToSlash(filepath.Join(dir, filename))
 	return urlPath, nil
+}
+
+func clampStrings(values []string, max int) []string {
+	if len(values) > max {
+		return values[:max]
+	}
+	return values
+}
+
+func parseLinksFromForm(r *http.Request) []string {
+	links := []string{}
+	if r.MultipartForm != nil {
+		if arr, ok := r.MultipartForm.Value["links"]; ok {
+			for _, v := range arr {
+				v = strings.TrimSpace(v)
+				if v != "" {
+					links = append(links, v)
+				}
+			}
+		}
+		// Также поддержим link1..link5
+		for i := 1; i <= 5; i++ {
+			v := strings.TrimSpace(r.FormValue(fmt.Sprintf("link%d", i)))
+			if v != "" {
+				links = append(links, v)
+			}
+		}
+	}
+	return clampStrings(uniqueStrings(links), 5)
+}
+
+func uniqueStrings(arr []string) []string {
+	seen := map[string]struct{}{}
+	out := []string{}
+	for _, v := range arr {
+		if v == "" {
+			continue
+		}
+		if _, ok := seen[v]; !ok {
+			seen[v] = struct{}{}
+			out = append(out, v)
+		}
+	}
+	return out
 }
 
 // --- FORM HANDLER ---
@@ -184,7 +271,7 @@ func handleForm(w http.ResponseWriter, r *http.Request) {
 func handleBlog(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		rows, err := db.Query("SELECT id, img, title, description FROM blog ORDER BY id DESC")
+		rows, err := db.Query("SELECT id, img, title, description, IFNULL(images,''), IFNULL(links,'') FROM blog ORDER BY id DESC")
 		if err != nil {
 			http.Error(w, "DB error", http.StatusInternalServerError)
 			return
@@ -193,7 +280,14 @@ func handleBlog(w http.ResponseWriter, r *http.Request) {
 		var posts []BlogPost
 		for rows.Next() {
 			var p BlogPost
-			if err := rows.Scan(&p.ID, &p.Img, &p.Title, &p.Description); err == nil {
+			var imagesJSON, linksJSON string
+			if err := rows.Scan(&p.ID, &p.Img, &p.Title, &p.Description, &imagesJSON, &linksJSON); err == nil {
+				if imagesJSON != "" {
+					_ = json.Unmarshal([]byte(imagesJSON), &p.Images)
+				}
+				if linksJSON != "" {
+					_ = json.Unmarshal([]byte(linksJSON), &p.Links)
+				}
 				posts = append(posts, p)
 			}
 		}
@@ -201,47 +295,79 @@ func handleBlog(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(posts)
 	case http.MethodPost:
 		if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
-			err := r.ParseMultipartForm(10 << 20)
-			if err != nil {
+			if err := r.ParseMultipartForm(10 << 20); err != nil { // 10MB
 				http.Error(w, "Invalid form", http.StatusBadRequest)
 				return
 			}
-			file, handler, err := r.FormFile("img")
-			if err != nil {
-				http.Error(w, "Image required", http.StatusBadRequest)
-				return
+			// Collect images
+			var images []string
+			if files, ok := r.MultipartForm.File["imgs"]; ok {
+				for i, fh := range files {
+					if i >= 10 {
+						break
+					}
+					f, err := fh.Open()
+					if err != nil {
+						continue
+					}
+					path, err := saveUploadedFile(f, fh)
+					f.Close()
+					if err == nil {
+						images = append(images, path)
+					}
+				}
 			}
-			defer file.Close()
-			imgPath, err := saveUploadedFile(file, handler)
-			if err != nil {
-				http.Error(w, "Failed to save image", http.StatusInternalServerError)
-				return
+			if len(images) == 0 {
+				if file, handler, err := r.FormFile("img"); err == nil {
+					defer file.Close()
+					if path, err := saveUploadedFile(file, handler); err == nil {
+						images = append(images, path)
+					}
+				}
 			}
+			images = clampStrings(images, 10)
+			links := parseLinksFromForm(r)
 			title := r.FormValue("title")
 			desc := r.FormValue("description")
-			res, err := db.Exec("INSERT INTO blog (img, title, description) VALUES (?, ?, ?)", imgPath, title, desc)
+			imagesJSON, _ := json.Marshal(images)
+			linksJSON, _ := json.Marshal(links)
+			imgSingle := ""
+			if len(images) > 0 {
+				imgSingle = images[0]
+			}
+			res, err := db.Exec("INSERT INTO blog (img, title, description, images, links) VALUES (?, ?, ?, ?, ?)", imgSingle, title, desc, string(imagesJSON), string(linksJSON))
 			if err != nil {
 				http.Error(w, "DB error", http.StatusInternalServerError)
 				return
 			}
 			id, _ := res.LastInsertId()
-			p := BlogPost{ID: int(id), Img: imgPath, Title: title, Description: desc}
+			p := BlogPost{ID: int(id), Img: imgSingle, Images: images, Title: title, Description: desc, Links: links}
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(p)
 			return
 		}
+		// JSON body
 		var p BlogPost
 		if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
 			http.Error(w, "Invalid JSON", http.StatusBadRequest)
 			return
 		}
-		res, err := db.Exec("INSERT INTO blog (img, title, description) VALUES (?, ?, ?)", p.Img, p.Title, p.Description)
+		p.Images = clampStrings(p.Images, 10)
+		p.Links = clampStrings(uniqueStrings(p.Links), 5)
+		imgSingle := ""
+		if len(p.Images) > 0 {
+			imgSingle = p.Images[0]
+		}
+		imagesJSON, _ := json.Marshal(p.Images)
+		linksJSON, _ := json.Marshal(p.Links)
+		res, err := db.Exec("INSERT INTO blog (img, title, description, images, links) VALUES (?, ?, ?, ?, ?)", imgSingle, p.Title, p.Description, string(imagesJSON), string(linksJSON))
 		if err != nil {
 			http.Error(w, "DB error", http.StatusInternalServerError)
 			return
 		}
 		id, _ := res.LastInsertId()
 		p.ID = int(id)
+		p.Img = imgSingle
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(p)
 	default:
@@ -258,33 +384,74 @@ func handleBlogByID(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		var p BlogPost
-		err := db.QueryRow("SELECT id, img, title, description FROM blog WHERE id = ?", id).Scan(&p.ID, &p.Img, &p.Title, &p.Description)
+		var imagesJSON, linksJSON string
+		err := db.QueryRow("SELECT id, img, title, description, IFNULL(images,''), IFNULL(links,'') FROM blog WHERE id = ?", id).Scan(&p.ID, &p.Img, &p.Title, &p.Description, &imagesJSON, &linksJSON)
 		if err != nil {
 			http.Error(w, "Not found", http.StatusNotFound)
 			return
+		}
+		if imagesJSON != "" {
+			_ = json.Unmarshal([]byte(imagesJSON), &p.Images)
+		}
+		if linksJSON != "" {
+			_ = json.Unmarshal([]byte(linksJSON), &p.Links)
 		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(p)
 	case http.MethodPost, http.MethodPut:
 		if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
-			err := r.ParseMultipartForm(10 << 20)
-			if err != nil {
+			if err := r.ParseMultipartForm(10 << 20); err != nil {
 				http.Error(w, "Invalid form", http.StatusBadRequest)
 				return
 			}
 			title := r.FormValue("title")
 			desc := r.FormValue("description")
-			imgPath := r.FormValue("imgOld")
-			file, handler, err := r.FormFile("img")
-			if err == nil {
-				defer file.Close()
-				imgPath, err = saveUploadedFile(file, handler)
-				if err != nil {
-					http.Error(w, "Failed to save image", http.StatusInternalServerError)
-					return
+			// Start with old images if provided
+			var images []string
+			if oldJSON := strings.TrimSpace(r.FormValue("imagesOld")); oldJSON != "" {
+				_ = json.Unmarshal([]byte(oldJSON), &images)
+			}
+			// Or fallback to current DB value
+			if len(images) == 0 {
+				var cur string
+				_ = db.QueryRow("SELECT IFNULL(images,'') FROM blog WHERE id=?", id).Scan(&cur)
+				if cur != "" {
+					_ = json.Unmarshal([]byte(cur), &images)
 				}
 			}
-			_, err = db.Exec("UPDATE blog SET img=?, title=?, description=? WHERE id=?", imgPath, title, desc, id)
+			// Add new files
+			if files, ok := r.MultipartForm.File["imgs"]; ok {
+				for i, fh := range files {
+					if i >= 10 {
+						break
+					}
+					f, err := fh.Open()
+					if err != nil {
+						continue
+					}
+					path, err := saveUploadedFile(f, fh)
+					f.Close()
+					if err == nil {
+						images = append(images, path)
+					}
+				}
+			}
+			// Optional single replacement
+			if file, handler, err := r.FormFile("img"); err == nil {
+				defer file.Close()
+				if path, err := saveUploadedFile(file, handler); err == nil {
+					images = append([]string{path}, images...)
+				}
+			}
+			images = clampStrings(images, 10)
+			links := parseLinksFromForm(r)
+			imagesJSON, _ := json.Marshal(images)
+			linksJSON, _ := json.Marshal(links)
+			imgSingle := ""
+			if len(images) > 0 {
+				imgSingle = images[0]
+			}
+			_, err := db.Exec("UPDATE blog SET img=?, title=?, description=?, images=?, links=? WHERE id=?", imgSingle, title, desc, string(imagesJSON), string(linksJSON), id)
 			if err != nil {
 				http.Error(w, "DB error", http.StatusInternalServerError)
 				return
@@ -293,12 +460,21 @@ func handleBlogByID(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte(`{"status":"ok"}`))
 			return
 		}
+		// JSON
 		var p BlogPost
 		if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
 			http.Error(w, "Invalid JSON", http.StatusBadRequest)
 			return
 		}
-		_, err := db.Exec("UPDATE blog SET img=?, title=?, description=? WHERE id=?", p.Img, p.Title, p.Description, id)
+		p.Images = clampStrings(p.Images, 10)
+		p.Links = clampStrings(uniqueStrings(p.Links), 5)
+		imgSingle := ""
+		if len(p.Images) > 0 {
+			imgSingle = p.Images[0]
+		}
+		imagesJSON, _ := json.Marshal(p.Images)
+		linksJSON, _ := json.Marshal(p.Links)
+		_, err := db.Exec("UPDATE blog SET img=?, title=?, description=?, images=?, links=? WHERE id=?", imgSingle, p.Title, p.Description, string(imagesJSON), string(linksJSON), id)
 		if err != nil {
 			http.Error(w, "DB error", http.StatusInternalServerError)
 			return
@@ -322,7 +498,7 @@ func handleBlogByID(w http.ResponseWriter, r *http.Request) {
 func handleProjects(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		rows, err := db.Query("SELECT id, img, title, description FROM projects ORDER BY id DESC")
+		rows, err := db.Query("SELECT id, img, title, description, IFNULL(images,''), IFNULL(links,'') FROM projects ORDER BY id DESC")
 		if err != nil {
 			http.Error(w, "DB error", http.StatusInternalServerError)
 			return
@@ -331,7 +507,14 @@ func handleProjects(w http.ResponseWriter, r *http.Request) {
 		var items []Project
 		for rows.Next() {
 			var p Project
-			if err := rows.Scan(&p.ID, &p.Img, &p.Title, &p.Description); err == nil {
+			var imagesJSON, linksJSON string
+			if err := rows.Scan(&p.ID, &p.Img, &p.Title, &p.Description, &imagesJSON, &linksJSON); err == nil {
+				if imagesJSON != "" {
+					_ = json.Unmarshal([]byte(imagesJSON), &p.Images)
+				}
+				if linksJSON != "" {
+					_ = json.Unmarshal([]byte(linksJSON), &p.Links)
+				}
 				items = append(items, p)
 			}
 		}
@@ -339,31 +522,52 @@ func handleProjects(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(items)
 	case http.MethodPost:
 		if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
-			err := r.ParseMultipartForm(10 << 20)
-			if err != nil {
+			if err := r.ParseMultipartForm(10 << 20); err != nil {
 				http.Error(w, "Invalid form", http.StatusBadRequest)
 				return
 			}
-			file, handler, err := r.FormFile("img")
-			if err != nil {
-				http.Error(w, "Image required", http.StatusBadRequest)
-				return
+			var images []string
+			if files, ok := r.MultipartForm.File["imgs"]; ok {
+				for i, fh := range files {
+					if i >= 10 {
+						break
+					}
+					f, err := fh.Open()
+					if err != nil {
+						continue
+					}
+					path, err := saveUploadedFile(f, fh)
+					f.Close()
+					if err == nil {
+						images = append(images, path)
+					}
+				}
 			}
-			defer file.Close()
-			imgPath, err := saveUploadedFile(file, handler)
-			if err != nil {
-				http.Error(w, "Failed to save image", http.StatusInternalServerError)
-				return
+			if len(images) == 0 {
+				if file, handler, err := r.FormFile("img"); err == nil {
+					defer file.Close()
+					if path, err := saveUploadedFile(file, handler); err == nil {
+						images = append(images, path)
+					}
+				}
 			}
+			images = clampStrings(images, 10)
+			links := parseLinksFromForm(r)
 			title := r.FormValue("title")
 			desc := r.FormValue("description")
-			res, err := db.Exec("INSERT INTO projects (img, title, description) VALUES (?, ?, ?)", imgPath, title, desc)
+			imgSingle := ""
+			if len(images) > 0 {
+				imgSingle = images[0]
+			}
+			imagesJSON, _ := json.Marshal(images)
+			linksJSON, _ := json.Marshal(links)
+			res, err := db.Exec("INSERT INTO projects (img, title, description, images, links) VALUES (?, ?, ?, ?, ?)", imgSingle, title, desc, string(imagesJSON), string(linksJSON))
 			if err != nil {
 				http.Error(w, "DB error", http.StatusInternalServerError)
 				return
 			}
 			id, _ := res.LastInsertId()
-			p := Project{ID: int(id), Img: imgPath, Title: title, Description: desc}
+			p := Project{ID: int(id), Img: imgSingle, Images: images, Title: title, Description: desc, Links: links}
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(p)
 			return
@@ -373,13 +577,22 @@ func handleProjects(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid JSON", http.StatusBadRequest)
 			return
 		}
-		res, err := db.Exec("INSERT INTO projects (img, title, description) VALUES (?, ?, ?)", p.Img, p.Title, p.Description)
+		p.Images = clampStrings(p.Images, 10)
+		p.Links = clampStrings(uniqueStrings(p.Links), 5)
+		imgSingle := ""
+		if len(p.Images) > 0 {
+			imgSingle = p.Images[0]
+		}
+		imagesJSON, _ := json.Marshal(p.Images)
+		linksJSON, _ := json.Marshal(p.Links)
+		res, err := db.Exec("INSERT INTO projects (img, title, description, images, links) VALUES (?, ?, ?, ?, ?)", imgSingle, p.Title, p.Description, string(imagesJSON), string(linksJSON))
 		if err != nil {
 			http.Error(w, "DB error", http.StatusInternalServerError)
 			return
 		}
 		id, _ := res.LastInsertId()
 		p.ID = int(id)
+		p.Img = imgSingle
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(p)
 	default:
@@ -396,33 +609,70 @@ func handleProjectByID(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		var p Project
-		err := db.QueryRow("SELECT id, img, title, description FROM projects WHERE id = ?", id).Scan(&p.ID, &p.Img, &p.Title, &p.Description)
+		var imagesJSON, linksJSON string
+		err := db.QueryRow("SELECT id, img, title, description, IFNULL(images,''), IFNULL(links,'') FROM projects WHERE id = ?", id).Scan(&p.ID, &p.Img, &p.Title, &p.Description, &imagesJSON, &linksJSON)
 		if err != nil {
 			http.Error(w, "Not found", http.StatusNotFound)
 			return
+		}
+		if imagesJSON != "" {
+			_ = json.Unmarshal([]byte(imagesJSON), &p.Images)
+		}
+		if linksJSON != "" {
+			_ = json.Unmarshal([]byte(linksJSON), &p.Links)
 		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(p)
 	case http.MethodPost, http.MethodPut:
 		if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
-			err := r.ParseMultipartForm(10 << 20)
-			if err != nil {
+			if err := r.ParseMultipartForm(10 << 20); err != nil {
 				http.Error(w, "Invalid form", http.StatusBadRequest)
 				return
 			}
 			title := r.FormValue("title")
 			desc := r.FormValue("description")
-			imgPath := r.FormValue("imgOld")
-			file, handler, err := r.FormFile("img")
-			if err == nil {
-				defer file.Close()
-				imgPath, err = saveUploadedFile(file, handler)
-				if err != nil {
-					http.Error(w, "Failed to save image", http.StatusInternalServerError)
-					return
+			var images []string
+			if oldJSON := strings.TrimSpace(r.FormValue("imagesOld")); oldJSON != "" {
+				_ = json.Unmarshal([]byte(oldJSON), &images)
+			}
+			if len(images) == 0 {
+				var cur string
+				_ = db.QueryRow("SELECT IFNULL(images,'') FROM projects WHERE id=?", id).Scan(&cur)
+				if cur != "" {
+					_ = json.Unmarshal([]byte(cur), &images)
 				}
 			}
-			_, err = db.Exec("UPDATE projects SET img=?, title=?, description=? WHERE id=?", imgPath, title, desc, id)
+			if files, ok := r.MultipartForm.File["imgs"]; ok {
+				for i, fh := range files {
+					if i >= 10 {
+						break
+					}
+					f, err := fh.Open()
+					if err != nil {
+						continue
+					}
+					path, err := saveUploadedFile(f, fh)
+					f.Close()
+					if err == nil {
+						images = append(images, path)
+					}
+				}
+			}
+			if file, handler, err := r.FormFile("img"); err == nil {
+				defer file.Close()
+				if path, err := saveUploadedFile(file, handler); err == nil {
+					images = append([]string{path}, images...)
+				}
+			}
+			images = clampStrings(images, 10)
+			links := parseLinksFromForm(r)
+			imagesJSON, _ := json.Marshal(images)
+			linksJSON, _ := json.Marshal(links)
+			imgSingle := ""
+			if len(images) > 0 {
+				imgSingle = images[0]
+			}
+			_, err := db.Exec("UPDATE projects SET img=?, title=?, description=?, images=?, links=? WHERE id=?", imgSingle, title, desc, string(imagesJSON), string(linksJSON), id)
 			if err != nil {
 				http.Error(w, "DB error", http.StatusInternalServerError)
 				return
@@ -436,7 +686,15 @@ func handleProjectByID(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid JSON", http.StatusBadRequest)
 			return
 		}
-		_, err := db.Exec("UPDATE projects SET img=?, title=?, description=? WHERE id=?", p.Img, p.Title, p.Description, id)
+		p.Images = clampStrings(p.Images, 10)
+		p.Links = clampStrings(uniqueStrings(p.Links), 5)
+		imgSingle := ""
+		if len(p.Images) > 0 {
+			imgSingle = p.Images[0]
+		}
+		imagesJSON, _ := json.Marshal(p.Images)
+		linksJSON, _ := json.Marshal(p.Links)
+		_, err := db.Exec("UPDATE projects SET img=?, title=?, description=?, images=?, links=? WHERE id=?", imgSingle, p.Title, p.Description, string(imagesJSON), string(linksJSON), id)
 		if err != nil {
 			http.Error(w, "DB error", http.StatusInternalServerError)
 			return

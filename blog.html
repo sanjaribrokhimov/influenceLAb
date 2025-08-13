@@ -89,8 +89,12 @@
         </div>
         <!-- Body (scrollable) -->
         <div class="px-6 py-6 space-y-6 overflow-y-auto max-h-[75vh]">
-          <img id="blog-modal-img" src="" alt="" class="w-full max-h-96 object-cover rounded-xl" />
+          <div class="space-y-3">
+            <img id="blog-modal-main" src="" alt="" class="w-full max-h-96 object-cover rounded-xl" />
+            <div id="blog-modal-thumbs" class="grid grid-cols-5 gap-2"></div>
+          </div>
           <p id="blog-modal-desc" class="text-gray-700 text-lg leading-relaxed"></p>
+          <div id="blog-modal-links" class="space-y-2"></div>
         </div>
                 </div>
             </div>
@@ -121,15 +125,21 @@
         description: 'Разбираем типичные ошибки и даём советы, как их избежать для максимального результата.'
       }
     ];
-    function renderBlog(posts) {
-      document.getElementById('blog-list').innerHTML = posts.map((p, i) => `
-        <div class="group bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-center">
-          <img src="${p.img}" alt="${p.title}" class="w-full h-56 object-cover rounded-xl mb-6" />
-          <h3 class="text-xl font-bold text-black mb-4">${p.title}</h3>
-          <p class="text-gray-600 mb-4 text-center line-clamp-3">${p.description}</p>
-          <button class="px-6 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200" onclick="openBlogModal(${i})">Читать</button>
-        </div>
-      `).join('');
+         function renderBlog(posts) {
+      document.getElementById('blog-list').innerHTML = posts.map((p, i) => {
+                 const cover = (Array.isArray(p.images) && p.images.length) ? p.images[0] : (p.img || 'img/img1.jpg');
+         const linksHtml = (Array.isArray(p.links) && p.links.length) ? `<div class=\"w-full flex flex-wrap gap-2 mt-2\">${p.links.slice(0,3).map(u => `<a href=\"${u}\" target=\"_blank\" class=\"inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-sm\">Link</a>`).join('')}</div>` : '';
+         return `
+         <div class=\"group bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-center\">
+           <img src=\"${cover}\" alt=\"${p.title}\" class=\"w-full h-56 object-cover rounded-xl mb-6\" />
+           <div class=\"w-full flex items-center gap-3 mb-2\">
+             <h3 class=\"text-xl font-bold text-black\">${p.title}</h3>
+           </div>
+           <p class=\"text-gray-600 mb-4 text-center line-clamp-3\">${p.description}</p>
+           ${linksHtml}
+           <button class=\"px-6 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200\" onclick=\"openBlogModal(${i})\">Читать</button>
+         </div>`;
+      }).join('');
     }
     let blogData = [];
     fetch('/api/blog')
@@ -145,12 +155,19 @@
     // Переопределяем функции открытия/закрытия модалки для лучшего UX
     window.openBlogModal = function(idx) {
       const p = blogData[idx];
-      document.getElementById('blog-modal-img').src = p.img;
+      const images = (Array.isArray(p.images) && p.images.length) ? p.images.slice(0,10) : (p.img ? [p.img] : []);
       document.getElementById('blog-modal-title').textContent = p.title;
       document.getElementById('blog-modal-desc').textContent = p.description;
+      const main = document.getElementById('blog-modal-main');
+      const thumbs = document.getElementById('blog-modal-thumbs');
+      main.src = images[0] || '';
+      thumbs.innerHTML = images.map((src, i) => `<img data-i=\"${i}\" src=\"${src}\" class=\"h-16 w-full object-cover rounded border cursor-pointer\">`).join('');
+      thumbs.querySelectorAll('img').forEach(img => img.onclick = () => { main.src = img.src; });
+      const linksBox = document.getElementById('blog-modal-links');
+      const links = Array.isArray(p.links) ? p.links.slice(0,5) : [];
+      linksBox.innerHTML = links.length ? `<div class=\"flex flex-wrap gap-2\">${links.map(u => `<a href=\"${u}\" target=\"_blank\" class=\"inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-sm\">Link</a>`).join('')}</div>` : '';
       const modal = document.getElementById('blog-modal');
       modal.classList.remove('hidden');
-      // Блокируем скролл фона
       document.body.style.overflow = 'hidden';
     };
     function closeBlogModal() {

@@ -257,14 +257,18 @@
         .then(r => r.json())
         .then(data => {
           const items = (Array.isArray(data) && data.length) ? data.slice(0,3) : defaultHomeProjects;
-          document.getElementById('projects-list-home').innerHTML = items.map(p => `
-            <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-start">
-              <img src="${p.img}" alt="${p.title}" class="w-full h-48 object-cover rounded-xl mb-6" />
-              <h3 class="text-xl font-bold text-black mb-3">${p.title}</h3>
-              <p class="text-gray-600 mb-4 line-clamp-3">${p.description}</p>
-              <a href="projects.html" class="mt-auto inline-block px-5 py-2 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200">Подробнее</a>
-            </div>
-          `).join('');
+          document.getElementById('projects-list-home').innerHTML = items.map(p => {
+            const cover = (Array.isArray(p.images) && p.images.length) ? p.images[0] : (p.img || 'img/img1.jpg');
+            const linksHtml = (Array.isArray(p.links) && p.links.length) ? `<div class=\"w-full flex flex-wrap gap-1 mt-1 mb-3\">${p.links.slice(0,3).map(u => `<a href=\"${u}\" target=\"_blank\" class=\"inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-[11px]\">Link</a>`).join('')}</div>` : '';
+            return `
+            <div class=\"bg-white px-8 pt-8 pb-5 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-start\"> 
+              <img src=\"${cover}\" alt=\"${p.title}\" class=\"w-full h-48 object-cover rounded-xl mb-6\" />
+              <h3 class=\"text-xl font-bold text-black mb-3\">${p.title}</h3>
+              <p class=\"text-gray-600 mb-4 line-clamp-3\">${p.description}</p>
+              ${linksHtml}
+              <a href=\"projects.html\" class=\"mt-3 inline-block px-5 py-2 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200\">Подробнее</a>
+            </div>`;
+          }).join('');
         })
         .catch(() => {
           document.getElementById('projects-list-home').innerHTML = defaultHomeProjects.map(p => `
@@ -445,14 +449,18 @@
     .then(r => r.json())
     .then(data => {
       const posts = (Array.isArray(data) && data.length > 0) ? data.slice(0, 3) : defaultHomeBlog;
-      document.getElementById('blog-list-home').innerHTML = posts.map(p => `
-        <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col items-start">
-          <img src="${p.img}" alt="${p.title}" class="w-full h-48 object-cover rounded-xl mb-4" />
-          <h3 class="text-lg font-bold mb-2">${p.title}</h3>
-          <p class="text-gray-600 mb-4 line-clamp-3">${p.description}</p>
-          <a href="blog.html" class="mt-auto inline-block px-5 py-2 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200">Читать</a>
-            </div>
-      `).join('');
+      document.getElementById('blog-list-home').innerHTML = posts.map(p => {
+        const cover = (Array.isArray(p.images) && p.images.length) ? p.images[0] : (p.img || 'img/img1.jpg');
+        const linksHtml = (Array.isArray(p.links) && p.links.length) ? `<div class=\"w-full flex flex-wrap gap-2 mt-2 mb-3\">${p.links.slice(0,3).map(u => `<a href=\"${u}\" target=\"_blank\" class=\"inline-flex items-center gap-1 px-2 py-1 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-xs\">Link</a>`).join('')}</div>` : '';
+        return `
+        <div class=\"bg-white px-6 pt-6 pb-4 rounded-2xl shadow-lg flex flex-col items-start\">
+          <img src=\"${cover}\" alt=\"${p.title}\" class=\"w-full h-48 object-cover rounded-xl mb-4\" />
+          <h3 class=\"text-lg font-bold mb-2\">${p.title}</h3>
+          <p class=\"text-gray-600 mb-2 line-clamp-3\">${p.description}</p>
+          ${linksHtml}
+          <a href=\"blog.html\" class=\"mt-auto inline-block px-5 py-2 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200\">Читать</a>
+            </div>`;
+      }).join('');
     })
     .catch(() => {
       document.getElementById('blog-list-home').innerHTML = defaultHomeBlog.map(p => `
