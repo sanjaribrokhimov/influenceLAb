@@ -50,7 +50,7 @@
             background-clip: text;
         }
         /* Ограничение текста на 3 строки */
-        .clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .clamp-3 { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
     </style>
 </head>
 <body class="bg-white">
@@ -59,6 +59,15 @@
       const loadHeader = async () => {
         const html = await fetch('components/header.html').then(r => r.text());
         document.getElementById('site-header').innerHTML = html;
+        
+        // Извлекаем и выполняем скрипты из header
+        const scripts = document.getElementById('site-header').querySelectorAll('script');
+        scripts.forEach((script) => {
+          const newScript = document.createElement('script');
+          newScript.textContent = script.textContent;
+          document.head.appendChild(newScript);
+        });
+        
         const menuBtn = document.getElementById('mobile-menu-button');
         const menu = document.getElementById('mobile-menu');
         const overlay = document.getElementById('mobile-menu-overlay');
@@ -71,6 +80,12 @@
           overlay.addEventListener('click', closeMenu);
           document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
         }
+        
+        // Обновляем переводы после загрузки header
+        console.log('About page: Header loaded, updating translations...');
+        if (window.updateContentOnLanguageChange) {
+          window.updateContentOnLanguageChange();
+        }
       };
       loadHeader();
     </script>
@@ -80,9 +95,9 @@
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
 
             <h1 class="text-5xl lg:text-6xl font-black text-black mb-6">
-                Influence Lab — <span class="gradient-text">креативное агентство инфлюенсер-маркетинга</span>
+                Influence Lab — <span class="gradient-text" id="hero-subtitle">креативное агентство инфлюенсер-маркетинга</span>
             </h1>
-            <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed" id="hero-description">
                 Помогаем брендам выстраивать сильную коммуникацию с аудиторией через блогеров и лидеров мнений. Разрабатываем стратегические кампании «под ключ»: от подбора подходящих инфлюенсеров до креатива, запуска и аналитики.
             </p>
         </div>
@@ -92,14 +107,14 @@
     <section class="py-20 bg-white">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
             <div>
-                <h2 class="text-3xl font-bold text-black mb-6">О компании</h2>
-                <p class="text-lg text-gray-600 mb-6">
+                <h2 class="text-3xl font-bold text-black mb-6" id="about-title">О компании</h2>
+                <p class="text-lg text-gray-600 mb-6" id="about-description">
                     Influence Lab — это команда, которая знает, как превратить блогеров в ваших амбассадоров и донести ценность продукта до нужной аудитории. С нами сотрудничают бренды, которым важна не просто реклама, а реальный отклик, вовлеченность и рост продаж.
                 </p>
                 <ul class="space-y-4 text-base text-gray-700">
-                    <li><span class="font-bold text-brand-blue">•</span> Стратегические кампании «под ключ»</li>
-                    <li><span class="font-bold text-brand-blue">•</span> Креатив, запуск и аналитика</li>
-                    <li><span class="font-bold text-brand-blue">•</span> Работаем с брендами, которым важен результат</li>
+                    <li><span class="font-bold text-brand-blue">•</span> <span id="feature1">Стратегические кампании «под ключ»</span></li>
+                    <li><span class="font-bold text-brand-blue">•</span> <span id="feature2">Креатив, запуск и аналитика</span></li>
+                    <li><span class="font-bold text-brand-blue">•</span> <span id="feature3">Работаем с брендами, которым важен результат</span></li>
                 </ul>
             </div>
             <div>
@@ -111,26 +126,26 @@
     <!-- Problems & Solutions -->
     <section class="py-20 bg-gray-50">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 class="text-3xl font-bold text-black mb-10 text-center">Проблемы клиентов и наши решения</h2>
+            <h2 class="text-3xl font-bold text-black mb-10 text-center" id="problems-title">Проблемы клиентов и наши решения</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
                 <div>
-                    <h3 class="text-xl font-semibold text-brand-blue mb-4">Проблемы клиентов</h3>
+                    <h3 class="text-xl font-semibold text-brand-blue mb-4" id="problems-subtitle">Проблемы клиентов</h3>
                     <ul class="list-disc pl-6 space-y-2 text-gray-700">
-                        <li>Отсутствие креативности в рекламе (блогер делает на отвали)</li>
-                        <li>Трудности в профессиональной коммуникации: незнание ТЗ, налогообложения, правовых аспектов, политики брендов</li>
-                        <li>Проблемы с оплатой по перечислению (блогеры хотят наличкой/на карту)</li>
-                        <li>Подбор неэффективных блогеров</li>
-                        <li>Проблемы работы с региональными блогерами</li>
+                        <li id="problem1">Отсутствие креативности в рекламе (блогер делает на отвали)</li>
+                        <li id="problem2">Трудности в профессиональной коммуникации: незнание ТЗ, налогообложения, правовых аспектов, политики брендов</li>
+                        <li id="problem3">Проблемы с оплатой по перечислению (блогеры хотят наличкой/на карту)</li>
+                        <li id="problem4">Подбор неэффективных блогеров</li>
+                        <li id="problem5">Проблемы работы с региональными блогерами</li>
                     </ul>
                 </div>
                 <div>
-                    <h3 class="text-xl font-semibold text-brand-blue-soft mb-4">Наши решения</h3>
+                    <h3 class="text-xl font-semibold text-brand-blue-soft mb-4" id="solutions-subtitle">Наши решения</h3>
                     <ul class="list-disc pl-6 space-y-2 text-gray-700">
-                        <li>Пишем и дорабатываем сценарий рекламы вместе с блогером</li>
-                        <li>Объясняем блогеру все аспекты интеграции, сопровождаем от сценария до готового материала</li>
-                        <li>Берём на себя все вопросы с оплатой — вы просто перечисляете нам на расчётный счёт</li>
-                        <li>Делаем подборку правильных блогеров, часто дешевле и эффективнее</li>
-                        <li>В базе — ответственные и раскрученные региональные блогеры</li>
+                        <li id="solution1">Пишем и дорабатываем сценарий рекламы вместе с блогером</li>
+                        <li id="solution2">Объясняем блогеру все аспекты интеграции, сопровождаем от сценария до готового материала</li>
+                        <li id="solution3">Берём на себя все вопросы с оплатой — вы просто перечисляете нам на расчётный счёт</li>
+                        <li id="solution4">Делаем подборку правильных блогеров, часто дешевле и эффективнее</li>
+                        <li id="solution5">В базе — ответственные и раскрученные региональные блогеры</li>
                     </ul>
                 </div>
             </div>
@@ -140,32 +155,32 @@
     <!-- Roadmap -->
     <section class="py-20 bg-white">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 class="text-3xl font-bold text-black mb-10 text-center">Дорожная карта проекта</h2>
+            <h2 class="text-3xl font-bold text-black mb-10 text-center" id="roadmap-title">Дорожная карта проекта</h2>
             <div class="grid grid-cols-1 md:grid-cols-5 gap-8 text-center">
                 <div>
                     <div class="w-16 h-16 mx-auto rounded-full bg-brand-blue-soft text-white flex items-center justify-center text-2xl font-bold mb-4">1</div>
-                    <div class="font-semibold mb-2">Брифинг</div>
-                    <div class="text-gray-600 text-sm">Объяснение проекта и переговоры</div>
+                    <div class="font-semibold mb-2" id="step1-title">Брифинг</div>
+                    <div class="text-gray-600 text-sm" id="step1-desc">Объяснение проекта и переговоры</div>
                 </div>
                 <div>
                     <div class="w-16 h-16 mx-auto rounded-full bg-brand-blue-medium text-white flex items-center justify-center text-2xl font-bold mb-4">2</div>
-                    <div class="font-semibold mb-2">Сбор таблицы</div>
-                    <div class="text-gray-600 text-sm">Подбор блогеров и сбор информации</div>
+                    <div class="font-semibold mb-2" id="step2-title">Сбор таблицы</div>
+                    <div class="text-gray-600 text-sm" id="step2-desc">Подбор блогеров и сбор информации</div>
                 </div>
                 <div>
                     <div class="w-16 h-16 mx-auto rounded-full bg-brand-blue text-white flex items-center justify-center text-2xl font-bold mb-4">3</div>
-                    <div class="font-semibold mb-2">Утверждение</div>
-                    <div class="text-gray-600 text-sm">Выбор и утверждение блогеров</div>
+                    <div class="font-semibold mb-2" id="step3-title">Утверждение</div>
+                    <div class="text-gray-600 text-sm" id="step3-desc">Выбор и утверждение блогеров</div>
                 </div>
                 <div>
                     <div class="w-16 h-16 mx-auto rounded-full bg-orange-400 text-white flex items-center justify-center text-2xl font-bold mb-4">4</div>
-                    <div class="font-semibold mb-2">Реализация</div>
-                    <div class="text-gray-600 text-sm">Сценарии, съёмки, утверждение, публикация</div>
+                    <div class="font-semibold mb-2" id="step4-title">Реализация</div>
+                    <div class="text-gray-600 text-sm" id="step4-desc">Сценарии, съёмки, утверждение, публикация</div>
                 </div>
                 <div>
                     <div class="w-16 h-16 mx-auto rounded-full bg-green-500 text-white flex items-center justify-center text-2xl font-bold mb-4">5</div>
-                    <div class="font-semibold mb-2">Отчетность</div>
-                    <div class="text-gray-600 text-sm">Подготовка отчёта по метрикам</div>
+                    <div class="font-semibold mb-2" id="step5-title">Отчетность</div>
+                    <div class="text-gray-600 text-sm" id="step5-desc">Подготовка отчёта по метрикам</div>
                 </div>
             </div>
         </div>
@@ -176,68 +191,287 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
           <div class="inline-flex items-center px-4 py-2 bg-brand-blue-soft/10 text-brand-blue-soft rounded-full text-sm font-medium mb-6">
-            Наши проекты
+            <span id="projects-badge">Наши проекты</span>
           </div>
           <h2 class="text-4xl lg:text-5xl font-bold text-black mb-6">
-            <span class="gradient-text">Наши проекты</span>
+            <span class="gradient-text" id="projects-title">Наши проекты</span>
           </h2>
-          <p class="text-xl text-gray-600 max-w-2xl mx-auto">Примеры реализованных кейсов для наших клиентов</p>
+          <p class="text-xl text-gray-600 max-w-2xl mx-auto" id="projects-description">Примеры реализованных кейсов для наших клиентов</p>
         </div>
-        <div id="projects-list" class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12"></div>
+        <div id="projects-list" class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 items-stretch"></div>
         <div class="text-center">
-          <a href="projects.html" class="inline-block px-10 py-4 bg-brand-blue-soft text-white rounded-xl font-semibold hover:bg-brand-blue-medium transition-all duration-200 text-lg shadow-lg">Подробнее</a>
+          <a href="projects.html" class="inline-block px-10 py-4 bg-brand-blue-soft text-white rounded-xl font-semibold hover:bg-brand-blue-medium transition-all duration-200 text-lg shadow-lg"><span id="more-projects-btn">Подробнее</span></a>
         </div>
       </div>
     </section>
     <script>
-        const defaultProjects = [
-          {
-            img: 'img/img1.jpg',
-            title: 'Название проекта',
-            description: 'Описание проекта. Современный дизайн, уникальный стиль, эффективная реализация.'
-          },
-          {
-            img: 'img/img2.png',
-            title: 'Название проекта',
-            description: 'Описание проекта. Креативные решения, индивидуальный подход, результат для клиента.'
-          },
-          {
-            img: 'img/img3.jpg',
-            title: 'Название проекта',
-            description: 'Описание проекта. Эстетика, функциональность, рост бренда.'
-          },
-          {
-            img: 'img/img4.png',
-            title: 'Название проекта',
-            description: 'Описание проекта. Эффективная стратегия, рост продаж, узнаваемость.'
+        (function(){
+          function getLang(){ return localStorage.getItem('site_lang') || 'RU'; }
+          function getTranslated(field, item){
+            const lang = getLang();
+            if (lang === 'UZ' && item[`${field}_uz`]) return item[`${field}_uz`];
+            if (lang === 'EN' && item[`${field}_en`]) return item[`${field}_en`];
+            return item[field] || '';
           }
-        ];
-        fetch('/api/projects')
-          .then(r => r.json())
-          .then(data => {
-            const projects = (Array.isArray(data) && data.length > 0) ? data.slice(0, 4) : defaultProjects;
-            document.getElementById('projects-list').innerHTML = projects.map(p => `
-              <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-center">
-                <img src="${p.img}" alt="${p.title}" class="w-full h-48 object-cover rounded-xl mb-6" />
-                <h3 class="text-xl font-bold text-black mb-4">${p.title}</h3>
-                <p class="text-gray-600 mb-6 text-center clamp-3">${p.description}</p>
-              </div>
-            `).join('');
-          })
-          .catch(() => {
-            document.getElementById('projects-list').innerHTML = defaultProjects.map(p => `
-              <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-center">
-                <img src="${p.img}" alt="${p.title}" class="w-full h-48 object-cover rounded-xl mb-6" />
-                <h3 class="text-xl font-bold text-black mb-4">${p.title}</h3>
-                <p class="text-gray-600 mb-6 text-center clamp-3">${p.description}</p>
-              </div>
-            `).join('');
-          });
+          const defaultProjects = [
+            { img: 'img/img1.jpg', title: 'Проект', description: 'Современный дизайн, уникальный стиль, эффективная реализация.' },
+            { img: 'img/img2.png', title: 'Проект', description: 'Креативные решения, индивидуальный подход, результат для клиента.' },
+            { img: 'img/img3.jpg', title: 'Проект', description: 'Эстетика, функциональность, рост бренда.' }
+          ];
+          function renderAboutProjects(items){
+            const el = document.getElementById('projects-list');
+            if (!el) return;
+            const list = (Array.isArray(items) && items.length > 0) ? items.slice(0,3) : defaultProjects;
+            el.innerHTML = list.map(p => {
+              const cover = (Array.isArray(p.images) && p.images.length) ? p.images[0] : (p.img || 'img/img1.jpg');
+              const title = getTranslated('title', p) || (p.title || '');
+              const description = getTranslated('description', p) || (p.description || '');
+              const linksHtml = (Array.isArray(p.links) && p.links.length) ? p.links.slice(0,5).map(u => `<a href=\"${u}\" target=\"_blank\" class=\"inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-xs\">Link</a>`).join('') : '';
+              return `
+              <div class=\"bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-start h-full\">
+                <img src=\"${cover}\" alt=\"${title}\" class=\"w-full h-48 object-cover rounded-xl mb-6\" />
+                <h3 class=\"text-xl font-bold text-black mb-3\">${title}</h3>
+                <p class=\"text-gray-600 mb-4 line-clamp-3\">${description}</p>
+                <div class=\"w-full flex items-center justify-between gap-2 mt-auto\">
+                  <div class=\"flex flex-wrap gap-2\">${linksHtml}</div>
+                  <a href=\"projects.html\" class=\"px-6 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200\">${(function(){const l=(localStorage.getItem('site_lang')||'RU');return l==='UZ'?'Batafsil':(l==='EN'?'More':'Подробнее');})()}</a>
+                </div>
+              </div>`;
+            }).join('');
+          }
+          window.renderAboutProjects = renderAboutProjects;
+          fetch('/api/projects')
+            .then(r=>r.json())
+            .then(data => { window.aboutProjectsData = (Array.isArray(data) && data.length) ? data : []; renderAboutProjects(window.aboutProjectsData); })
+            .catch(()=>{ window.aboutProjectsData = []; renderAboutProjects(window.aboutProjectsData); });
+        })();
     </script>
 
     <div id="site-footer"></div>
     <script>
-        fetch('components/footer.html').then(r => r.text()).then(t => document.getElementById('site-footer').innerHTML = t);
+        // Функция получения языка из localStorage
+        function getCurrentLanguage() {
+          return localStorage.getItem('site_lang') || 'RU';
+        }
+
+        // Переводы для интерфейса
+        const translations = {
+          RU: {
+            heroSubtitle: 'креативное агентство инфлюенсер-маркетинга',
+            heroDescription: 'Помогаем брендам выстраивать сильную коммуникацию с аудиторией через блогеров и лидеров мнений. Разрабатываем стратегические кампании «под ключ»: от подбора подходящих инфлюенсеров до креатива, запуска и аналитики.',
+            aboutTitle: 'О компании',
+            aboutDescription: 'Influence Lab — это команда, которая знает, как превратить блогеров в ваших амбассадоров и донести ценность продукта до нужной аудитории. С нами сотрудничают бренды, которым важна не просто реклама, а реальный отклик, вовлеченность и рост продаж.',
+            feature1: 'Стратегические кампании «под ключ»',
+            feature2: 'Креатив, запуск и аналитика',
+            feature3: 'Работаем с брендами, которым важен результат',
+            problemsTitle: 'Проблемы клиентов и наши решения',
+            problemsSubtitle: 'Проблемы клиентов',
+            problem1: 'Отсутствие креативности в рекламе (блогер делает на отвали)',
+            problem2: 'Трудности в профессиональной коммуникации: незнание ТЗ, налогообложения, правовых аспектов, политики брендов',
+            problem3: 'Проблемы с оплатой по перечислению (блогеры хотят наличкой/на карту)',
+            problem4: 'Подбор неэффективных блогеров',
+            problem5: 'Проблемы работы с региональными блогерами',
+            solutionsSubtitle: 'Наши решения',
+            solution1: 'Пишем и дорабатываем сценарий рекламы вместе с блогером',
+            solution2: 'Объясняем блогеру все аспекты интеграции, сопровождаем от сценария до готового материала',
+            solution3: 'Берём на себя все вопросы с оплатой — вы просто перечисляете нам на расчётный счёт',
+            solution4: 'Делаем подборку правильных блогеров, часто дешевле и эффективнее',
+            solution5: 'В базе — ответственные и раскрученные региональные блогеры',
+            roadmapTitle: 'Дорожная карта проекта',
+            step1Title: 'Брифинг',
+            step1Desc: 'Объяснение проекта и переговоры',
+            step2Title: 'Сбор таблицы',
+            step2Desc: 'Подбор блогеров и сбор информации',
+            step3Title: 'Утверждение',
+            step3Desc: 'Выбор и утверждение блогеров',
+            step4Title: 'Реализация',
+            step4Desc: 'Сценарии, съёмки, утверждение, публикация',
+            step5Title: 'Отчетность',
+            step5Desc: 'Подготовка отчёта по метрикам',
+            projectsBadge: 'Наши проекты',
+            projectsTitle: 'Наши проекты',
+            projectsDescription: 'Примеры реализованных кейсов для наших клиентов',
+            moreProjectsBtn: 'Подробнее'
+          },
+          UZ: {
+            heroSubtitle: 'influenser marketing yaratuvchi agentligi',
+            heroDescription: 'Brendlarga blogerlar va fikr yetakchilari orqali auditoriya bilan kuchli aloqani o\'rnatishga yordam beramiz. Biz  strategik kampaniyalarni ishlab chiqamiz: mos keladigan influenserlarni tanlashdan ijodiy ishlar, ishga tushirish va tahlilgacha.',
+            aboutTitle: 'Kompaniya haqida',
+            aboutDescription: 'Influence Lab — bu blogerlarni sizning elchilaringizga aylantirish va mahsulotning qimmatini kerakli auditoriyaga yetkazishni biladigan jamoa. Biz bilan faqat reklama emas, balki haqiqiy javob, jalb qilish va sotuvlarning o\'sishi muhim bo\'lgan brendlar hamkorlik qiladi.',
+            feature1: 'Strategik kampaniyalar ',
+            feature2: 'Ijodiy ishlar, ishga tushirish va tahlil',
+            feature3: 'Natija muhim bo\'lgan brendlar bilan ishlaymiz',
+            problemsTitle: 'Mijozlarning muammolari va bizning yechimlarimiz',
+            problemsSubtitle: 'Mijozlarning muammolari',
+            problem1: 'Reklamada ijodiy yo\'qligi (bloger "otval" qiladi)',
+            problem2: 'Kasbiy aloqada qiyinchiliklar: TZ, soliqlar, huquqiy jihatlar, brendlar siyosati haqida bilimsizlik',
+            problem3: 'O\'tkazma orqali to\'lov muammolari (blogerlar naqd pul/kartaga xohlashadi)',
+            problem4: 'Samarasiz blogerlarni tanlash',
+            problem5: 'Mintaqaviy blogerlar bilan ishlash muammolari',
+            solutionsSubtitle: 'Bizning yechimlarimiz',
+            solution1: 'Bloger bilan birgalikda reklama ssenariysini yozamiz va yaxshilaymiz',
+            solution2: 'Blogerga integratsiyaning barcha jihatlarini tushuntiramiz, ssenariydan tayyor materialgacha hamrohlik qilamiz',
+            solution3: 'To\'lov bilan bog\'liq barcha savollarni o\'zimizga olamiz — siz faqat bizning hisob raqamimizga o\'tkazasiz',
+            solution4: 'To\'g\'ri blogerlarni tanlaymiz, ko\'pincha arzonroq va samaraliroq',
+            solution5: 'Bazada — mas\'uliyatli va targ\'ib qilingan mintaqaviy blogerlar',
+            roadmapTitle: 'Loyiha yo\'l xaritasi',
+            step1Title: 'Brifing',
+            step1Desc: 'Loyihani tushuntirish va muzokaralar',
+            step2Title: 'Jadval to\'plash',
+            step2Desc: 'Blogerlarni tanlash va ma\'lumot to\'plash',
+            step3Title: 'Tasdiqlash',
+            step3Desc: 'Blogerlarni tanlash va tasdiqlash',
+            step4Title: 'Amalga oshirish',
+            step4Desc: 'Ssenariylar, suratga olish, tasdiqlash, nashr etish',
+            step5Title: 'Hisobot',
+            step5Desc: 'Metrikalar bo\'yicha hisobot tayyorlash',
+            projectsBadge: 'Bizning loyihalar',
+            projectsTitle: 'Bizning loyihalar',
+            projectsDescription: 'Mijozlarimiz uchun amalga oshirilgan holatlar misollari',
+            moreProjectsBtn: 'Batafsil'
+          },
+          EN: {
+            heroSubtitle: 'creative influencer marketing agency',
+            heroDescription: 'We help brands build strong communication with audiences through bloggers and opinion leaders. We develop strategic campaigns "turnkey": from selecting suitable influencers to creative work, launch and analytics.',
+            aboutTitle: 'About the company',
+            aboutDescription: 'Influence Lab is a team that knows how to turn bloggers into your ambassadors and deliver product value to the right audience. We work with brands that care about not just advertising, but real response, engagement and sales growth.',
+            feature1: 'Strategic campaigns "turnkey"',
+            feature2: 'Creative work, launch and analytics',
+            feature3: 'We work with brands that care about results',
+            problemsTitle: 'Client problems and our solutions',
+            problemsSubtitle: 'Client problems',
+            problem1: 'Lack of creativity in advertising (blogger does it carelessly)',
+            problem2: 'Difficulties in professional communication: ignorance of TOR, taxation, legal aspects, brand policies',
+            problem3: 'Payment problems by transfer (bloggers want cash/on card)',
+            problem4: 'Selection of ineffective bloggers',
+            problem5: 'Problems working with regional bloggers',
+            solutionsSubtitle: 'Our solutions',
+            solution1: 'We write and refine the advertising script together with the blogger',
+            solution2: 'We explain all aspects of integration to the blogger, accompany from script to finished material',
+            solution3: 'We take on all payment issues — you just transfer to our current account',
+            solution4: 'We make a selection of the right bloggers, often cheaper and more effective',
+            solution5: 'In the database — responsible and promoted regional bloggers',
+            roadmapTitle: 'Project roadmap',
+            step1Title: 'Briefing',
+            step1Desc: 'Project explanation and negotiations',
+            step2Title: 'Table collection',
+            step2Desc: 'Blogger selection and information gathering',
+            step3Title: 'Approval',
+            step3Desc: 'Selection and approval of bloggers',
+            step4Title: 'Implementation',
+            step4Desc: 'Scripts, filming, approval, publication',
+            step5Title: 'Reporting',
+            step5Desc: 'Preparation of metrics report',
+            projectsBadge: 'Our projects',
+            projectsTitle: 'Our projects',
+            projectsDescription: 'Examples of implemented cases for our clients',
+            moreProjectsBtn: 'More details'
+          }
+        };
+
+        // Обновление интерфейса на выбранном языке
+        function updateInterface() {
+          const lang = getCurrentLanguage();
+          const t = translations[lang] || translations['RU']; // Fallback на русский
+          console.log('About page: Updating interface for language:', lang);
+          
+          if (t) {
+            // Hero section
+            if (document.getElementById('hero-subtitle')) {
+              document.getElementById('hero-subtitle').textContent = t.heroSubtitle;
+              console.log('Updated hero-subtitle to:', t.heroSubtitle);
+            }
+            if (document.getElementById('hero-description')) {
+              document.getElementById('hero-description').textContent = t.heroDescription;
+              console.log('Updated hero-description to:', t.heroDescription);
+            }
+            
+            // About section
+            if (document.getElementById('about-title')) document.getElementById('about-title').textContent = t.aboutTitle;
+            if (document.getElementById('about-description')) document.getElementById('about-description').textContent = t.aboutDescription;
+            if (document.getElementById('feature1')) document.getElementById('feature1').textContent = t.feature1;
+            if (document.getElementById('feature2')) document.getElementById('feature2').textContent = t.feature2;
+            if (document.getElementById('feature3')) document.getElementById('feature3').textContent = t.feature3;
+            
+            // Problems & Solutions section
+            if (document.getElementById('problems-title')) document.getElementById('problems-title').textContent = t.problemsTitle;
+            if (document.getElementById('problems-subtitle')) document.getElementById('problems-subtitle').textContent = t.problemsSubtitle;
+            if (document.getElementById('problem1')) document.getElementById('problem1').textContent = t.problem1;
+            if (document.getElementById('problem2')) document.getElementById('problem2').textContent = t.problem2;
+            if (document.getElementById('problem3')) document.getElementById('problem3').textContent = t.problem3;
+            if (document.getElementById('problem4')) document.getElementById('problem4').textContent = t.problem4;
+            if (document.getElementById('problem5')) document.getElementById('problem5').textContent = t.problem5;
+            if (document.getElementById('solutions-subtitle')) document.getElementById('solutions-subtitle').textContent = t.solutionsSubtitle;
+            if (document.getElementById('solution1')) document.getElementById('solution1').textContent = t.solution1;
+            if (document.getElementById('solution2')) document.getElementById('solution2').textContent = t.solution2;
+            if (document.getElementById('solution3')) document.getElementById('solution3').textContent = t.solution3;
+            if (document.getElementById('solution4')) document.getElementById('solution4').textContent = t.solution4;
+            if (document.getElementById('solution5')) document.getElementById('solution5').textContent = t.solution5;
+            
+            // Roadmap section
+            if (document.getElementById('roadmap-title')) document.getElementById('roadmap-title').textContent = t.roadmapTitle;
+            if (document.getElementById('step1-title')) document.getElementById('step1-title').textContent = t.step1Title;
+            if (document.getElementById('step1-desc')) document.getElementById('step1-desc').textContent = t.step1Desc;
+            if (document.getElementById('step2-title')) document.getElementById('step2-title').textContent = t.step2Title;
+            if (document.getElementById('step2-desc')) document.getElementById('step2-desc').textContent = t.step2Desc;
+            if (document.getElementById('step3-title')) document.getElementById('step3-title').textContent = t.step3Title;
+            if (document.getElementById('step3-desc')) document.getElementById('step3-desc').textContent = t.step3Desc;
+            if (document.getElementById('step4-title')) document.getElementById('step4-title').textContent = t.step4Title;
+            if (document.getElementById('step4-desc')) document.getElementById('step4-desc').textContent = t.step4Desc;
+            if (document.getElementById('step5-title')) document.getElementById('step5-title').textContent = t.step5Title;
+            if (document.getElementById('step5-desc')) document.getElementById('step5-desc').textContent = t.step5Desc;
+            
+            // Projects section
+            if (document.getElementById('projects-badge')) document.getElementById('projects-badge').textContent = t.projectsBadge;
+            if (document.getElementById('projects-title')) document.getElementById('projects-title').textContent = t.projectsTitle;
+            if (document.getElementById('projects-description')) document.getElementById('projects-description').textContent = t.projectsDescription;
+            if (document.getElementById('more-projects-btn')) document.getElementById('more-projects-btn').textContent = t.moreProjectsBtn;
+          }
+        }
+
+        // Глобальная функция для обновления контента при смене языка
+        window.updateContentOnLanguageChange = function() {
+          updateInterface();
+          
+          // Перерисовываем карточки проектов при смене языка
+          if (window.aboutProjectsData && window.renderAboutProjects) {
+            window.renderAboutProjects(window.aboutProjectsData);
+          }
+          
+          // Обновляем footer
+          if (window.updateFooterTranslations) {
+            window.updateFooterTranslations();
+          }
+        };
+
+        // Инициализация
+        console.log('About page: Initializing translations...');
+        console.log('Current language:', getCurrentLanguage());
+        
+        // Обновляем переводы с небольшой задержкой, чтобы DOM был готов
+        setTimeout(() => {
+          updateInterface();
+          console.log('About page: Translations initialized');
+        }, 100);
+
+        fetch('components/footer.html').then(r => r.text()).then(t => {
+            document.getElementById('site-footer').innerHTML = t;
+            
+            // Извлекаем и выполняем скрипты из footer
+            const scripts = document.getElementById('site-footer').querySelectorAll('script');
+            scripts.forEach((script) => {
+                const newScript = document.createElement('script');
+                newScript.textContent = script.textContent;
+                document.head.appendChild(newScript);
+            });
+            
+            // Инициализируем переводы footer
+            setTimeout(() => {
+                if (window.updateFooterTranslations) {
+                    window.updateFooterTranslations();
+                }
+            }, 200);
+        });
     </script>
 </body>
 </html> 

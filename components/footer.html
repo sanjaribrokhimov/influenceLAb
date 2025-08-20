@@ -1,4 +1,6 @@
 <footer class="bg-brand-blue text-white relative overflow-hidden">
+  <!-- Тест загрузки footer -->
+  <script>console.log('Footer HTML loaded!');</script>
   <!-- subtle glow decor -->
   <div class="pointer-events-none absolute -top-24 -left-24 w-72 h-72 rounded-full bg-white/10 blur-3xl"></div>
   <div class="pointer-events-none absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-brand-blue-soft/30 blur-3xl"></div>
@@ -10,39 +12,254 @@
         <div class="flex items-center gap-3 mb-4">
           <img src="img/logoName.png" alt="Influence Lab" class="h-8 w-auto" />
         </div>
-        <p class="text-sm text-white/80 leading-relaxed">
+        <p class="text-sm text-white/80 leading-relaxed" id="footer-description">
           Создаём сильные коммуникации брендов через блогеров и лидеров мнений. Стратегия, креатив, запуск и аналитика — всё под ключ.
         </p>
       </div>
 
       <!-- Contacts -->
       <div>
-        <h3 class="text-lg font-semibold mb-4">Контакты</h3>
+        <h3 class="text-lg font-semibold mb-4" id="footer-contacts-title">Контакты</h3>
         <ul class="space-y-2 text-sm">
-          <li><span class="font-bold">Телефон:</span> <a href="tel:+998910441757" class="hover:underline">+998 91 044-17-57</a></li>
-          <li><span class="font-bold">Адрес:</span> Тошкент Ш Беруний 13 Б</li>
+          <li><span class="font-bold" id="footer-phone-label">Телефон:</span> <a href="tel:+998910441757" class="hover:underline">+998 91 044-17-57</a></li>
+          <li><span class="font-bold" id="footer-address-label">Адрес:</span> <span id="footer-address">Тошкент Ш Беруний 13 Б</span></li>
           <li><span class="font-bold">Telegram:</span> <a href="https://t.me/influencelab_1757" target="_blank" class="hover:underline">@influencelab_1757</a></li>
-          <li><span class="font-bold">Почта:</span> <a href="mailto:prosmm2001@gmail.com" class="hover:underline">prosmm2001@gmail.com</a></li>
+          <li><span class="font-bold" id="footer-email-label">Почта:</span> <a href="mailto:prosmm2001@gmail.com" class="hover:underline">prosmm2001@gmail.com</a></li>
         </ul>
       </div>
 
       <!-- Sitemap -->
       <div>
-        <h3 class="text-lg font-semibold mb-4">Карта сайта</h3>
+        <h3 class="text-lg font-semibold mb-4" id="footer-sitemap-title">Карта сайта</h3>
         <ul class="space-y-2 text-sm">
-          <li><a href="index.html" class="hover:underline">Главная</a></li>
-          <li><a href="projects.html" class="hover:underline">Проекты</a></li>
-          <li><a href="about.html" class="hover:underline">О компании</a></li>
-          <li><a href="blog.html" class="hover:underline">Блог</a></li>
-          <li><a href="contact.html" class="hover:underline">Связаться</a></li>
+          <li><a href="index.html" class="hover:underline" id="footer-nav-home">Главная</a></li>
+          <li><a href="projects.html" class="hover:underline" id="footer-nav-projects">Проекты</a></li>
+          <li><a href="about.html" class="hover:underline" id="footer-nav-about">О компании</a></li>
+          <li><a href="blog.html" class="hover:underline" id="footer-nav-blog">Блог</a></li>
+          <li><a href="contact.html" class="hover:underline" id="footer-nav-contact">Связаться</a></li>
         </ul>
       </div>
     </div>
 
     <!-- Bottom bar -->
     <div class="mt-10 pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-white/70">
-      <div>&copy; Influence Lab, 2025. Все права защищены.</div>
-      <div>Создатель: <span class="font-semibold">Sanjar Ibrokhimov</span></div>
+      <div id="footer-copyright">&copy; Influence Lab, 2025. Все права защищены.</div>
+      <div id="footer-creator">Создатель: <span class="font-semibold">Sanjar Ibrokhimov</span></div>
     </div>
   </div>
-</footer> 
+</footer>
+
+<script>
+console.log('Footer script tag found!');
+// Система переводов для footer
+(function() {
+  console.log('Footer script starting...');
+  const LANG_KEY = 'site_lang';
+  
+  // Переводы для footer
+  const footerTranslations = {
+    RU: {
+      footerDescription: 'Создаём сильные коммуникации брендов через блогеров и лидеров мнений. Стратегия, креатив, запуск и аналитика — всё под ключ.',
+      footerContactsTitle: 'Контакты',
+      footerPhoneLabel: 'Телефон:',
+      footerAddressLabel: 'Адрес:',
+      footerAddress: 'Тошкент Ш Беруний 13 Б',
+      footerEmailLabel: 'Почта:',
+      footerSitemapTitle: 'Карта сайта',
+      footerNavHome: 'Главная',
+      footerNavProjects: 'Проекты',
+      footerNavAbout: 'О компании',
+      footerNavBlog: 'Блог',
+      footerNavContact: 'Связаться',
+      footerCopyright: '© Influence Lab, 2025. Все права защищены.',
+      footerCreator: 'Создатель:'
+    },
+    UZ: {
+      footerDescription: 'Blogerlar va yetakchilari orqali brendlarning kuchli kommunikatsiyalarini yaratamiz. Strategiya, ijodiy ishlar, ishga tushirish va tahlil — hammasi mujassam.',
+      footerContactsTitle: 'Aloqa',
+      footerPhoneLabel: 'Telefon:',
+      footerAddressLabel: 'Manzil:',
+      footerAddress: 'Toshkent Sh Beruniy 13 B',
+      footerEmailLabel: 'Pochta:',
+      footerSitemapTitle: 'Sayt xaritasi',
+      footerNavHome: 'Bosh sahifa',
+      footerNavProjects: 'Loyihalar',
+      footerNavAbout: 'Kompaniya haqida',
+      footerNavBlog: 'Blog',
+      footerNavContact: 'Bog\'lanish',
+      footerCopyright: '© Influence Lab, 2025. Barcha huquqlar himoyalangan.',
+      footerCreator: 'Yaratuvchi:'
+    },
+    EN: {
+      footerDescription: 'We create strong brand communications through bloggers and opinion leaders. Strategy, creativity, launch and analytics — everything turnkey.',
+      footerContactsTitle: 'Contacts',
+      footerPhoneLabel: 'Phone:',
+      footerAddressLabel: 'Address:',
+      footerAddress: 'Tashkent Sh Beruniy 13 B',
+      footerEmailLabel: 'Email:',
+      footerSitemapTitle: 'Sitemap',
+      footerNavHome: 'Home',
+      footerNavProjects: 'Projects',
+      footerNavAbout: 'About',
+      footerNavBlog: 'Blog',
+      footerNavContact: 'Contact',
+      footerCopyright: '© Influence Lab, 2025. All rights reserved.',
+      footerCreator: 'Creator:'
+    }
+  };
+  
+  // Функция обновления переводов в footer
+  function updateFooterTranslations() {
+    const lang = localStorage.getItem(LANG_KEY) || 'RU';
+    const t = footerTranslations[lang] || footerTranslations['RU'];
+    
+    console.log('Footer: Updating translations for language:', lang);
+    console.log('Footer: Available elements:', {
+      description: !!document.getElementById('footer-description'),
+      contacts: !!document.getElementById('footer-contacts-title'),
+      phone: !!document.getElementById('footer-phone-label'),
+      address: !!document.getElementById('footer-address-label'),
+      addressText: !!document.getElementById('footer-address'),
+      email: !!document.getElementById('footer-email-label'),
+      sitemap: !!document.getElementById('footer-sitemap-title'),
+      navHome: !!document.getElementById('footer-nav-home'),
+      navProjects: !!document.getElementById('footer-nav-projects'),
+      navAbout: !!document.getElementById('footer-nav-about'),
+      navBlog: !!document.getElementById('footer-nav-blog'),
+      navContact: !!document.getElementById('footer-nav-contact'),
+      copyright: !!document.getElementById('footer-copyright'),
+      creator: !!document.getElementById('footer-creator')
+    });
+    
+    // Обновляем элементы footer
+    if (document.getElementById('footer-description')) {
+      document.getElementById('footer-description').textContent = t.footerDescription;
+      console.log('Footer: Updated description to:', t.footerDescription);
+    }
+    if (document.getElementById('footer-contacts-title')) {
+      document.getElementById('footer-contacts-title').textContent = t.footerContactsTitle;
+      console.log('Footer: Updated contacts title to:', t.footerContactsTitle);
+    }
+    if (document.getElementById('footer-phone-label')) {
+      document.getElementById('footer-phone-label').textContent = t.footerPhoneLabel;
+    }
+    if (document.getElementById('footer-address-label')) {
+      document.getElementById('footer-address-label').textContent = t.footerAddressLabel;
+    }
+    if (document.getElementById('footer-address')) {
+      document.getElementById('footer-address').textContent = t.footerAddress;
+    }
+    if (document.getElementById('footer-email-label')) {
+      document.getElementById('footer-email-label').textContent = t.footerEmailLabel;
+    }
+    if (document.getElementById('footer-sitemap-title')) {
+      document.getElementById('footer-sitemap-title').textContent = t.footerSitemapTitle;
+    }
+    if (document.getElementById('footer-nav-home')) {
+      document.getElementById('footer-nav-home').textContent = t.footerNavHome;
+    }
+    if (document.getElementById('footer-nav-projects')) {
+      document.getElementById('footer-nav-projects').textContent = t.footerNavProjects;
+    }
+    if (document.getElementById('footer-nav-about')) {
+      document.getElementById('footer-nav-about').textContent = t.footerNavAbout;
+    }
+    if (document.getElementById('footer-nav-blog')) {
+      document.getElementById('footer-nav-blog').textContent = t.footerNavBlog;
+    }
+    if (document.getElementById('footer-nav-contact')) {
+      document.getElementById('footer-nav-contact').textContent = t.footerNavContact;
+    }
+    if (document.getElementById('footer-copyright')) {
+      document.getElementById('footer-copyright').textContent = t.footerCopyright;
+    }
+    if (document.getElementById('footer-creator')) {
+      document.getElementById('footer-creator').textContent = t.footerCreator + ' Sanjar Ibrokhimov';
+    }
+  }
+  
+  // Делаем функцию глобально доступной
+  window.updateFooterTranslations = updateFooterTranslations;
+  console.log('Footer: updateFooterTranslations function created and assigned to window');
+  
+  // Глобальная функция для принудительного обновления footer
+  window.forceUpdateFooter = function() {
+    console.log('Footer: Force update called...');
+    updateFooterTranslations();
+  };
+  
+  // Тестовая функция для проверки
+  window.testFooterTranslation = function() {
+    console.log('Footer: Test function called');
+    console.log('Footer: Current language:', localStorage.getItem(LANG_KEY));
+    console.log('Footer: Available translations:', Object.keys(footerTranslations));
+    updateFooterTranslations();
+  };
+  
+  // Делаем тест доступным в консоли
+  console.log('Footer: Test function available as testFooterTranslation()');
+  
+  // Обновляем переводы сразу при загрузке
+  console.log('Footer: Script loaded, current language:', localStorage.getItem(LANG_KEY));
+  updateFooterTranslations();
+  
+  // Тестовое обновление через 1 секунду
+  setTimeout(() => {
+    console.log('Footer: Test update after 1 second...');
+    updateFooterTranslations();
+  }, 1000);
+  
+  // Обновляем переводы при изменении языка
+  window.addEventListener('storage', function(e) {
+    if (e.key === LANG_KEY) {
+      console.log('Footer: Language changed, updating translations...');
+      updateFooterTranslations();
+    }
+  });
+  
+  // Дополнительная инициализация при полной загрузке DOM
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('Footer: DOM fully loaded, updating translations...');
+    updateFooterTranslations();
+  });
+  
+  // Инициализация после загрузки footer (для динамически загружаемых компонентов)
+  setTimeout(() => {
+    console.log('Footer: Delayed initialization...');
+    updateFooterTranslations();
+  }, 100);
+  
+  // Проверяем каждые 200мс, пока footer не загрузится
+  const checkInterval = setInterval(() => {
+    const footerElements = document.querySelectorAll('#footer-description, #footer-contacts-title');
+    if (footerElements.length > 0) {
+      console.log('Footer: Elements found, updating translations...');
+      updateFooterTranslations();
+      clearInterval(checkInterval);
+    }
+  }, 200);
+  
+  // Дополнительная проверка каждые 2 секунды
+  setInterval(() => {
+    const currentLang = localStorage.getItem(LANG_KEY) || 'RU';
+    const footerDescription = document.getElementById('footer-description');
+    if (footerDescription) {
+      const expectedText = footerTranslations[currentLang]?.footerDescription || footerTranslations['RU'].footerDescription;
+      if (footerDescription.textContent !== expectedText) {
+        console.log('Footer: Text mismatch detected, updating...');
+        updateFooterTranslations();
+      }
+    }
+  }, 2000);
+  
+  // Слушаем изменения в localStorage (для смены языка через кнопки)
+  const originalSetItem = localStorage.setItem;
+  localStorage.setItem = function(key, value) {
+    originalSetItem.apply(this, arguments);
+    if (key === LANG_KEY) {
+      console.log('Footer: Language changed via localStorage, updating...');
+      setTimeout(() => updateFooterTranslations(), 50);
+    }
+  };
+})();
+</script> 

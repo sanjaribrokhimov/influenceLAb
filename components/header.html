@@ -2,15 +2,24 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
             <div class="flex items-center">
-                <img src="img/logoName.png" alt="Influence Lab Logo" class="w-64 h-auto" style="max-width:350px;" />
+                <a href="index.html" aria-label="На главную"><img src="img/logoName.png" alt="Influence Lab Logo" class="w-64 h-auto" style="max-width:350px;" /></a>
             </div>
             <div class="hidden md:block">
                 <div class="ml-10 flex items-baseline space-x-8">
-                    <a href="index.html" class="text-black hover:text-brand-blue-medium px-3 py-2 text-sm font-medium transition-colors duration-200">Главная</a>
-                    <a href="about.html" class="text-gray-600 hover:text-black px-3 py-2 text-sm font-medium transition-colors duration-200">О компании</a>
-                    <a href="projects.html" class="text-gray-600 hover:text-black px-3 py-2 text-sm font-medium transition-colors duration-200">Проекты</a>
-                    <a href="blog.html" class="text-gray-600 hover:text-black px-3 py-2 text-sm font-medium transition-colors duration-200">Блог</a>
-                    <a href="contact.html" class="bg-brand-blue text-white hover:bg-brand-blue-medium px-4 py-2 rounded-xl shadow-sm text-sm font-semibold transition-all duration-200 border border-brand-blue">Связаться</a>
+                    <a href="index.html" class="text-black hover:text-brand-blue-medium px-3 py-2 text-sm font-medium transition-colors duration-200" id="nav-home">Главная</a>
+                    <a href="about.html" class="text-gray-600 hover:text-black px-3 py-2 text-sm font-medium transition-colors duration-200" id="nav-about">О компании</a>
+                    <a href="projects.html" class="text-gray-600 hover:text-black px-3 py-2 text-sm font-medium transition-colors duration-200" id="nav-projects">Проекты</a>
+                    <a href="led.html" class="text-gray-600 hover:text-black px-3 py-2 text-sm font-medium transition-colors duration-200" id="nav-led">LED экраны</a>
+                    <a href="blog.html" class="text-gray-600 hover:text-black px-3 py-2 text-sm font-medium transition-colors duration-200" id="nav-blog">Блог</a>
+                    <a href="contact.html" class="bg-brand-blue text-white hover:bg-brand-blue-medium px-4 py-2 rounded-xl shadow-sm text-sm font-semibold transition-all duration-200 border border-brand-blue" id="nav-contact">Связаться</a>
+                    <div class="relative">
+                        <button id="lang-toggle" onclick="(function(btn){var c=localStorage.getItem('site_lang') || 'RU'; btn.textContent=c; var mt=document.getElementById('lang-toggle-mobile'); if(mt) mt.textContent=c; var m=btn.nextElementSibling; if(m){m.classList.toggle('hidden');} event.stopPropagation();})(this)" class="ml-2 inline-flex items-center gap-1 px-3 py-1 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-xs">RU</button>
+                        <div id="lang-menu" class="absolute right-0 mt-2 bg-white border border-gray-200 rounded shadow-lg hidden z-50">
+                            <button data-lang="RU" onclick="(function(el){var c=el.getAttribute('data-lang');localStorage.setItem('site_lang',c);var t=document.getElementById('lang-toggle');if(t)t.textContent=c;var m=document.getElementById('lang-toggle-mobile');if(m)m.textContent=c;var dd=document.getElementById('lang-menu');if(dd)dd.classList.add('hidden');var mm=document.getElementById('lang-menu-mobile');if(mm)mm.classList.add('hidden');if(window.updateContentOnLanguageChange)window.updateContentOnLanguageChange();if(window.updateHeaderTranslations)window.updateHeaderTranslations();})(this)" class="block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left">RU</button>
+                            <button data-lang="UZ" onclick="(function(el){var c=el.getAttribute('data-lang');localStorage.setItem('site_lang',c);var t=document.getElementById('lang-toggle');if(t)t.textContent=c;var m=document.getElementById('lang-toggle-mobile');if(m)m.textContent=c;var dd=document.getElementById('lang-menu');if(dd)dd.classList.add('hidden');var mm=document.getElementById('lang-menu-mobile');if(mm)mm.classList.add('hidden');if(window.updateContentOnLanguageChange)window.updateContentOnLanguageChange();if(window.updateHeaderTranslations)window.updateHeaderTranslations();})(this)" class="block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left">UZ</button>
+                            <button data-lang="EN" onclick="(function(el){var c=el.getAttribute('data-lang');localStorage.setItem('site_lang',c);var t=document.getElementById('lang-toggle');if(t)t.textContent=c;var m=document.getElementById('lang-toggle-mobile');if(m)m.textContent=c;var dd=document.getElementById('lang-menu');if(dd)dd.classList.add('hidden');var mm=document.getElementById('lang-menu-mobile');if(mm)mm.classList.add('hidden');if(window.updateContentOnLanguageChange)window.updateContentOnLanguageChange();if(window.updateHeaderTranslations)window.updateHeaderTranslations();})(this)" class="block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left">EN</button>
+                        </div>
+                    </div>
                 </div>
             </div>
             <!-- Mobile menu button -->
@@ -28,20 +37,35 @@
 <!-- Mobile menu overlay (ВНЕ nav, чтобы не ломался fixed в Safari) -->
 <div id="mobile-menu-overlay" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-[99] hidden opacity-0 transition-opacity duration-300 pointer-events-auto"></div>
 <!-- Mobile menu panel (ВНЕ nav) -->
-<div id="mobile-menu" class="fixed top-0 right-0 w-4/5 max-w-xs h-full bg-white shadow-lg z-[100] transform translate-x-full transition-transform duration-300 flex flex-col p-8 space-y-6 md:hidden pointer-events-auto">
-    <div class="flex justify-between items-center mb-8">
-        <img src="img/logoName.png" alt="Influence Lab Logo" class="w-64 h-auto" style="max-width:350px;" />
-        <button id="mobile-menu-close" class="text-black hover:text-gray-600 focus:outline-none" aria-label="Закрыть меню">
-            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        </button>
+<div id="mobile-menu" class="fixed top-0 right-0 w-4/5 max-w-xs h-full bg-white shadow-lg z-[100] transform translate-x-full transition-transform duration-300 flex flex-col md:hidden pointer-events-auto">
+    <div class="sticky top-0 bg-white z-10 p-4 border-b">
+        <div class="flex items-center justify-between">
+            <a href="index.html" aria-label="На главную"><img src="img/logoName.png" alt="Influence Lab Logo" class="h-8 w-auto" /></a>
+            <div class="flex items-center gap-2">
+                <div class="relative">
+                    <button id="lang-toggle-mobile" onclick="(function(btn){var c=localStorage.getItem('site_lang') || 'RU'; btn.textContent=c; var dt=document.getElementById('lang-toggle'); if(dt) dt.textContent=c; var m=document.getElementById('lang-menu-mobile'); if(m){m.classList.toggle('hidden');} event.stopPropagation();})(this)" class="inline-flex items-center gap-1 px-3 py-1 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-xs">RU</button>
+                    <div id="lang-menu-mobile" class="absolute right-0 mt-2 bg-white border border-gray-200 rounded shadow-lg hidden z-50">
+                        <button data-lang="RU" onclick="(function(el){var c=el.getAttribute('data-lang');localStorage.setItem('site_lang',c);var t=document.getElementById('lang-toggle');if(t)t.textContent=c;var m=document.getElementById('lang-toggle-mobile');if(m)m.textContent=c;var dd=document.getElementById('lang-menu');if(dd)dd.classList.add('hidden');var mm=document.getElementById('lang-menu-mobile');if(mm)mm.classList.add('hidden');if(window.updateContentOnLanguageChange)window.updateContentOnLanguageChange();if(window.updateHeaderTranslations)window.updateHeaderTranslations();})(this)" class="block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left">RU</button>
+                        <button data-lang="UZ" onclick="(function(el){var c=el.getAttribute('data-lang');localStorage.setItem('site_lang',c);var t=document.getElementById('lang-toggle');if(t)t.textContent=c;var m=document.getElementById('lang-toggle-mobile');if(m)m.textContent=c;var dd=document.getElementById('lang-menu');if(dd)dd.classList.add('hidden');var mm=document.getElementById('lang-menu-mobile');if(mm)mm.classList.add('hidden');if(window.updateContentOnLanguageChange)window.updateContentOnLanguageChange();if(window.updateHeaderTranslations)window.updateHeaderTranslations();})(this)" class="block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left">UZ</button>
+                        <button data-lang="EN" onclick="(function(el){var c=el.getAttribute('data-lang');localStorage.setItem('site_lang',c);var t=document.getElementById('lang-toggle');if(t)t.textContent=c;var m=document.getElementById('lang-toggle-mobile');if(m)m.textContent=c;var dd=document.getElementById('lang-menu');if(dd)dd.classList.add('hidden');var mm=document.getElementById('lang-menu-mobile');if(mm)mm.classList.add('hidden');if(window.updateContentOnLanguageChange)window.updateContentOnLanguageChange();if(window.updateHeaderTranslations)window.updateHeaderTranslations();})(this)" class="block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left">EN</button>
+                    </div>
+                </div>
+                <button id="mobile-menu-close" class="text-black hover:text-gray-600 focus:outline-none" aria-label="Закрыть меню">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
     </div>
-    <a href="index.html" class="block text-lg font-medium text-black py-2 hover:text-brand-blue-soft transition-colors">Главная</a>
-    <a href="projects.html" class="block text-lg font-medium text-gray-700 py-2 hover:text-brand-blue-soft transition-colors">Проекты</a>
-    <a href="about.html" class="block text-lg font-medium text-gray-700 py-2 hover:text-brand-blue-soft transition-colors">О компании</a>
-    <a href="blog.html" class="block text-lg font-medium text-gray-700 py-2 hover:text-brand-blue-soft transition-colors">Блог</a>
-    <a href="contact.html" class="block text-lg font-medium text-gray-700 py-2 hover:text-brand-blue-soft transition-colors">Связаться</a>
+    <div class="p-8 space-y-6">
+        <a href="index.html" class="block text-lg font-medium text-black py-2 hover:text-brand-blue-soft transition-colors" id="nav-home-mobile">Главная</a>
+        <a href="projects.html" class="block text-lg font-medium text-gray-700 py-2 hover:text-brand-blue-soft transition-colors" id="nav-projects-mobile">Проекты</a>
+        <a href="about.html" class="block text-lg font-medium text-gray-700 py-2 hover:text-brand-blue-soft transition-colors" id="nav-about-mobile">О компании</a>
+        <a href="led.html" class="block text-lg font-medium text-gray-700 py-2 hover:text-brand-blue-soft transition-colors" id="nav-led-mobile">LED экраны</a>
+        <a href="blog.html" class="block text-lg font-medium text-gray-700 py-2 hover:text-brand-blue-soft transition-colors" id="nav-blog-mobile">Блог</a>
+        <a href="contact.html" class="block text-lg font-medium text-gray-700 py-2 hover:text-brand-blue-soft transition-colors" id="nav-contact-mobile">Связаться</a>
+    </div>
 </div>
 
 <script>
@@ -71,4 +95,204 @@
     if (closeBtn) closeBtn.addEventListener('click', closeMenu);
     if (overlay) overlay.addEventListener('click', closeMenu);
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
+
+    // Inline lang init and handlers (works on any page that includes header)
+    (function(){
+      console.log('Header script starting...');
+      const LANG_KEY='site_lang';
+      console.log('Current localStorage value:', localStorage.getItem(LANG_KEY));
+      
+      // Функция для установки языка на кнопки
+      function setLanguageOnButtons() {
+        const currentLang = localStorage.getItem(LANG_KEY) || 'RU';
+        console.log('Setting language on buttons:', currentLang);
+        
+        const btn = document.getElementById('lang-toggle');
+        const btnM = document.getElementById('lang-toggle-mobile');
+        
+        if(btn) {
+          btn.textContent = currentLang;
+          console.log('Desktop button set to:', currentLang);
+        }
+        if(btnM) {
+          btnM.textContent = currentLang;
+          console.log('Mobile button set to:', currentLang);
+        }
+      }
+      
+      // Пытаемся установить язык сразу, если элементы уже есть
+      setLanguageOnButtons();
+      
+      // Переводы для header
+      const headerTranslations = {
+        RU: {
+          navHome: 'Главная',
+          navAbout: 'О компании',
+          navProjects: 'Проекты',
+          navLed: 'LED экраны',
+          navBlog: 'Блог',
+          navContact: 'Связаться'
+        },
+        UZ: {
+          navHome: 'Bosh sahifa',
+          navAbout: 'Kompaniya haqida',
+          navProjects: 'Loyihalar',
+          navLed: 'LED ekranlar',
+          navBlog: 'Blog',
+          navContact: 'Bog\'lanish'
+        },
+        EN: {
+          navHome: 'Home',
+          navAbout: 'About',
+          navProjects: 'Projects',
+          navLed: 'LED Screens',
+          navBlog: 'Blog',
+          navContact: 'Contact'
+        }
+      };
+      
+      // Функция обновления переводов в header
+      function updateHeaderTranslations() {
+        const lang = localStorage.getItem(LANG_KEY) || 'RU';
+        const t = headerTranslations[lang] || headerTranslations['RU'];
+        
+        console.log('Header: Updating translations for language:', lang);
+        
+        // Обновляем десктопную навигацию
+        if (document.getElementById('nav-home')) document.getElementById('nav-home').textContent = t.navHome;
+        if (document.getElementById('nav-about')) document.getElementById('nav-about').textContent = t.navAbout;
+        if (document.getElementById('nav-projects')) document.getElementById('nav-projects').textContent = t.navProjects;
+        if (document.getElementById('nav-led')) document.getElementById('nav-led').textContent = t.navLed;
+        if (document.getElementById('nav-blog')) document.getElementById('nav-blog').textContent = t.navBlog;
+        if (document.getElementById('nav-contact')) document.getElementById('nav-contact').textContent = t.navContact;
+        
+        // Обновляем мобильную навигацию
+        if (document.getElementById('nav-home-mobile')) document.getElementById('nav-home-mobile').textContent = t.navHome;
+        if (document.getElementById('nav-about-mobile')) document.getElementById('nav-about-mobile').textContent = t.navAbout;
+        if (document.getElementById('nav-projects-mobile')) document.getElementById('nav-projects-mobile').textContent = t.navProjects;
+        if (document.getElementById('nav-led-mobile')) document.getElementById('nav-led-mobile').textContent = t.navLed;
+        if (document.getElementById('nav-blog-mobile')) document.getElementById('nav-blog-mobile').textContent = t.navBlog;
+        if (document.getElementById('nav-contact-mobile')) document.getElementById('nav-contact-mobile').textContent = t.navContact;
+      }
+      
+      // Делаем функцию глобально доступной
+      window.updateHeaderTranslations = updateHeaderTranslations;
+      
+      // Функция установки языка на кнопки
+      function setLanguageOnButtons() {
+        const currentLang = localStorage.getItem(LANG_KEY) || 'RU';
+        console.log('Setting language on buttons:', currentLang);
+        
+        const btn = document.getElementById('lang-toggle');
+        const btnM = document.getElementById('lang-toggle-mobile');
+        
+        if(btn) {
+          btn.textContent = currentLang;
+          console.log('Desktop button set to:', currentLang);
+        }
+        if(btnM) {
+          btnM.textContent = currentLang;
+          console.log('Mobile button set to:', currentLang);
+        }
+      }
+      
+      // Устанавливаем язык на кнопки и переводы сразу
+      setLanguageOnButtons();
+      updateHeaderTranslations();
+      
+      // Ждем немного, чтобы DOM был готов
+      setTimeout(() => {
+        const btn = document.getElementById('lang-toggle');
+        const btnM = document.getElementById('lang-toggle-mobile');
+        const menu = document.getElementById('lang-menu');
+        const menuM = document.getElementById('lang-menu-mobile');
+        
+        console.log('Found elements:', { btn: !!btn, btnM: !!btnM, menu: !!menu, menuM: !!menuM });
+      
+              // Обновляем контент страницы если функция существует
+        if (window.updateContentOnLanguageChange) {
+          window.updateContentOnLanguageChange();
+        }
+        
+        // Обновляем footer если функция существует
+        if (window.updateFooterTranslations) {
+          window.updateFooterTranslations();
+        }
+      
+      function pick(e){
+        const el=e.target.closest('button[data-lang]'); if(!el) return;
+        const code=el.getAttribute('data-lang'); 
+        console.log('Language selected:', code);
+        localStorage.setItem(LANG_KEY, code); 
+        console.log('Saved to localStorage:', localStorage.getItem(LANG_KEY));
+        
+        // Обновляем кнопки
+        if(btn) {
+          btn.textContent = code;
+          console.log('Desktop button updated to:', code);
+        }
+        if(btnM) {
+          btnM.textContent = code;
+          console.log('Mobile button updated to:', code);
+        }
+        
+        // Обновляем переводы header
+        updateHeaderTranslations();
+        
+        if(menu) menu.classList.add('hidden'); 
+        if(menuM) menuM.classList.add('hidden');
+        
+        // Обновляем контент страницы
+        if (window.updateContentOnLanguageChange) {
+          window.updateContentOnLanguageChange();
+        }
+        
+        // Обновляем footer
+        if (window.updateFooterTranslations) {
+          console.log('Header: Language changed, updating footer...');
+          window.updateFooterTranslations();
+        } else {
+          console.log('Header: updateFooterTranslations function not found during language change');
+          // Попытка найти и выполнить скрипты footer
+          const footerScripts = document.querySelectorAll('#site-footer script');
+          if (footerScripts.length > 0) {
+            console.log('Header: Found footer scripts, executing...');
+            footerScripts.forEach((script) => {
+              const newScript = document.createElement('script');
+              newScript.textContent = script.textContent;
+              document.head.appendChild(newScript);
+            });
+            setTimeout(() => {
+              if (window.updateFooterTranslations) {
+                window.updateFooterTranslations();
+              }
+            }, 100);
+          }
+        }
+      }
+      
+              if(menu) menu.addEventListener('click', pick);
+        if(menuM) menuM.addEventListener('click', pick);
+        document.addEventListener('click', (e)=>{
+          if(!e.target.closest('#lang-toggle') && !e.target.closest('#lang-menu')){ if(menu) menu.classList.add('hidden'); }
+          if(!e.target.closest('#lang-toggle-mobile') && !e.target.closest('#lang-menu-mobile')){ if(menuM) menuM.classList.add('hidden'); }
+        });
+        
+
+      }, 100); // Закрываем setTimeout
+      
+      // Дополнительная инициализация при полной загрузке DOM
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM fully loaded, re-initializing language buttons...');
+        setLanguageOnButtons();
+        updateHeaderTranslations();
+        
+        // Обновляем footer если функция существует
+        if (window.updateFooterTranslations) {
+          window.updateFooterTranslations();
+        }
+      });
+      
+
+    })();
 </script> 

@@ -33,6 +33,15 @@
       const loadHeader = async () => {
         const html = await fetch('components/header.html').then(r => r.text());
         document.getElementById('site-header').innerHTML = html;
+        
+        // Извлекаем и выполняем скрипты из header
+        const scripts = document.getElementById('site-header').querySelectorAll('script');
+        scripts.forEach((script) => {
+          const newScript = document.createElement('script');
+          newScript.textContent = script.textContent;
+          document.head.appendChild(newScript);
+        });
+        
         const menuBtn = document.getElementById('mobile-menu-button');
         const menu = document.getElementById('mobile-menu');
         const overlay = document.getElementById('mobile-menu-overlay');
@@ -45,6 +54,14 @@
           overlay.addEventListener('click', closeMenu);
           document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
         }
+        
+        // Обновляем переводы после загрузки header
+        console.log('Projects page: Header loaded, updating translations...');
+        setTimeout(() => {
+          if (window.updateContentOnLanguageChange) {
+            window.updateContentOnLanguageChange();
+          }
+        }, 100);
       };
       loadHeader();
     </script>
@@ -52,12 +69,12 @@
     <section class="bg-gray-50 py-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
-                <h1 class="text-4xl lg:text-5xl font-bold text-black mb-6">Наши проекты</h1>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                <h1 class="text-4xl lg:text-5xl font-bold text-black mb-6" id="page-title">Наши проекты</h1>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto" id="page-description">
                     Портфолио работ, которые демонстрируют наш подход к созданию уникальных брендов
                 </p>
             </div>
-            <div id="projects-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+            <div id="projects-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch"></div>
         </div>
     </section>
     <!-- Модальное окно -->
@@ -66,7 +83,7 @@
             <!-- Header -->
             <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                 <h3 id="modal-title" class="text-2xl font-bold"></h3>
-                <button id="modal-close" class="text-gray-400 hover:text-black text-3xl leading-none px-2">&times;</button>
+                <button id="modal-close" class="text-gray-400 hover:text-black text-3xl leading-none px-2" title="Закрыть">&times;</button>
             </div>
                          <!-- Body (scrollable) -->
              <div class="px-6 py-6 space-y-6 overflow-y-auto max-h-[75vh]">
@@ -81,73 +98,280 @@
             </div>
             
     <script>
-        const defaultProjects = [
-            { img: 'img/img1.jpg', title: 'Название проекта', description: 'Описание проекта. Современный дизайн, уникальный стиль, эффективная реализация.' },
-            { img: 'img/img2.png', title: 'Название проекта', description: 'Описание проекта. Креативные решения, индивидуальный подход, результат для клиента.' },
-            { img: 'img/img3.jpg', title: 'Название проекта', description: 'Описание проекта. Эстетика, функциональность, рост бренда.' },
-            { img: 'img/img4.png', title: 'Название проекта', description: 'Описание проекта. Эффективная стратегия, рост продаж, узнаваемость.' }
-        ];
-                 function renderProjects(projects) {
-            document.getElementById('projects-list').innerHTML = projects.map((p, i) => {
-                const cover = (Array.isArray(p.images) && p.images.length) ? p.images[0] : (p.img || 'img/img1.jpg');
-                const linksHtml = (Array.isArray(p.links) && p.links.length) ? `<div class=\"w-full flex flex-wrap gap-2 mt-2\">${p.links.slice(0,3).map(u => `<a href=\"${u}\" target=\"_blank\" class=\"inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-sm\">Link</a>`).join('')}</div>` : '';
-                return `
-                <div class=\"group bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-start\">
-                    <img src=\"${cover}\" alt=\"${p.title}\" class=\"w-full h-56 object-contain bg-gray-50 rounded-xl mb-6\" />
-                    <div class=\"w-full flex items-center gap-3 mb-2\">
-                      <h3 class=\"text-xl font-bold text-black\">${p.title}</h3>
-                    </div>
-                    <p class=\"text-gray-600 mb-4 line-clamp-3\">${p.description}</p>
-                    ${linksHtml}
-                    <button class=\"mt-auto px-6 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200\" onclick=\"openModal(${i})\">Читать</button>
-                </div>`;
-            }).join('');
-        }
-        let projectsData = [];
-        fetch('/api/projects')
-            .then(r => r.json())
-            .then(data => {
-                projectsData = (Array.isArray(data) && data.length > 0) ? data : defaultProjects;
-                renderProjects(projectsData);
-            })
-            .catch(() => {
-                projectsData = defaultProjects;
-                renderProjects(projectsData);
-            });
-        window.openModal = function(idx) {
-            const p = projectsData[idx];
-            const images = (Array.isArray(p.images) && p.images.length) ? p.images.slice(0,10) : (p.img ? [p.img] : []);
-            document.getElementById('modal-title').textContent = p.title;
-            document.getElementById('modal-desc').textContent = p.description;
-            const main = document.getElementById('project-modal-main');
-            const thumbs = document.getElementById('project-modal-thumbs');
-            main.src = images[0] || '';
-            thumbs.innerHTML = images.map((src, i) => `<img data-i=\"${i}\" src=\"${src}\" class=\"h-16 w-full object-cover rounded border cursor-pointer\">`).join('');
-            thumbs.querySelectorAll('img').forEach(img => img.onclick = () => { main.src = img.src; });
-            const linksBox = document.getElementById('project-modal-links');
-            const links = Array.isArray(p.links) ? p.links.slice(0,5) : [];
-            linksBox.innerHTML = links.length ? `<div class=\"flex flex-wrap gap-2\">${links.map(u => `<a href=\"${u}\" target=\"_blank\" class=\"inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-sm\">Link</a>`).join('')}</div>` : '';
-            const modal = document.getElementById('project-modal');
-            modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        };
-        function closeProjectModal() {
-            document.getElementById('project-modal').classList.add('hidden');
-            document.body.style.overflow = '';
-        }
-        document.getElementById('modal-close').onclick = closeProjectModal;
-        document.getElementById('project-modal').onclick = function(e) {
-            if (e.target === this) closeProjectModal();
-        };
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeProjectModal();
-        });
-    </script>
+    // Функция получения языка из localStorage
+    function getCurrentLanguage() {
+      return localStorage.getItem('site_lang') || 'RU';
+    }
 
+    // Переводы для интерфейса
+    const translations = {
+      RU: {
+        pageTitle: 'Наши проекты',
+        pageDescription: 'Портфолио работ, которые демонстрируют наш подход к созданию уникальных брендов',
+        readButton: 'Читать',
+        linkText: 'Link'
+      },
+      UZ: {
+        pageTitle: 'Bizning loyihalar',
+        pageDescription: 'Nozik brendlar yaratishga o\'z yondashuvimizni ko\'rsatadigan ishlar portfoliosi',
+        readButton: 'O\'qish',
+        linkText: 'Havola'
+      },
+      EN: {
+        pageTitle: 'Our Projects',
+        pageDescription: 'Portfolio of works that demonstrate our approach to creating unique brands',
+        readButton: 'Read',
+        linkText: 'Link'
+      }
+    };
+
+    // Обновление интерфейса на выбранном языке
+    function updateInterface() {
+      const lang = getCurrentLanguage();
+      const t = translations[lang] || translations['RU']; // Fallback на русский
+      
+      if (t) {
+        const pageTitleElement = document.getElementById('page-title');
+        const pageDescriptionElement = document.getElementById('page-description');
+        
+        if (pageTitleElement) {
+          pageTitleElement.textContent = t.pageTitle;
+        }
+        if (pageDescriptionElement) {
+          pageDescriptionElement.textContent = t.pageDescription;
+        }
+      }
+    }
+
+    // Получение переведенного контента
+    function getTranslatedContent(item, field) {
+      const lang = getCurrentLanguage();
+      
+      // Простая логика: если есть перевод для выбранного языка - используем его, иначе используем русский
+      if (lang === 'UZ' && item[`${field}_uz`]) {
+        return item[`${field}_uz`];
+      } else if (lang === 'EN' && item[`${field}_en`]) {
+        return item[`${field}_en`];
+      } else {
+        return item[field] || '';
+      }
+    }
+
+    const defaultProjects = [
+        { 
+          img: 'img/img1.jpg', 
+          title: 'Название проекта', 
+          title_uz: 'Loyiha nomi',
+          title_en: 'Project name',
+          description: 'Описание проекта. Современный дизайн, уникальный стиль, эффективная реализация.',
+          description_uz: 'Loyiha tavsifi. Zamonaviy dizayn, nozik uslub, samarali amalga oshirish.',
+          description_en: 'Project description. Modern design, unique style, effective implementation.'
+        },
+        { 
+          img: 'img/img2.png', 
+          title: 'Название проекта', 
+          title_uz: 'Loyiha nomi',
+          title_en: 'Project name',
+          description: 'Описание проекта. Креативные решения, индивидуальный подход, результат для клиента.',
+          description_uz: 'Loyiha tavsifi. Ijodiy yechimlar, individual yondashuv, mijoz uchun natija.',
+          description_en: 'Project description. Creative solutions, individual approach, result for the client.'
+        },
+        { 
+          img: 'img/img3.jpg', 
+          title: 'Название проекта', 
+          title_uz: 'Loyiha nomi',
+          title_en: 'Project name',
+          description: 'Описание проекта. Эстетика, функциональность, рост бренда.',
+          description_uz: 'Loyiha tavsifi. Estetika, funksionallik, brend o\'sishi.',
+          description_en: 'Project description. Aesthetics, functionality, brand growth.'
+        },
+        { 
+          img: 'img/img4.png', 
+          title: 'Название проекта', 
+          title_uz: 'Loyiha nomi',
+          title_en: 'Project name',
+          description: 'Описание проекта. Эффективная стратегия, рост продаж, узнаваемость.',
+          description_uz: 'Loyiha tavsifi. Samarali strategiya, sotuvlarning o\'sishi, tanilish.',
+          description_en: 'Project description. Effective strategy, sales growth, recognition.'
+        }
+    ];
+
+    function renderProjects(projects) {
+      const lang = getCurrentLanguage();
+      const t = translations[lang] || translations['RU']; // Fallback на русский
+      
+      const projectsListElement = document.getElementById('projects-list');
+      
+      if (!projectsListElement) {
+        console.error('Projects list element not found!');
+        return;
+      }
+      
+      const html = projects.map((p, i) => {
+        const cover = (Array.isArray(p.images) && p.images.length) ? p.images[0] : (p.img || 'img/img1.jpg');
+        const title = getTranslatedContent(p, 'title');
+        const description = getTranslatedContent(p, 'description');
+        
+        const links = (Array.isArray(p.links) && p.links.length) ? p.links.slice(0,5) : [];
+        const linksHtml = links.length ? links.map(u => 
+          `<a href="${u}" target="_blank" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-xs">${t.linkText}</a>`
+        ).join('') : '';
+        
+        return `
+          <div class="group bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-start cursor-pointer h-full" onclick="openModal(${i})"> 
+            <img src="${cover}" alt="${title}" class="w-full h-56 object-contain bg-gray-50 rounded-xl mb-6" />
+            <div class="w-full flex items-center gap-3 mb-2">
+              <h3 class="text-xl font-bold text-black">${title}</h3>
+            </div>
+            <p class="text-gray-600 mb-4 line-clamp-3">${description}</p>
+            <div class="w-full flex flex-wrap items-center justify-between gap-2 mt-auto">
+              <div class="flex flex-wrap gap-2">${linksHtml}</div>
+              <button class="px-6 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200" onclick="openModal(${i}); event.stopPropagation();">${t.readButton}</button>
+            </div>
+           </div>`;
+      }).join('');
+      
+      projectsListElement.innerHTML = html;
+    }
+
+    let projectsData = [];
+    
+    // Глобальная переменная для доступа из слушателя
+    window.projectsData = projectsData;
+    
+    function loadProjectsData() {
+      console.log('Loading projects data...');
+      fetch('/api/projects')
+        .then(r => {
+          console.log('Response status:', r.status);
+          return r.json();
+        })
+        .then(data => {
+          console.log('Projects data received:', data);
+          if (Array.isArray(data) && data.length > 0) {
+            projectsData = data;
+            window.projectsData = data;
+            console.log('Using API data, count:', data.length);
+          } else {
+            projectsData = defaultProjects;
+            window.projectsData = defaultProjects;
+            console.log('Using default data, count:', defaultProjects.length);
+          }
+          console.log('Final projects data:', projectsData);
+          renderProjects(projectsData);
+        })
+        .catch((error) => {
+          console.error('Error loading projects data:', error);
+          projectsData = defaultProjects;
+          window.projectsData = defaultProjects;
+          console.log('Using default data due to error');
+          renderProjects(projectsData);
+        });
+    }
+
+    window.openModal = function(idx) {
+      const p = projectsData[idx];
+      const images = (Array.isArray(p.images) && p.images.length) ? p.images.slice(0,10) : (p.img ? [p.img] : []);
+      
+      const title = getTranslatedContent(p, 'title');
+      const description = getTranslatedContent(p, 'description');
+      
+      console.log('Opening modal for project:', { title, description, lang: getCurrentLanguage() });
+      
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-desc').textContent = description;
+      
+      const main = document.getElementById('project-modal-main');
+      const thumbs = document.getElementById('project-modal-thumbs');
+      main.src = images[0] || '';
+      thumbs.innerHTML = images.map((src, i) => `<img data-i="${i}" src="${src}" class="h-16 w-full object-cover rounded border cursor-pointer">`).join('');
+      thumbs.querySelectorAll('img').forEach(img => img.onclick = () => { main.src = img.src; });
+      
+      const linksBox = document.getElementById('project-modal-links');
+      const links = Array.isArray(p.links) ? p.links.slice(0,5) : [];
+      const lang = getCurrentLanguage();
+      const t = translations[lang] || translations['RU'];
+      
+      linksBox.innerHTML = links.length ? 
+        `<div class="flex flex-wrap gap-2">${links.map(u => 
+          `<a href="${u}" target="_blank" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-sm">${t.linkText}</a>`
+        ).join('')}</div>` : '';
+      
+      const modal = document.getElementById('project-modal');
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    };
+
+    function closeProjectModal() {
+      document.getElementById('project-modal').classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    document.getElementById('modal-close').onclick = closeProjectModal;
+    document.getElementById('project-modal').onclick = function(e) {
+      if (e.target === this) closeProjectModal();
+    };
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeProjectModal();
+    });
+
+    // Инициализация
+    console.log('Projects page: Initializing...');
+    loadProjectsData();
+    
+    // Инициализируем переводы
+    setTimeout(() => {
+      console.log('Projects page: Initializing translations...');
+      updateInterface();
+    }, 200);
+    
+    // Глобальная функция для обновления контента при смене языка
+    window.updateContentOnLanguageChange = function() {
+      console.log('Projects page: Language changed to:', getCurrentLanguage());
+      updateInterface();
+      renderProjects(window.projectsData || projectsData);
+      
+      // Обновляем footer
+      if (window.updateFooterTranslations) {
+        window.updateFooterTranslations();
+      }
+    };
+    
+    // Слушатель изменений в localStorage (для изменений из других вкладок)
+    window.addEventListener('storage', function(e) {
+      if (e.key === 'site_lang') {
+        console.log('Language changed to:', e.newValue);
+        window.updateContentOnLanguageChange();
+      }
+    });
+    </script>
+    
     <div id="site-footer"></div>
     <script>
-        fetch('components/header.html').then(r => r.text()).then(t => document.getElementById('site-header').innerHTML = t);
-        fetch('components/footer.html').then(r => r.text()).then(t => document.getElementById('site-footer').innerHTML = t);
+        // Загружаем только footer (header уже загружен выше)
+        console.log('Projects page: Loading footer...');
+        fetch('components/footer.html').then(r => r.text()).then((footerHtml) => {
+            document.getElementById('site-footer').innerHTML = footerHtml;
+            console.log('Projects page: Footer set to DOM');
+            
+            // Извлекаем и выполняем скрипты из footer
+            const footerScripts = document.getElementById('site-footer').querySelectorAll('script');
+            footerScripts.forEach((script) => {
+                const newScript = document.createElement('script');
+                newScript.textContent = script.textContent;
+                document.head.appendChild(newScript);
+            });
+            
+            // Инициализируем переводы footer
+            setTimeout(() => {
+                if (window.updateFooterTranslations) {
+                    window.updateFooterTranslations();
+                }
+            }, 200);
+        }).catch(error => {
+            console.error('Projects page: Error loading footer:', error);
+        });
     </script>
-</body>
+  </body>
 </html> 

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ру">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,7 +13,7 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
   <!-- Login Form -->
-  <div id="login-section" class="flex items-center justify-center min-h-screen">
+  <div id="login-section" class="flex items-center justify-center min-х-screen">
     <form id="login-form" class="bg-white p-8 rounded-xl shadow-xl w-full max-w-xs space-y-6">
       <h2 class="text-2xl font-bold text-center mb-4">Вход в админку</h2>
       <input type="text" id="login" placeholder="Логин" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-brand-blue-soft" required>
@@ -39,12 +39,14 @@
         <div class="flex gap-2 items-center">
           <button id="add-btn" class="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white px-6 py-2 rounded-lg font-semibold shadow hover:from-blue-600 hover:to-blue-800 transition-all duration-200">+ Пост</button>
           <button id="add-project-btn" class="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white px-6 py-2 rounded-lg font-semibold shadow hover:from-blue-600 hover:to-blue-800 transition-all duration-200">+ Проект</button>
+          <button id="add-led-btn" class="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white px-6 py-2 rounded-lg font-semibold shadow hover:from-blue-600 hover:to-blue-800 transition-all duration-200">+ LED</button>
           <button id="logout-btn" class="ml-2 px-4 py-2 rounded-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition">Выйти</button>
         </div>
       </div>
       <div class="mt-4 flex gap-2">
         <button id="tab-blog" class="px-4 py-2 rounded-full bg-blue-100 text-blue-700 font-semibold">Блог</button>
         <button id="tab-projects" class="px-4 py-2 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300">Проекты</button>
+        <button id="tab-led" class="px-4 py-2 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300">LED экраны</button>
       </div>
     </div>
 
@@ -55,37 +57,91 @@
     <div id="projects-section" class="hidden">
       <div id="projects-list" class="space-y-4"></div>
     </div>
+
+    <div id="led-section" class="hidden">
+      <div id="led-list" class="space-y-4"></div>
+    </div>
   </div>
 
   <!-- Modal (Add/Edit) -->
-  <div id="modal-bg" class="modal-bg fixed inset-0 z-40 flex items-center justify-center hidden">
-    <div class="bg-white rounded-xl shadow-xl p-8 w-full max-w-md relative">
-      <button id="modal-close" class="absolute top-3 right-3 text-gray-400 hover:text-black text-2xl">&times;</button>
-      <h2 id="modal-title" class="text-xl font-bold mb-4">Добавить пост</h2>
-      <form id="modal-form" class="space-y-4">
+  <div id="modal-bg" class="modal-bg fixed inset-0 z-40 flex items-center justify-center hidden p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] relative flex flex-col">
+      <div class="flex-shrink-0 p-6 border-b">
+        <button id="modal-close" class="absolute top-4 right-4 text-gray-400 hover:text-black text-2xl">&times;</button>
+        <h2 id="modal-title" class="text-2xl font-bold">Добавить пост</h2>
+      </div>
+      <div class="flex-1 overflow-y-auto p-6">
+        <form id="modal-form" class="space-y-6">
         <input type="hidden" id="modal-id">
         <input type="hidden" id="modal-img-old">
-        <div>
-          <label class="block mb-1 font-semibold">Картинки (до 10)</label>
-          <input type="file" id="modal-imgs" name="imgs[]" multiple class="w-full px-4 py-2 border rounded-lg" accept="image/*">
+        
+        <!-- Картинки -->
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <label class="block mb-2 font-semibold text-lg">📸 Картинки (до 10)</label>
+          <input type="file" id="modal-imgs" name="imgs[]" multiple class="w-full px-4 py-3 border rounded-lg bg-white" accept="image/*">
           <input type="hidden" id="modal-images-old">
-          <div id="img-preview" class="mt-2 grid grid-cols-3 gap-2"></div>
+          <div id="img-preview" class="mt-3 grid grid-cols-4 gap-3"></div>
         </div>
-        <div>
-          <label class="block mb-1 font-semibold">Заголовок</label>
-          <input type="text" id="modal-title-input" class="w-full px-4 py-2 border rounded-lg" required>
+        <!-- Заголовки -->
+        <div class="bg-blue-50 p-4 rounded-lg">
+          <label class="block mb-3 font-semibold text-lg">📝 Заголовки</label>
+          
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div>
+              <label class="block mb-2 font-semibold text-sm text-gray-700">🇷🇺 Русский (RU)</label>
+              <input type="text" id="modal-title-input" class="w-full px-4 py-3 border rounded-lg" required>
+            </div>
+            <div>
+              <label class="block mb-2 font-semibold text-sm text-gray-700">🇺🇿 O'zbekcha (UZ)</label>
+              <input type="text" id="modal-title-uz" class="w-full px-4 py-3 border rounded-lg bg-gray-50" placeholder="Переведется автоматически">
+            </div>
+            <div>
+              <label class="block mb-2 font-semibold text-sm text-gray-700">🇺🇸 English (EN)</label>
+              <input type="text" id="modal-title-en" class="w-full px-4 py-3 border rounded-lg bg-gray-50" placeholder="Переведется автоматически">
+            </div>
+          </div>
         </div>
-        <div>
-          <label class="block mb-1 font-semibold">Описание</label>
-          <textarea id="modal-desc" class="w-full px-4 py-2 border rounded-lg" rows="3" required></textarea>
+        <!-- Описания -->
+        <div class="bg-green-50 p-4 rounded-lg">
+          <label class="block mb-3 font-semibold text-lg">📄 Описания</label>
+          
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div>
+              <label class="block mb-2 font-semibold text-sm text-gray-700">🇷🇺 Русский (RU)</label>
+              <textarea id="modal-desc" class="w-full px-4 py-3 border rounded-lg" rows="4" required></textarea>
+            </div>
+            <div>
+              <label class="block mb-2 font-semibold text-sm text-gray-700">🇺🇿 O'zbekcha (UZ)</label>
+              <textarea id="modal-desc-uz" class="w-full px-4 py-3 border rounded-lg bg-gray-50" rows="4" placeholder="Переведется автоматически"></textarea>
+            </div>
+            <div>
+              <label class="block mb-2 font-semibold text-sm text-gray-700">🇺🇸 English (EN)</label>
+              <textarea id="modal-desc-en" class="w-full px-4 py-3 border rounded-lg bg-gray-50" rows="4" placeholder="Переведется автоматически"></textarea>
+            </div>
+          </div>
         </div>
-        <div>
-          <label class="block mb-1 font-semibold">Ссылки (до 5)</label>
-          <div id="links-container" class="space-y-2"></div>
-          <button type="button" id="add-link-btn" class="mt-2 px-3 py-1 text-sm rounded bg-gray-100 hover:bg-gray-200">+ Добавить ссылку</button>
+        <!-- Дополнительные поля для LED экранов -->
+        <div id="led-extra-block" class="hidden bg-yellow-50 p-4 rounded-lg">
+          <label class="block mb-3 font-semibold text-lg">📍 Дополнительная информация</label>
+          <div>
+            <label class="block mb-2 font-semibold text-sm text-gray-700">📍 Локация</label>
+            <input type="text" id="modal-location" class="w-full px-4 py-3 border rounded-lg" placeholder="Адрес или координаты LED экрана">
+          </div>
         </div>
-        <button id="modal-save-btn" type="submit" class="w-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-blue-800 transition-all duration-200">Сохранить</button>
+        <!-- Ссылки -->
+        <div id="links-block" class="bg-purple-50 p-4 rounded-lg">
+          <label class="block mb-3 font-semibold text-lg">🔗 Ссылки (до 5)</label>
+          <div id="links-container" class="space-y-3"></div>
+          <button type="button" id="add-link-btn" class="mt-3 px-4 py-2 text-sm rounded bg-purple-500 text-white hover:bg-purple-600 transition font-semibold">+ Добавить ссылку</button>
+        </div>
+        <!-- Кнопки действий -->
+        <div class="flex-shrink-0 pt-4 border-t space-y-3">
+          <button type="button" id="translate-all-btn" class="w-full bg-gradient-to-r from-green-500 via-green-600 to-green-700 text-white py-3 rounded-lg font-semibold hover:from-green-600 hover:to-green-800 transition-all duration-200 shadow-lg">🔄 Перевести всё</button>
+          <button id="modal-save-btn" type="submit" class="w-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white py-4 rounded-lg font-semibold text-lg hover:from-blue-600 hover:to-blue-800 transition-all duration-200 shadow-lg">💾 Сохранить</button>
+        </div>
       </form>
+    </div>
+  </div>
     </div>
   </div>
 
@@ -101,6 +157,7 @@
       adminSection.classList.remove('hidden');
       loadBlog();
       loadProjects();
+      loadLed();
     }
     // --- Password eye toggle ---
     const passwordInput = document.getElementById('password');
@@ -113,7 +170,6 @@
     togglePasswordBtn.addEventListener('click', () => {
       const type = passwordInput.type === 'password' ? 'text' : 'password';
       passwordInput.type = type;
-      // Меняем иконку (можно добавить закрытый глаз, если нужно)
       eyeIcon.innerHTML = type === 'password'
         ? `<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.75-7.5 9.75-7.5 9.75 7.5 9.75 7.5-3.75 7.5-9.75 7.5S2.25 12 2.25 12z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />`
         : `<path stroke-linecap="round" stroke-linejoin="round" d="M3 3l18 18M2.25 12s3.75-7.5 9.75-7.5c2.28 0 4.36.6 6.18 1.6M21.75 12s-3.75 7.5-9.75 7.5c-2.28 0-4.36-.6-6.18-1.6" />`;
@@ -128,6 +184,7 @@
         localStorage.setItem('isAdmin', '1');
         loadBlog();
         loadProjects();
+        loadLed();
       } else {
         loginError.classList.remove('hidden');
       }
@@ -193,6 +250,37 @@
       fetch(`/api/projects/${id}`, {method:'DELETE'}).then(()=>loadProjects());
     }
 
+    // --- LED CRUD ---
+    const ledList = document.getElementById('led-list');
+    function ledCard(item) {
+      return `<div class="bg-white rounded-xl shadow flex flex-col md:flex-row items-center md:items-start gap-6 p-4">
+        <img src="${item.img}" alt="img" class="w-32 h-32 object-cover rounded-lg border">
+        <div class="flex-1">
+          <div class="font-bold text-lg mb-1">${item.title}</div>
+          <div class="text-gray-600 mb-2">${item.description || ''}</div>
+          <div class="text-sm text-gray-500 mb-2">${item.location ? 'Локация: ' + item.location : ''} ${item.price ? ' · Цена: ' + item.price : ''}</div>
+          <div class="flex gap-2">
+            <button onclick="editLed(${item.id})" class="px-4 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500">Редактировать</button>
+            <button onclick="deleteLed(${item.id})" class="px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600">Удалить</button>
+          </div>
+        </div>
+      </div>`;
+    }
+    function loadLed() {
+      fetch('/api/led').then(r=>r.json()).then(items => {
+        ledList.innerHTML = items.length ? items.map(ledCard).join('') : '<div class="text-gray-400 text-center">Нет LED экранов</div>';
+      });
+    }
+    window.editLed = function(id) {
+      fetch(`/api/led/${id}`).then(r=>r.json()).then(item => {
+        openModal('Редактировать LED', item, 'led');
+      });
+    }
+    window.deleteLed = function(id) {
+      if (!confirm('Удалить LED?')) return;
+      fetch(`/api/led/${id}`, {method:'DELETE'}).then(()=>loadLed());
+    }
+
     // --- MODAL ---
     const modalBg = document.getElementById('modal-bg');
     const modalForm = document.getElementById('modal-form');
@@ -206,7 +294,10 @@
     const imgPreview = document.getElementById('img-preview');
     const linksContainer = document.getElementById('links-container');
     const addLinkBtn = document.getElementById('add-link-btn');
-    let modalContext = 'blog'; // 'blog' | 'projects'
+    const linksBlock = document.getElementById('links-block');
+    const ledExtraBlock = document.getElementById('led-extra-block');
+    const modalLocation = document.getElementById('modal-location');
+    let modalContext = 'blog'; // 'blog' | 'projects' | 'led'
     // Предпросмотр картинок
     let currentImagesOld = [];
     let newFiles = [];
@@ -217,14 +308,13 @@
     }
     function renderPreviews() {
       imgPreview.innerHTML = '';
-      // Старые изображения: удаление и сортировка
       currentImagesOld.forEach((src, idx) => {
         const wrap = document.createElement('div');
         wrap.className = 'relative group';
         wrap.draggable = true;
         wrap.innerHTML = `
-          <img src="${src}" class="h-20 w-full object-cover rounded border">
-          <button type="button" class="absolute top-1 right-1 hidden group-hover:block bg-white/80 rounded px-2">×</button>
+          <img src="${src}" class="h-24 w-full object-cover rounded-lg border-2 border-gray-200 shadow-sm">
+          <button type="button" class="absolute top-2 right-2 hidden group-hover:block bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold hover:bg-red-600 transition">×</button>
         `;
         wrap.addEventListener('dragstart', (e) => {
           e.dataTransfer.setData('text/plain', String(idx));
@@ -247,14 +337,13 @@
         };
         imgPreview.appendChild(wrap);
       });
-      // Новые файлы: удаление
       newFiles.forEach((file, idx) => {
         const url = URL.createObjectURL(file);
         const wrap = document.createElement('div');
         wrap.className = 'relative group';
         wrap.innerHTML = `
-          <img src="${url}" class="h-20 w-full object-cover rounded border">
-          <button type="button" class="absolute top-1 right-1 hidden group-hover:block bg-white/80 rounded px-2">×</button>
+          <img src="${url}" class="h-24 w-full object-cover rounded-lg border-2 border-gray-200 shadow-sm">
+          <button type="button" class="absolute top-2 right-2 hidden group-hover:block bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold hover:bg-red-600 transition">×</button>
         `;
         wrap.querySelector('button').onclick = () => {
           newFiles.splice(idx, 1);
@@ -281,8 +370,8 @@
       if (count >= 5) return;
       const wrap = document.createElement('div');
       wrap.className = 'flex gap-2';
-      wrap.innerHTML = `<input type="url" placeholder="https://..." class="flex-1 px-3 py-2 border rounded" value="${value || ''}">
-        <button type="button" class="px-2 rounded bg-gray-100 hover:bg-gray-200">×</button>`;
+      wrap.innerHTML = `<input type="url" placeholder="https://..." class="flex-1 px-4 py-3 border rounded-lg" value="${value || ''}">
+        <button type="button" class="px-4 py-3 rounded-lg bg-red-500 text-white hover:bg-red-600 transition font-bold">×</button>`;
       const removeBtn = wrap.querySelector('button');
       removeBtn.onclick = () => { wrap.remove(); };
       linksContainer.appendChild(wrap);
@@ -290,6 +379,7 @@
     addLinkBtn.onclick = () => addLinkInput('');
     document.getElementById('add-btn').onclick = () => openModal('Добавить пост', null, 'blog');
     document.getElementById('add-project-btn').onclick = () => openModal('Добавить проект', null, 'projects');
+    document.getElementById('add-led-btn').onclick = () => openModal('Добавить LED', null, 'led');
     document.getElementById('modal-close').onclick = closeModal;
     modalBg.onclick = (e) => { if (e.target === modalBg) closeModal(); };
     function openModal(title, post, context) {
@@ -304,9 +394,21 @@
       modalImagesOld.value = JSON.stringify(currentImagesOld);
       renderPreviews();
       modalTitleInput.value = post ? post.title : '';
+      document.getElementById('modal-title-uz').value = post ? (post.title_uz || '') : '';
+      document.getElementById('modal-title-en').value = post ? (post.title_en || '') : '';
       modalDesc.value = post ? post.description : '';
-      renderLinks((post && Array.isArray(post.links)) ? post.links : []);
-      // Меняем текст кнопки
+      document.getElementById('modal-desc-uz').value = post ? (post.description_uz || '') : '';
+      document.getElementById('modal-desc-en').value = post ? (post.description_en || '') : '';
+      // toggle blocks
+      if (modalContext === 'led') {
+        linksBlock.classList.add('hidden');
+        ledExtraBlock.classList.remove('hidden');
+        modalLocation.value = post ? (post.location || '') : '';
+      } else {
+        ledExtraBlock.classList.add('hidden');
+        linksBlock.classList.remove('hidden');
+        renderLinks((post && Array.isArray(post.links)) ? post.links : []);
+      }
       document.getElementById('modal-save-btn').textContent = post ? 'Сохранить' : 'Добавить';
       modalBg.classList.remove('hidden');
     }
@@ -314,63 +416,214 @@
       modalBg.classList.add('hidden');
       modalForm.reset();
     }
-    modalForm.onsubmit = (e) => {
+    modalForm.onsubmit = async (e) => {
       e.preventDefault();
-      const id = modalId.value;
-      const formData = new FormData();
-      const files = newFiles.slice(0, 10 - currentImagesOld.length);
-      files.forEach(f => formData.append('imgs', f));
-      // Передаем старые изображения JSONом, чтобы сервер мог сохранить их при редактировании
-      formData.append('imagesOld', JSON.stringify(currentImagesOld));
-      // Для обратной совместимости передадим первый как imgOld
-      formData.append('imgOld', (currentImagesOld[0] || ''));
-      // Ссылки
-      const links = Array.from(linksContainer.querySelectorAll('input[type="url"]'))
-        .map(i => i.value.trim()).filter(Boolean).slice(0,5);
-      links.forEach(v => formData.append('links', v));
-      formData.append('title', modalTitleInput.value);
-      formData.append('description', modalDesc.value);
-      const base = modalContext === 'projects' ? '/api/projects' : '/api/blog';
-      if (id) {
-        fetch(`${base}/${id}`, { method: 'POST', body: formData })
-        .then(r => { if (!r.ok) throw new Error('fail'); })
-        .then(() => { closeModal(); modalContext === 'projects' ? loadProjects() : loadBlog(); })
-        .catch(() => alert('Ошибка при сохранении.'));
-      } else {
-        if ((currentImagesOld.length + files.length) === 0) { alert('Пожалуйста, выберите минимум одну картинку'); return; }
-        fetch(base, { method: 'POST', body: formData })
-        .then(r => { if (!r.ok) throw new Error('fail'); })
-        .then(() => { closeModal(); modalContext === 'projects' ? loadProjects() : loadBlog(); })
-        .catch(() => alert('Ошибка при добавлении.'));
+      
+      const title = modalTitleInput.value.trim();
+      const desc = modalDesc.value.trim();
+      
+      // Автоматический перевод перед сохранением, если поля UZ/EN пустые
+      const titleUz = document.getElementById('modal-title-uz').value.trim();
+      const titleEn = document.getElementById('modal-title-en').value.trim();
+      const descUz = document.getElementById('modal-desc-uz').value.trim();
+      const descEn = document.getElementById('modal-desc-en').value.trim();
+      
+      const saveBtn = document.getElementById('modal-save-btn');
+      const originalText = saveBtn.textContent;
+      saveBtn.textContent = '🔄 Переводим и сохраняем...';
+      saveBtn.disabled = true;
+      
+      try {
+        // Переводим заголовок, если нужно
+        if (title && (!titleUz || !titleEn)) {
+          const titleResponse = await fetch('/api/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: title, lang: 'all' })
+          });
+          const titleData = await titleResponse.json();
+          if (titleData.translations) {
+            if (!titleUz) document.getElementById('modal-title-uz').value = titleData.translations.uz || '';
+            if (!titleEn) document.getElementById('modal-title-en').value = titleData.translations.en || '';
+          }
+        }
+        
+        // Переводим описание, если нужно
+        if (desc && (!descUz || !descEn)) {
+          const descResponse = await fetch('/api/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: desc, lang: 'all' })
+          });
+          const descData = await descResponse.json();
+          if (descData.translations) {
+            if (!descUz) document.getElementById('modal-desc-uz').value = descData.translations.uz || '';
+            if (!descEn) document.getElementById('modal-desc-en').value = descData.translations.en || '';
+          }
+        }
+        
+        // Теперь сохраняем
+        const id = modalId.value;
+        const formData = new FormData();
+        const files = newFiles.slice(0, 10 - currentImagesOld.length);
+        files.forEach(f => formData.append('imgs', f));
+        formData.append('imagesOld', JSON.stringify(currentImagesOld));
+        formData.append('imgOld', (currentImagesOld[0] || ''));
+        formData.append('title', modalTitleInput.value);
+        formData.append('title_uz', document.getElementById('modal-title-uz').value);
+        formData.append('title_en', document.getElementById('modal-title-en').value);
+        formData.append('description', modalDesc.value);
+        formData.append('description_uz', document.getElementById('modal-desc-uz').value);
+        formData.append('description_en', document.getElementById('modal-desc-en').value);
+        let base = '/api/blog';
+        if (modalContext === 'projects') base = '/api/projects';
+        if (modalContext === 'led') {
+          base = '/api/led';
+          formData.append('location', modalLocation.value || '');
+        } else {
+          const links = Array.from(linksContainer.querySelectorAll('input[type="url"]')).map(i => i.value.trim()).filter(Boolean).slice(0,5);
+          links.forEach(v => formData.append('links', v));
+        }
+        
+        if (id) {
+          const response = await fetch(`${base}/${id}`, { method: 'POST', body: formData });
+          if (!response.ok) throw new Error('fail');
+          closeModal(); 
+          modalContext === 'projects' ? loadProjects() : (modalContext === 'led' ? loadLed() : loadBlog());
+        } else {
+          if ((currentImagesOld.length + files.length) === 0) { 
+            alert('Пожалуйста, выберите минимум одну картинку'); 
+            return; 
+          }
+          const response = await fetch(base, { method: 'POST', body: formData });
+          if (!response.ok) throw new Error('fail');
+          closeModal(); 
+          modalContext === 'projects' ? loadProjects() : (modalContext === 'led' ? loadLed() : loadBlog());
+        }
+      } catch (error) {
+        console.error('Save error:', error);
+        alert('Ошибка при сохранении.');
+      } finally {
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
       }
     };
 
     // --- Tabs switch ---
     const tabBlog = document.getElementById('tab-blog');
     const tabProjects = document.getElementById('tab-projects');
+    const tabLed = document.getElementById('tab-led');
     const blogSection = document.getElementById('blog-section');
     const projectsSection = document.getElementById('projects-section');
+    const ledSection = document.getElementById('led-section');
     function setTab(tab) {
       if (tab === 'blog') {
         blogSection.classList.remove('hidden');
         projectsSection.classList.add('hidden');
+        ledSection.classList.add('hidden');
         tabBlog.classList.add('bg-blue-100','text-blue-700');
         tabBlog.classList.remove('bg-gray-200','text-gray-700');
         tabProjects.classList.add('bg-gray-200','text-gray-700');
         tabProjects.classList.remove('bg-blue-100','text-blue-700');
-      } else {
+        tabLed.classList.add('bg-gray-200','text-gray-700');
+        tabLed.classList.remove('bg-blue-100','text-blue-700');
+      } else if (tab === 'projects') {
         projectsSection.classList.remove('hidden');
         blogSection.classList.add('hidden');
+        ledSection.classList.add('hidden');
         tabProjects.classList.add('bg-blue-100','text-blue-700');
         tabProjects.classList.remove('bg-gray-200','text-gray-700');
         tabBlog.classList.add('bg-gray-200','text-gray-700');
         tabBlog.classList.remove('bg-blue-100','text-blue-700');
+        tabLed.classList.add('bg-gray-200','text-gray-700');
+        tabLed.classList.remove('bg-blue-100','text-blue-700');
+      } else {
+        ledSection.classList.remove('hidden');
+        blogSection.classList.add('hidden');
+        projectsSection.classList.add('hidden');
+        tabLed.classList.add('bg-blue-100','text-blue-700');
+        tabLed.classList.remove('bg-gray-200','text-gray-700');
+        tabBlog.classList.add('bg-gray-200','text-gray-700');
+        tabBlog.classList.remove('bg-blue-100','text-blue-700');
+        tabProjects.classList.add('bg-gray-200','text-gray-700');
+        tabProjects.classList.remove('bg-blue-100','text-blue-700');
       }
     }
     tabBlog.onclick = () => setTab('blog');
     tabProjects.onclick = () => setTab('projects');
-    // начальная вкладка
+    tabLed.onclick = () => setTab('led');
     setTab('blog');
+
+    // --- TRANSLATION FUNCTIONS ---
+    
+    // Функция перевода всех полей
+    document.getElementById('translate-all-btn').onclick = () => {
+      const title = modalTitleInput.value.trim();
+      const desc = modalDesc.value.trim();
+      
+      if (!title && !desc) {
+        alert('Сначала введите заголовок или описание на русском языке');
+        return;
+      }
+      
+      const btn = document.getElementById('translate-all-btn');
+      const originalText = btn.textContent;
+      btn.textContent = '🔄 Переводим...';
+      btn.disabled = true;
+      
+      const promises = [];
+      
+      // Перевод заголовка
+      if (title) {
+        promises.push(
+          fetch('/api/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: title, lang: 'all' })
+          })
+          .then(r => r.json())
+          .then(data => ({ type: 'title', data }))
+        );
+      }
+      
+      // Перевод описания
+      if (desc) {
+        promises.push(
+          fetch('/api/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: desc, lang: 'all' })
+          })
+          .then(r => r.json())
+          .then(data => ({ type: 'desc', data }))
+        );
+      }
+      
+      Promise.all(promises)
+        .then(results => {
+          results.forEach(result => {
+            if (result.data.translations) {
+              if (result.type === 'title') {
+                document.getElementById('modal-title-uz').value = result.data.translations.uz || '';
+                document.getElementById('modal-title-en').value = result.data.translations.en || '';
+              } else if (result.type === 'desc') {
+                document.getElementById('modal-desc-uz').value = result.data.translations.uz || '';
+                document.getElementById('modal-desc-en').value = result.data.translations.en || '';
+              }
+            }
+          });
+        })
+        .catch(err => {
+          console.error('Translation error:', err);
+          alert('Ошибка при переводе');
+        })
+        .finally(() => {
+          btn.textContent = originalText;
+          btn.disabled = false;
+        });
+    };
+    
+
 
     // --- LOGOUT ---
     document.getElementById('logout-btn').onclick = () => {
@@ -381,4 +634,5 @@
     };
   </script>
 </body>
+</html> 
 </html> 

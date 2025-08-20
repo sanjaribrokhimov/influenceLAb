@@ -109,11 +109,40 @@
 </head>
 <body class="bg-white">
     <!-- Header include -->
+     <br>
     <div id="site-header"></div>
     <script>
       const loadHeader = async () => {
         const html = await fetch('components/header.html').then(r => r.text());
         document.getElementById('site-header').innerHTML = html;
+        
+        // Выполняем inline-скрипты из header, чтобы инициировать переводы
+        (function(){
+          const container = document.getElementById('site-header');
+          if (container) {
+            const scripts = container.querySelectorAll('script');
+            scripts.forEach((script) => {
+              const exec = document.createElement('script');
+              exec.textContent = script.textContent;
+              document.head.appendChild(exec);
+            });
+          }
+        })();
+        
+        // Инициализация языка после загрузки header
+        const currentLang = localStorage.getItem('site_lang') || 'RU';
+        const btn = document.getElementById('lang-toggle');
+        const btnM = document.getElementById('lang-toggle-mobile');
+        
+        if(btn) {
+          btn.textContent = currentLang;
+          console.log('Desktop button initialized with:', currentLang);
+        }
+        if(btnM) {
+          btnM.textContent = currentLang;
+          console.log('Mobile button initialized with:', currentLang);
+        }
+        
         const menuBtn = document.getElementById('mobile-menu-button');
         const menu = document.getElementById('mobile-menu');
         const overlay = document.getElementById('mobile-menu-overlay');
@@ -146,25 +175,25 @@
                     <br>
                     <div class="inline-flex items-center px-4 py-2 bg-brand-blue-soft/10 text-brand-blue-soft rounded-full text-sm font-medium mb-6">
                         <span class="w-2 h-2 bg-brand-blue-soft rounded-full mr-2 animate-pulse"></span>
-                        Создаем будущее брендов
+                        <span id="hero-badge">Создаем будущее брендов</span>
                     </div>
                     
                     <h1 class="text-5xl lg:text-7xl font-black text-black leading-tight mb-6">
-                        Помогаем  
-                        <span class="gradient-text">брендам </span> 
-                        зарабатывать больше
+                        <span id="hero-title-start">Помогаем</span>  
+                        <span class="gradient-text" id="hero-title-brand">брендам</span> 
+                        <span id="hero-title-end">зарабатывать больше</span>
                     </h1>
                     
-                    <p class="text-xl text-gray-600 mb-8 leading-relaxed">
+                    <p class="text-xl text-gray-600 mb-8 leading-relaxed" id="hero-description">
                         Делаем рекламу у блогеров просто и с пользой для вашего бизнеса.
                     </p>
                     
                     <div class="flex flex-col sm:flex-row gap-4">
                         <button onclick="window.location.href='contact.html'" class="bg-brand-blue-soft hover:bg-brand-blue-medium text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
-                            Связаться
+                            <span id="contact-btn">Связаться</span>
                         </button>
                         <button onclick="window.location.href='projects.html'" class="border-2 border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300">
-                            Смотреть работы
+                            <span id="projects-btn">Смотреть работы</span>
                         </button>
                     </div>
                     
@@ -231,55 +260,77 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-20">
                 <div class="inline-flex items-center px-4 py-2 bg-brand-blue-soft/10 text-brand-blue-soft rounded-full text-sm font-medium mb-6">
-                    Наши проекты
+                    <span id="projects-badge">Наши проекты</span>
                 </div>
                 <h2 class="text-4xl lg:text-5xl font-bold text-black mb-6">
-                    <span class="gradient-text">Наши проекты</span>
+                    <span class="gradient-text" id="projects-title">Наши проекты</span>
                 </h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto" id="projects-description">
                     Примеры реализованных кейсов для наших клиентов
                 </p>
             </div>
-            <div id="projects-list-home" class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12"></div>
+            <div id="projects-list-home" class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 items-stretch"></div>
             <div class="text-center">
-              <a href="projects.html" class="inline-block px-10 py-4 bg-brand-blue-soft text-white rounded-xl font-semibold hover:bg-brand-blue-medium transition-all duration-200 text-lg shadow-lg">Все проекты</a>
+              <a href="projects.html" class="inline-block px-10 py-4 bg-brand-blue-soft text-white rounded-xl font-semibold hover:bg-brand-blue-medium transition-all duration-200 text-lg shadow-lg"><span id="all-projects-btn">Все проекты</span></a>
                     </div>
                 </div>
                 
     </section>
     <script>
-      const defaultHomeProjects = [
-        { img: 'img/img1.jpg', title: 'Проект', description: 'Современный дизайн, уникальный стиль, эффективная реализация.' },
-        { img: 'img/img2.png', title: 'Проект', description: 'Креативные решения, индивидуальный подход, результат для клиента.' },
-        { img: 'img/img3.jpg', title: 'Проект', description: 'Эстетика, функциональность, рост бренда.' }
-      ];
-      fetch('/api/projects')
-        .then(r => r.json())
-        .then(data => {
-          const items = (Array.isArray(data) && data.length) ? data.slice(0,3) : defaultHomeProjects;
-          document.getElementById('projects-list-home').innerHTML = items.map(p => {
+      (function(){
+        // Local helpers to avoid relying on later-defined globals
+        function getLang(){ return localStorage.getItem('site_lang') || 'RU'; }
+        function getTranslated(field, item){
+          const lang = getLang();
+          if (lang === 'UZ' && item[`${field}_uz`]) return item[`${field}_uz`];
+          if (lang === 'EN' && item[`${field}_en`]) return item[`${field}_en`];
+          return item[field] || '';
+        }
+        
+        const defaultHomeProjects = [
+          { img: 'img/img1.jpg', title: 'Проект', description: 'Современный дизайн, уникальный стиль, эффективная реализация.' },
+          { img: 'img/img2.png', title: 'Проект', description: 'Креативные решения, индивидуальный подход, результат для клиента.' },
+          { img: 'img/img3.jpg', title: 'Проект', description: 'Эстетика, функциональность, рост бренда.' }
+        ];
+        
+        function renderHomeProjects(items){
+          const container = document.getElementById('projects-list-home');
+          if (!container) return;
+          const list = (Array.isArray(items) && items.length) ? items.slice(0,3) : defaultHomeProjects;
+          container.innerHTML = list.map(p => {
             const cover = (Array.isArray(p.images) && p.images.length) ? p.images[0] : (p.img || 'img/img1.jpg');
-            const linksHtml = (Array.isArray(p.links) && p.links.length) ? `<div class=\"w-full flex flex-wrap gap-1 mt-1 mb-3\">${p.links.slice(0,3).map(u => `<a href=\"${u}\" target=\"_blank\" class=\"inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-[11px]\">Link</a>`).join('')}</div>` : '';
+            const title = getTranslated('title', p) || (p.title || '');
+            const description = getTranslated('description', p) || (p.description || '');
+            const linksHtml = (Array.isArray(p.links) && p.links.length) ? `<div class=\"w-full flex flex-wrap gap-1 mt-1 mb-3\">${p.links.slice(0,5).map(u => `<a href=\"${u}\" target=\"_blank\" class=\"inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-[11px]\">Link</a>`).join('')}</div>` : '';
             return `
-            <div class=\"bg-white px-8 pt-8 pb-5 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-start\"> 
-              <img src=\"${cover}\" alt=\"${p.title}\" class=\"w-full h-48 object-cover rounded-xl mb-6\" />
-              <h3 class=\"text-xl font-bold text-black mb-3\">${p.title}</h3>
-              <p class=\"text-gray-600 mb-4 line-clamp-3\">${p.description}</p>
-              ${linksHtml}
-              <a href=\"projects.html\" class=\"mt-3 inline-block px-5 py-2 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200\">Подробнее</a>
+            <div class=\"bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-start h-full\"> 
+              <img src=\"${cover}\" alt=\"${title}\" class=\"w-full h-48 object-cover rounded-xl mb-6\" />
+              <h3 class=\"text-xl font-bold text-black mb-3\">${title}</h3>
+              <p class=\"text-gray-600 mb-4 line-clamp-3\">${description}</p>
+              <div class=\"w-full flex items-center justify-between gap-2 mt-auto\"> 
+                <div class=\"flex flex-wrap gap-2\">${linksHtml}</div>
+                <a href=\"projects.html\" class=\"px-6 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200\">${(function(){const l=(localStorage.getItem('site_lang')||'RU');return l==='UZ'?'Batafsil':(l==='EN'?'More':'Подробнее');})()}</a>
+              </div>
+              
             </div>`;
           }).join('');
-        })
-        .catch(() => {
-          document.getElementById('projects-list-home').innerHTML = defaultHomeProjects.map(p => `
-            <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-start">
-              <img src="${p.img}" alt="${p.title}" class="w-full h-48 object-cover rounded-xl mb-6" />
-              <h3 class="text-xl font-bold text-black mb-3">${p.title}</h3>
-              <p class="text-gray-600 mb-4 line-clamp-3">${p.description}</p>
-              <a href="projects.html" class="mt-auto inline-block px-5 py-2 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200">Подробнее</a>
-            </div>
-          `).join('');
-        });
+        }
+        
+        // Expose for re-render on language change
+        window.renderHomeProjects = renderHomeProjects;
+        
+        // Initial load
+        fetch('/api/projects')
+          .then(r => r.json())
+          .then(data => {
+            window.homeProjectsData = (Array.isArray(data) && data.length) ? data : [];
+            renderHomeProjects(window.homeProjectsData);
+          })
+          .catch(() => {
+            window.homeProjectsData = [];
+            renderHomeProjects(window.homeProjectsData);
+          });
+      })();
     </script>
 
     <!-- Преимущества: 4 полношироких блока -->
@@ -287,10 +338,10 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-20">
       <div class="inline-flex items-center px-4 py-2 bg-brand-blue-soft/10 text-brand-blue-soft rounded-full text-sm font-medium mb-6">
-        Почему выбирают нас
+        <span id="advantages-badge">Почему выбирают нас</span>
       </div>
       <h2 class="text-4xl lg:text-5xl font-bold text-black mb-6">
-        <span class="gradient-text">Что мы делаем лучше от других</span>
+        <span class="gradient-text" id="advantages-title">Что мы делаем лучше от других</span>
       </h2>
     </div>
     <div class="space-y-20">
@@ -298,9 +349,9 @@
       <div class="flex flex-col lg:flex-row items-center justify-between gap-12">
         <div class="w-full lg:w-1/2 order-2 lg:order-1">
           <span class="text-brand-blue-soft text-lg font-bold mb-2 block">01</span>
-          <h3 class="text-3xl font-extrabold mb-4">БЫСТРЕЕ</h3>
-          <p class="text-lg text-gray-700 mb-6">У нас вам не придется ждать ответа блогера, придумывать и утверждать текст. Мы берем все задачи на себя, тем самым освобождая вас от волнений и лишней траты времени.</p>
-          <a href="contact.html" class="inline-block px-8 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200">Связаться</a>
+          <h3 class="text-3xl font-extrabold mb-4" id="advantage1-title">БЫСТРЕЕ</h3>
+          <p class="text-lg text-gray-700 mb-6" id="advantage1-description">У нас вам не придется ждать ответа блогера, придумывать и утверждать текст. Мы берем все задачи на себя, тем самым освобождая вас от волнений и лишней траты времени.</p>
+          <a href="contact.html" class="inline-block px-8 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200"><span id="contact-btn-1">Связаться</span></a>
         </div>
         <div class="w-full lg:w-1/2 order-1 lg:order-2 flex justify-center">
           <img src="img/img1.jpg" alt="Быстрее" class="rounded-2xl shadow-xl w-full max-w-md object-cover" />
@@ -313,18 +364,18 @@
                     </div>
         <div class="w-full lg:w-1/2">
           <span class="text-brand-blue-soft text-lg font-bold mb-2 block">02</span>
-          <h3 class="text-3xl font-extrabold mb-4">БЕЗОПАСНЕЕ</h3>
-          <p class="text-lg text-gray-700 mb-6">Мы берём ответственность за результат. Оплата делится на этапы, поэтому ваши деньги в безопасности, а вы уверены в качестве работы.</p>
-          <a href="contact.html" class="inline-block px-8 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200">Связаться</a>
+          <h3 class="text-3xl font-extrabold mb-4" id="advantage2-title">БЕЗОПАСНЕЕ</h3>
+          <p class="text-lg text-gray-700 mb-6" id="advantage2-description">Мы берём ответственность за результат. Оплата делится на этапы, поэтому ваши деньги в безопасности, а вы уверены в качестве работы.</p>
+          <a href="contact.html" class="inline-block px-8 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200"><span id="contact-btn-2">Связаться</span></a>
                     </div>
                 </div>
       <!-- Block 3 -->
       <div class="flex flex-col lg:flex-row items-center justify-between gap-12">
         <div class="w-full lg:w-1/2 order-2 lg:order-1">
           <span class="text-brand-blue-soft text-lg font-bold mb-2 block">03</span>
-          <h3 class="text-3xl font-extrabold mb-4">ПРОДУКТИВНЕЕ</h3>
-          <p class="text-lg text-gray-700 mb-6">Мы знаем, с какими блогерами и форматами работают разные ниши бизнеса. Вам не придётся тратить время на поиск и проверку — мы сразу подберём тех, кто принесёт результат.</p>
-          <a href="contact.html" class="inline-block px-8 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200">Связаться</a>
+          <h3 class="text-3xl font-extrabold mb-4" id="advantage3-title">ПРОДУКТИВНЕЕ</h3>
+          <p class="text-lg text-gray-700 mb-6" id="advantage3-description">Мы знаем, с какими блогерами и форматами работают разные ниши бизнеса. Вам не придётся тратить время на поиск и проверку — мы сразу подберём тех, кто принесёт результат.</p>
+          <a href="contact.html" class="inline-block px-8 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200"><span id="contact-btn-3">Связаться</span></a>
                     </div>
         <div class="w-full lg:w-1/2 order-1 lg:order-2 flex justify-center">
           <img src="img/img3.jpg" alt="Продуктивнее" class="rounded-2xl shadow-xl w-full max-w-md object-cover" />
@@ -337,14 +388,73 @@
                     </div>
         <div class="w-full lg:w-1/2">
           <span class="text-brand-blue-soft text-lg font-bold mb-2 block">04</span>
-          <h3 class="text-3xl font-extrabold mb-4">IT-УСЛУГИ ПОД КЛЮЧ</h3>
-          <p class="text-lg text-gray-700 mb-6">Разрабатываем сайты, мобильные приложения, Telegram-ботов и другие IT-решения для продвижения и автоматизации вашего бизнеса.</p>
-          <a href="contact.html" class="inline-block px-8 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200">Связаться</a>
+          <h3 class="text-3xl font-extrabold mb-4" id="advantage4-title">IT-УСЛУГИ ПОД КЛЮЧ</h3>
+          <p class="text-lg text-gray-700 mb-6" id="advantage4-description">Разрабатываем сайты, мобильные приложения, Telegram-ботов и другие IT-решения для продвижения и автоматизации вашего бизнеса.</p>
+          <a href="contact.html" class="inline-block px-8 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200"><span id="contact-btn-4">Связаться</span></a>
                     </div>
                 </div>
             </div>
         </div>
     </section>
+
+    <!-- LED Screens teaser section -->
+    <section class="py-24 bg-gray-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+          <div class="inline-flex items-center px-4 py-2 bg-brand-blue-soft/10 text-brand-blue-soft rounded-full text-sm font-medium mb-4">
+            <span id="led-badge">LED экраны</span>
+          </div>
+          <h2 class="text-4xl font-bold text-black" id="led-title">Реклама на LED-экранах в Ташкенте</h2>
+          <p class="text-gray-600 mt-3 max-w-3xl mx-auto" id="led-subtitle">Разместим вашу рекламу без очередей и по отличным ценам — быстро и прозрачно</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" id="led-list-home"></div>
+        <div class="text-center mt-8">
+          <a href="led.html" class="inline-block px-10 py-4 bg-brand-blue-soft text-white rounded-xl font-semibold hover:bg-brand-blue-medium transition-all duration-200 text-lg shadow-lg" id="go-to-led-btn">Подробнее</a>
+        </div>
+      </div>
+    </section>
+    <script>
+      (function(){
+        function getLang(){ return localStorage.getItem('site_lang') || 'RU'; }
+        function getTranslated(field, item){
+          const lang = getLang();
+          if (lang === 'UZ' && item[`${field}_uz`]) return item[`${field}_uz`];
+          if (lang === 'EN' && item[`${field}_en`]) return item[`${field}_en`];
+          return item[field] || '';
+        }
+        const defaultHomeLed = [
+          { img: 'img/img1.jpg', title: 'LED экран', description: 'Яркое размещение в центре города' },
+          { img: 'img/img2.png', title: 'LED экран', description: 'Высокая видимость и охват' },
+          { img: 'img/img3.jpg', title: 'LED экран', description: 'Эффективная outdoor‑реклама' }
+        ];
+        function renderHomeLed(items){
+          const container = document.getElementById('led-list-home');
+          if (!container) return;
+          const list = (Array.isArray(items) && items.length) ? items.slice(0,3) : defaultHomeLed;
+          container.innerHTML = list.map(it => {
+            const cover = (Array.isArray(it.images) && it.images.length) ? it.images[0] : (it.img || 'img/img1.jpg');
+            const title = getTranslated('title', it) || (it.title || '');
+            const description = getTranslated('description', it) || (it.description || '');
+            const location = it.location || '';
+            return `
+            <div class=\"bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-start\">
+              <img src=\"${cover}\" alt=\"${title}\" class=\"w-full h-48 object-cover rounded-xl mb-6\" />
+              <h3 class=\"text-xl font-bold text-black mb-3\">${title}</h3>
+              <p class=\"text-gray-600 mb-4 line-clamp-3\">${description}</p>
+              <div class=\"mt-auto inline-flex items-center gap-2 text-sm text-brand-blue-soft\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1118 0z\"/><circle cx=\"12\" cy=\"10\" r=\"3\"/></svg><span>${location}</span></div>
+            </div>`;
+          }).join('');
+        }
+        window.renderHomeLed = renderHomeLed;
+        fetch('/api/led')
+          .then(r => r.json())
+          .then(data => {
+            window.homeLedData = (Array.isArray(data) && data.length) ? data : [];
+            renderHomeLed(window.homeLedData);
+          })
+          .catch(() => { window.homeLedData = []; renderHomeLed(window.homeLedData); });
+      })();
+    </script>
 
    
 
@@ -353,12 +463,12 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-16">
                 <div class="inline-flex items-center px-4 py-2 bg-brand-blue-soft/10 text-brand-blue-soft rounded-full text-sm font-medium mb-6">
-        Наша команда
+        <span id="team-badge">Наша команда</span>
                 </div>
                 <h2 class="text-4xl lg:text-5xl font-bold text-black mb-6">
-        <span class="gradient-text">Вдохновляющие люди</span>
+        <span class="gradient-text" id="team-title">Вдохновляющие люди</span>
                 </h2>
-      <p class="text-xl text-gray-600 max-w-2xl mx-auto">Мы — команда профессионалов, которые любят своё дело и создают проекты с душой.</p>
+      <p class="text-xl text-gray-600 max-w-2xl mx-auto" id="team-description">Мы — команда профессионалов, которые любят своё дело и создают проекты с душой.</p>
             </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
       <!-- Участник 1 -->
@@ -368,7 +478,7 @@
                     </div>
         <div class="p-6 text-center">
           <div class="text-lg font-bold text-black">Бобоев Мухаммаджон </div>
-          <div class="text-sm text-gray-500">Исполнительный директор компании Influence Lab</div>
+          <div class="text-sm text-gray-500" id="team-member1-role">Исполнительный директор компании Influence Lab</div>
                 </div>
                     </div>
       <!-- Участник 2 -->
@@ -378,7 +488,7 @@
                 </div>
         <div class="p-6 text-center">
           <div class="text-lg font-bold text-black">Нуруллаева Зарина</div>
-          <div class="text-sm text-gray-500">Управляющий отдела работы по блогерам Узбекистана</div>
+          <div class="text-sm text-gray-500" id="team-member2-role">Управляющий отдела работы по блогерам Узбекистана</div>
                     </div>
                 </div>
       <!-- Участник 3 -->
@@ -388,7 +498,7 @@
                     </div>
         <div class="p-6 text-center">
           <div class="text-lg font-bold text-black">Пулат Аббос</div>
-          <div class="text-sm text-gray-500">Руководитель отдела по международным интеграциям</div>
+          <div class="text-sm text-gray-500" id="team-member3-role">Руководитель отдела по международным интеграциям</div>
         </div>
       </div>
       <!-- Участник 4 (пустой) -->
@@ -398,7 +508,7 @@
         </div>
         <div class="p-6 text-center">
           <div class="text-lg font-bold text-black">Иброхимов Санжар</div>
-          <div class="text-sm text-gray-500">Главный ИТ-специалист</div>
+          <div class="text-sm text-gray-500" id="team-member4-role">Главный ИТ-специалист</div>
         </div>
                 </div>
             </div>
@@ -408,13 +518,13 @@
     <!-- CTA Section -->
     <section class="py-24 bg-gradient-to-br from-brand-blue via-brand-blue-medium to-brand-blue-soft text-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 class="text-4xl lg:text-5xl font-bold mb-6">Готовы начать проект?</h2>
-            <p class="text-xl text-gray-200 mb-12 max-w-3xl mx-auto">
+            <h2 class="text-4xl lg:text-5xl font-bold mb-6" id="cta-title">Готовы начать проект?</h2>
+            <p class="text-xl text-gray-200 mb-12 max-w-3xl mx-auto" id="cta-description">
                 Оставьте заявку, и мы свяжемся с вами в течение 24 часов для обсуждения вашего проекта
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
                 <button class="bg-white text-brand-blue px-8 py-4 rounded-xl font-semibold hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg">
-                    Оставить заявку
+                    <span id="cta-btn">Оставить заявку</span>
                 </button>
                 
             </div>
@@ -426,16 +536,16 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-16">
       <div class="inline-flex items-center px-4 py-2 bg-brand-blue-soft/10 text-brand-blue-soft rounded-full text-sm font-medium mb-6">
-        Блог
+        <span id="blog-badge">Блог</span>
                 </div>
       <h2 class="text-4xl lg:text-5xl font-bold text-black mb-6">
-        <span class="gradient-text">Свежие статьи и новости</span>
+        <span class="gradient-text" id="blog-title">Свежие статьи и новости</span>
       </h2>
-      <p class="text-xl text-gray-600 max-w-2xl mx-auto">Читайте полезные материалы и узнавайте о последних трендах в digital-маркетинге и IT.</p>
+      <p class="text-xl text-gray-600 max-w-2xl mx-auto" id="blog-description">Читайте полезные материалы и узнавайте о последних трендах в digital-маркетинге и IT.</p>
             </div>
     <div id="blog-list-home" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12"></div>
     <div class="text-center">
-      <a href="blog.html" class="inline-block px-10 py-4 bg-brand-blue-soft text-white rounded-xl font-semibold hover:bg-brand-blue-medium transition-all duration-200 text-lg shadow-lg">Перейти в блог</a>
+      <a href="blog.html" class="inline-block px-10 py-4 bg-brand-blue-soft text-white rounded-xl font-semibold hover:bg-brand-blue-medium transition-all duration-200 text-lg shadow-lg"><span id="go-to-blog-btn">Перейти в блог</span></a>
                     </div>
                 </div>
 </section>
@@ -448,21 +558,32 @@
   fetch('/api/blog')
     .then(r => r.json())
     .then(data => {
-      const posts = (Array.isArray(data) && data.length > 0) ? data.slice(0, 3) : defaultHomeBlog;
-      document.getElementById('blog-list-home').innerHTML = posts.map(p => {
+      window.homeBlogData = (Array.isArray(data) && data.length > 0) ? data : [];
+      const posts = window.homeBlogData.length ? window.homeBlogData.slice(0, 3) : defaultHomeBlog;
+      function getLang(){ return localStorage.getItem('site_lang') || 'RU'; }
+      function getTranslated(field, item){
+        const lang = getLang();
+        if (lang === 'UZ' && item[`${field}_uz`]) return item[`${field}_uz`];
+        if (lang === 'EN' && item[`${field}_en`]) return item[`${field}_en`];
+        return item[field] || '';
+      }
+      const html = posts.map(p => {
         const cover = (Array.isArray(p.images) && p.images.length) ? p.images[0] : (p.img || 'img/img1.jpg');
-        const linksHtml = (Array.isArray(p.links) && p.links.length) ? `<div class=\"w-full flex flex-wrap gap-2 mt-2 mb-3\">${p.links.slice(0,3).map(u => `<a href=\"${u}\" target=\"_blank\" class=\"inline-flex items-center gap-1 px-2 py-1 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-xs\">Link</a>`).join('')}</div>` : '';
+        const title = getTranslated('title', p) || (p.title || '');
+        const description = getTranslated('description', p) || (p.description || '');
+        const linksHtml = (Array.isArray(p.links) && p.links.length) ? p.links.slice(0,5).map(u => `<a href=\"${u}\" target=\"_blank\" class=\"inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-xs\">Link</a>`).join('') : '';
         return `
         <div class=\"bg-white px-6 pt-6 pb-4 rounded-2xl shadow-lg flex flex-col items-start\">
-          <img src=\"${cover}\" alt=\"${p.title}\" class=\"w-full h-48 object-cover rounded-xl mb-4\" />
-          <h3 class=\"text-lg font-bold mb-2\">${p.title}</h3>
-          <p class=\"text-gray-600 mb-2 line-clamp-3\">${p.description}</p>
-          ${linksHtml}
-          <a href=\"blog.html\" class=\"mt-auto inline-block px-5 py-2 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200\">Читать</a>
+          <img src=\"${cover}\" alt=\"${title}\" class=\"w-full h-48 object-cover rounded-xl mb-4\" />
+          <h3 class=\"text-lg font-bold mb-2\">${title}</h3>
+          <p class=\"text-gray-600 mb-2 line-clamp-3\">${description}</p>
+          <div class=\"w-full flex items-center justify-between gap-2 mt-auto\">\n            <div class=\"flex flex-wrap gap-2\">${linksHtml}</div>\n            <a href=\"blog.html\" class=\"px-6 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200\">${(function(){const l=(localStorage.getItem('site_lang')||'RU');return l==='UZ'?'Batafsil':(l==='EN'?'More':'Подробнее');})()}</a>\n          </div>
             </div>`;
       }).join('');
+      document.getElementById('blog-list-home').innerHTML = html;
     })
     .catch(() => {
+      window.homeBlogData = [];
       document.getElementById('blog-list-home').innerHTML = defaultHomeBlog.map(p => `
         <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col items-start">
           <img src="${p.img}" alt="${p.title}" class="w-full h-48 object-cover rounded-xl mb-4" />
@@ -477,7 +598,346 @@
     <!-- Footer include -->
     <div id="site-footer"></div>
     <script>
-        fetch('components/footer.html').then(r => r.text()).then(t => document.getElementById('site-footer').innerHTML = t);
+        console.log('Index: site-footer element exists:', !!document.getElementById('site-footer'));
+    </script>
+    <script>
+        console.log('Index: Starting footer fetch...');
+        fetch('components/footer.html').then(r => {
+            console.log('Index: Footer fetch response status:', r.status);
+            return r.text();
+        }).then(t => {
+            console.log('Index: Footer HTML loaded, length:', t.length);
+            document.getElementById('site-footer').innerHTML = t;
+            console.log('Index: Footer HTML inserted into DOM');
+            
+            // Извлекаем и выполняем скрипты из footer
+            const scripts = document.getElementById('site-footer').querySelectorAll('script');
+            console.log('Index: Found', scripts.length, 'scripts in footer');
+            
+            scripts.forEach((script, index) => {
+                console.log('Index: Executing script', index + 1);
+                const newScript = document.createElement('script');
+                newScript.textContent = script.textContent;
+                document.head.appendChild(newScript);
+            });
+            
+            // Инициализируем переводы footer после выполнения скриптов
+            setTimeout(() => {
+                if (window.updateFooterTranslations) {
+                    console.log('Index: Initializing footer translations...');
+                    window.updateFooterTranslations();
+                } else {
+                    console.log('Index: updateFooterTranslations function not found!');
+                    
+                    // Повторная попытка через 500мс
+                    setTimeout(() => {
+                        if (window.updateFooterTranslations) {
+                            console.log('Index: Retry - Initializing footer translations...');
+                            window.updateFooterTranslations();
+                        } else {
+                            console.log('Index: Retry - updateFooterTranslations function still not found!');
+                        }
+                    }, 500);
+                }
+            }, 200);
+        }).catch(err => {
+            console.error('Index: Error loading footer:', err);
+        });
+    </script>
+
+    <!-- Система переводов -->
+    <script>
+        // Функция получения языка из localStorage
+        function getCurrentLanguage() {
+          return localStorage.getItem('site_lang') || 'RU';
+        }
+
+        // Переводы для интерфейса
+        const translations = {
+          RU: {
+            heroBadge: 'Создаем будущее брендов',
+            heroTitleStart: 'Помогаем',
+            heroTitleBrand: 'брендам',
+            heroTitleEnd: 'зарабатывать больше',
+            heroDescription: 'Делаем рекламу у блогеров просто и с пользой для вашего бизнеса.',
+            contactBtn: 'Связаться',
+            projectsBtn: 'Смотреть работы',
+            projectsBadge: 'Наши проекты',
+            projectsTitle: 'Наши проекты',
+            projectsDescription: 'Примеры реализованных кейсов для наших клиентов',
+            allProjectsBtn: 'Все проекты',
+            advantagesBadge: 'Почему выбирают нас',
+            advantagesTitle: 'Что мы делаем лучше от других',
+            advantage1Title: 'БЫСТРЕЕ',
+            advantage1Description: 'У нас вам не придется ждать ответа блогера, придумывать и утверждать текст. Мы берем все задачи на себя, тем самым освобождая вас от волнений и лишней траты времени.',
+            advantage2Title: 'БЕЗОПАСНЕЕ',
+            advantage2Description: 'Мы берём ответственность за результат. Оплата делится на этапы, поэтому ваши деньги в безопасности, а вы уверены в качестве работы.',
+            advantage3Title: 'ПРОДУКТИВНЕЕ',
+            advantage3Description: 'Мы знаем, с какими блогерами и форматами работают разные ниши бизнеса. Вам не придётся тратить время на поиск и проверку — мы сразу подберём тех, кто принесёт результат.',
+            advantage4Title: 'IT-УСЛУГИ ПОД КЛЮЧ',
+            advantage4Description: 'Разрабатываем сайты, мобильные приложения, Telegram-ботов и другие IT-решения для продвижения и автоматизации вашего бизнеса.',
+            teamBadge: 'Наша команда',
+            teamTitle: 'Вдохновляющие люди',
+            teamDescription: 'Мы — команда профессионалов, которые любят своё дело и создают проекты с душой.',
+            teamMember1Role: 'Исполнительный директор компании Influence Lab',
+            teamMember2Role: 'Управляющий отдела работы по блогерам Узбекистана',
+            teamMember3Role: 'Руководитель отдела по международным интеграциям',
+            teamMember4Role: 'Главный ИТ-специалист',
+            ctaTitle: 'Готовы начать проект?',
+            ctaDescription: 'Оставьте заявку, и мы свяжемся с вами в течение 24 часов для обсуждения вашего проекта',
+            ctaBtn: 'Оставить заявку',
+            blogBadge: 'Блог',
+            blogTitle: 'Свежие статьи и новости',
+            blogDescription: 'Читайте полезные материалы и узнавайте о последних трендах в digital-маркетинге и IT.',
+            goToBlogBtn: 'Перейти в блог',
+            ledBadge: 'LED экраны',
+            ledTitle: 'Реклама на LED-экранах в Ташкенте',
+            ledSubtitle: 'Разместим вашу рекламу без очередей и по отличным ценам — быстро и прозрачно',
+            ledCard1Title: 'Быстрый запуск',
+            ledCard1Desc: 'Бронируем эфиры и запускаем показ в короткие сроки',
+            ledCardBtn1: 'Заказать',
+            ledCard2Title: 'Лучшие локации',
+            ledCard2Desc: 'Подберём экраны с максимальным охватом в нужных районах',
+            ledCardBtn2: 'Подобрать',
+            ledCard3Title: 'Честные цены',
+            ledCard3Desc: 'Оптимальные пакеты размещения без переплат',
+            ledCardBtn3: 'Узнать цену',
+            goToLedBtn: 'Подробнее'
+          },
+          UZ: {
+            heroBadge: 'Brendlarning kelajagini yaratamiz',
+            heroTitleStart: 'Brendlarga',
+            heroTitleBrand: 'yanada ko\'proq daromad qilishga',
+            heroTitleEnd: 'yordam beramiz',
+            heroDescription: 'Blogerlar bilan reklamani oddiy va biznesingiz uchun foydali qilamiz.',
+            contactBtn: 'Bog\'lanish',
+            projectsBtn: 'Ishlarni ko\'rish',
+            projectsBadge: 'Bizning loyihalar',
+            projectsTitle: 'Bizning loyihalar',
+            projectsDescription: 'Mijozlarimiz uchun amalga oshirilgan holatlar misollari',
+            allProjectsBtn: 'Barcha loyihalar',
+            advantagesBadge: 'Nega bizni tanlaydilar',
+            advantagesTitle: 'Biz boshqalardan nimalar bilan farq qilamiz',
+            advantage1Title: 'TEZROQ',
+            advantage1Description: 'Bizda blogerning javobini kutish, matn o\'ylab topish va tasdiqlash shart emas. Biz barcha vazifalarni o\'zimizga olamiz, shu bilan sizni tashvish va ortiqcha vaqt sarfidan ozod qilamiz.',
+            advantage2Title: 'XAVFSIZROQ',
+            advantage2Description: 'Biz natija uchun javobgarlikni olamiz. To\'lov bosqichlarga bo\'linadi, shuning uchun pulingiz xavfsiz va siz ish sifatiga ishonch hosil qilasiz.',
+            advantage3Title: 'SAMARALIROQ',
+            advantage3Description: 'Biz qaysi blogerlar va formatlar bilan turli biznes sohalari ishlayotganini bilamiz. Siz qidiruv va tekshiruv uchun vaqt sarflashingiz shart emas — biz darhol natija keltiradiganlarni tanlab beramiz.',
+            advantage4Title: 'IT XIZMATLAR',
+            advantage4Description: 'Sizning biznesingizni targ\'ib qilish va avtomatlashtirish uchun veb-saytlar, mobil ilovalar, Telegram-botlar va boshqa IT yechimlarni ishlab chiqamiz.',
+            teamBadge: 'Bizning jamoa',
+            teamTitle: 'Ilhomlantiruvchi odamlar',
+            teamDescription: 'Biz — o\'z ishini yaxshi ko\'radigan va loyihalarni qalb bilan yaratadigan mutaxassislar jamoasimiz.',
+            teamMember1Role: 'Influence Lab kompaniyasining bosh ijrochi direktori',
+            teamMember2Role: 'O\'zbekiston blogerlari bilan ishlash bo\'limi boshqaruvchisi',
+            teamMember3Role: 'Xalqaro integratsiyalar bo\'limi rahbari',
+            teamMember4Role: 'Bosh IT mutaxassisi',
+            ctaTitle: 'Loyihani boshlashga tayyormisiz?',
+            ctaDescription: 'Arizani qoldiring va biz 24 soat ichida sizning loyihangizni muhokama qilish uchun siz bilan bog\'lanamiz',
+            ctaBtn: 'Ariza qoldirish',
+            blogBadge: 'Blog',
+            blogTitle: 'Yangiliklar va maqolalar',
+            blogDescription: 'Foydali materiallarni o\'qing va digital-marketing va IT sohasidagi so\'nggi trendlar haqida bilib oling.',
+            goToBlogBtn: 'Blogni ko\'rish',
+            ledBadge: 'LED ekranlar',
+            ledTitle: 'Toshkentda LED ekranlarda reklama',
+            ledSubtitle: 'Navbatlarsiz va qulay narxlarda reklama joylashtiramiz — tez va shaffof',
+            ledCard1Title: 'Tez start',
+            ledCard1Desc: 'Efirlarni bron qilamiz va qisqa muddatda ishga tushiramiz',
+            ledCardBtn1: 'Buyurtma berish',
+            ledCard2Title: 'Eng yaxshi joylar',
+            ledCard2Desc: 'Kerakli hududlarda maksimal qamrovli ekranlarni tanlaymiz',
+            ledCardBtn2: 'Tanlash',
+            ledCard3Title: 'Ochiq narxlar',
+            ledCard3Desc: 'Ortiqcha to\'lovsiz optimal paketlar',
+            ledCardBtn3: 'Narxni bilish',
+            goToLedBtn: 'Batafsil'
+          },
+          EN: {
+            heroBadge: 'Creating the future of brands',
+            heroTitleStart: 'We help',
+            heroTitleBrand: 'brands',
+            heroTitleEnd: 'earn more',
+            heroDescription: 'We make advertising with bloggers simple and beneficial for your business.',
+            contactBtn: 'Contact',
+            projectsBtn: 'View works',
+            projectsBadge: 'Our projects',
+            projectsTitle: 'Our projects',
+            projectsDescription: 'Examples of implemented cases for our clients',
+            allProjectsBtn: 'All projects',
+            advantagesBadge: 'Why choose us',
+            advantagesTitle: 'What we do better than others',
+            advantage1Title: 'FASTER',
+            advantage1Description: 'With us, you won\'t have to wait for a blogger\'s response, come up with and approve text. We take all tasks upon ourselves, thereby freeing you from worries and unnecessary time waste.',
+            advantage2Title: 'SAFER',
+            advantage2Description: 'We take responsibility for the result. Payment is divided into stages, so your money is safe and you are confident in the quality of work.',
+            advantage3Title: 'MORE PRODUCTIVE',
+            advantage3Description: 'We know which bloggers and formats work with different business niches. You won\'t have to spend time searching and checking — we\'ll immediately select those who will bring results.',
+            advantage4Title: 'IT SERVICES TURNKEY',
+            advantage4Description: 'We develop websites, mobile applications, Telegram bots and other IT solutions for promoting and automating your business.',
+            teamBadge: 'Our team',
+            teamTitle: 'Inspiring people',
+            teamDescription: 'We are a team of professionals who love their work and create projects with soul.',
+            teamMember1Role: 'Executive Director of Influence Lab company',
+            teamMember2Role: 'Head of Uzbekistan bloggers department',
+            teamMember3Role: 'Head of international integrations department',
+            teamMember4Role: 'Chief IT Specialist',
+            ctaTitle: 'Ready to start a project?',
+            ctaDescription: 'Leave an application and we will contact you within 24 hours to discuss your project',
+            ctaBtn: 'Leave application',
+            blogBadge: 'Blog',
+            blogTitle: 'Fresh articles and news',
+            blogDescription: 'Read useful materials and learn about the latest trends in digital marketing and IT.',
+            goToBlogBtn: 'Go to blog',
+            ledBadge: 'LED screens',
+            ledTitle: 'Advertising on LED screens in Tashkent',
+            ledSubtitle: 'Place your ads with no queues and at great prices — fast and transparent',
+            ledCard1Title: 'Fast launch',
+            ledCard1Desc: 'We book slots and go live in short timeframes',
+            ledCardBtn1: 'Order now',
+            ledCard2Title: 'Top locations',
+            ledCard2Desc: 'We pick screens with maximum reach in your areas',
+            ledCardBtn2: 'Select',
+            ledCard3Title: 'Fair pricing',
+            ledCard3Desc: 'Optimized packages without overpayment',
+            ledCardBtn3: 'Get a quote',
+            goToLedBtn: 'More'
+          }
+        };
+
+        // Обновление интерфейса на выбранном языке
+        function updateInterface() {
+          const lang = getCurrentLanguage();
+          const t = translations[lang] || translations['RU']; // Fallback на русский
+          
+          if (t) {
+            // Hero section
+            if (document.getElementById('hero-badge')) document.getElementById('hero-badge').textContent = t.heroBadge;
+            if (document.getElementById('hero-title-start')) document.getElementById('hero-title-start').textContent = t.heroTitleStart;
+            if (document.getElementById('hero-title-brand')) document.getElementById('hero-title-brand').textContent = t.heroTitleBrand;
+            if (document.getElementById('hero-title-end')) document.getElementById('hero-title-end').textContent = t.heroTitleEnd;
+            if (document.getElementById('hero-description')) document.getElementById('hero-description').textContent = t.heroDescription;
+            if (document.getElementById('contact-btn')) document.getElementById('contact-btn').textContent = t.contactBtn;
+            if (document.getElementById('projects-btn')) document.getElementById('projects-btn').textContent = t.projectsBtn;
+            
+            // Projects section
+            if (document.getElementById('projects-badge')) document.getElementById('projects-badge').textContent = t.projectsBadge;
+            if (document.getElementById('projects-title')) document.getElementById('projects-title').textContent = t.projectsTitle;
+            if (document.getElementById('projects-description')) document.getElementById('projects-description').textContent = t.projectsDescription;
+            if (document.getElementById('all-projects-btn')) document.getElementById('all-projects-btn').textContent = t.allProjectsBtn;
+            
+            // Advantages section
+            if (document.getElementById('advantages-badge')) document.getElementById('advantages-badge').textContent = t.advantagesBadge;
+            if (document.getElementById('advantages-title')) document.getElementById('advantages-title').textContent = t.advantagesTitle;
+            if (document.getElementById('advantage1-title')) document.getElementById('advantage1-title').textContent = t.advantage1Title;
+            if (document.getElementById('advantage1-description')) document.getElementById('advantage1-description').textContent = t.advantage1Description;
+            if (document.getElementById('advantage2-title')) document.getElementById('advantage2-title').textContent = t.advantage2Title;
+            if (document.getElementById('advantage2-description')) document.getElementById('advantage2-description').textContent = t.advantage2Description;
+            if (document.getElementById('advantage3-title')) document.getElementById('advantage3-title').textContent = t.advantage3Title;
+            if (document.getElementById('advantage3-description')) document.getElementById('advantage3-description').textContent = t.advantage3Description;
+            if (document.getElementById('advantage4-title')) document.getElementById('advantage4-title').textContent = t.advantage4Title;
+            if (document.getElementById('advantage4-description')) document.getElementById('advantage4-description').textContent = t.advantage4Description;
+            if (document.getElementById('contact-btn-1')) document.getElementById('contact-btn-1').textContent = t.contactBtn;
+            if (document.getElementById('contact-btn-2')) document.getElementById('contact-btn-2').textContent = t.contactBtn;
+            if (document.getElementById('contact-btn-3')) document.getElementById('contact-btn-3').textContent = t.contactBtn;
+            if (document.getElementById('contact-btn-4')) document.getElementById('contact-btn-4').textContent = t.contactBtn;
+            
+            // Team section
+            if (document.getElementById('team-badge')) document.getElementById('team-badge').textContent = t.teamBadge;
+            if (document.getElementById('team-title')) document.getElementById('team-title').textContent = t.teamTitle;
+            if (document.getElementById('team-description')) document.getElementById('team-description').textContent = t.teamDescription;
+            if (document.getElementById('team-member1-role')) document.getElementById('team-member1-role').textContent = t.teamMember1Role;
+            if (document.getElementById('team-member2-role')) document.getElementById('team-member2-role').textContent = t.teamMember2Role;
+            if (document.getElementById('team-member3-role')) document.getElementById('team-member3-role').textContent = t.teamMember3Role;
+            if (document.getElementById('team-member4-role')) document.getElementById('team-member4-role').textContent = t.teamMember4Role;
+            
+            // CTA section
+            if (document.getElementById('cta-title')) document.getElementById('cta-title').textContent = t.ctaTitle;
+            if (document.getElementById('cta-description')) document.getElementById('cta-description').textContent = t.ctaDescription;
+            if (document.getElementById('cta-btn')) document.getElementById('cta-btn').textContent = t.ctaBtn;
+            
+            // Blog section
+            if (document.getElementById('blog-badge')) document.getElementById('blog-badge').textContent = t.blogBadge;
+            if (document.getElementById('blog-title')) document.getElementById('blog-title').textContent = t.blogTitle;
+            if (document.getElementById('blog-description')) document.getElementById('blog-description').textContent = t.blogDescription;
+            if (document.getElementById('go-to-blog-btn')) document.getElementById('go-to-blog-btn').textContent = t.goToBlogBtn;
+
+            // LED screens section
+            if (document.getElementById('led-badge')) document.getElementById('led-badge').textContent = t.ledBadge;
+            if (document.getElementById('led-title')) document.getElementById('led-title').textContent = t.ledTitle;
+            if (document.getElementById('led-subtitle')) document.getElementById('led-subtitle').textContent = t.ledSubtitle;
+            if (document.getElementById('led-list-home')) {
+              window.renderHomeLed(window.homeLedData);
+            }
+            if (document.getElementById('go-to-led-btn')) document.getElementById('go-to-led-btn').textContent = t.goToLedBtn;
+            if (document.getElementById('led-card1-title')) document.getElementById('led-card1-title').textContent = t.ledCard1Title;
+            if (document.getElementById('led-card1-desc')) document.getElementById('led-card1-desc').textContent = t.ledCard1Desc;
+            if (document.getElementById('led-card-btn-1')) document.getElementById('led-card-btn-1').textContent = t.ledCardBtn1;
+            if (document.getElementById('led-card2-title')) document.getElementById('led-card2-title').textContent = t.ledCard2Title;
+            if (document.getElementById('led-card2-desc')) document.getElementById('led-card2-desc').textContent = t.ledCard2Desc;
+            if (document.getElementById('led-card-btn-2')) document.getElementById('led-card-btn-2').textContent = t.ledCardBtn2;
+            if (document.getElementById('led-card3-title')) document.getElementById('led-card3-title').textContent = t.ledCard3Title;
+            if (document.getElementById('led-card3-desc')) document.getElementById('led-card3-desc').textContent = t.ledCard3Desc;
+            if (document.getElementById('led-card-btn-3')) document.getElementById('led-card-btn-3').textContent = t.ledCardBtn3;
+          }
+        }
+
+        // Глобальная функция для обновления контента при смене языка
+        window.updateContentOnLanguageChange = function() {
+          updateInterface();
+          
+          // Перерисовываем карточки проектов при смене языка
+          if (window.homeProjectsData && window.renderHomeProjects) {
+            window.renderHomeProjects(window.homeProjectsData);
+          }
+          
+          // Обновляем LED карточки при смене языка
+          if (window.homeLedData && window.renderHomeLed) {
+            window.renderHomeLed(window.homeLedData);
+          }
+          
+          // Перерисовываем карточки блога при смене языка
+          if (window.homeBlogData && document.getElementById('blog-list-home')) {
+            const posts = window.homeBlogData.slice(0,3);
+            function getLang(){ return localStorage.getItem('site_lang') || 'RU'; }
+            function getTranslated(field, item){
+              const lang = getLang();
+              if (lang === 'UZ' && item[`${field}_uz`]) return item[`${field}_uz`];
+              if (lang === 'EN' && item[`${field}_en`]) return item[`${field}_en`];
+              return item[field] || '';
+            }
+            document.getElementById('blog-list-home').innerHTML = posts.map(p => {
+              const cover = (Array.isArray(p.images) && p.images.length) ? p.images[0] : (p.img || 'img/img1.jpg');
+              const title = getTranslated('title', p) || (p.title || '');
+              const description = getTranslated('description', p) || (p.description || '');
+              return `
+              <div class=\"bg-white px-6 pt-6 pb-4 rounded-2xl shadow-lg flex flex-col items-start\">
+                <img src=\"${cover}\" alt=\"${title}\" class=\"w-full h-48 object-cover rounded-xl mb-4\" />
+                <h3 class=\"text-lg font-bold mb-2\">${title}</h3>
+                <p class=\"text-gray-600 mb-2 line-clamp-3\">${description}</p>
+                <a href=\"blog.html\" class=\"mt-auto inline-block px-5 py-2 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200\">Читать</a>
+              </div>`;
+            }).join('');
+          }
+          
+          // Обновляем footer
+          if (window.updateFooterTranslations) {
+            console.log('Index: Updating footer translations...');
+            window.updateFooterTranslations();
+          }
+        };
+
+        // Инициализация
+        updateInterface();
+        
+        // Инициализируем footer переводы
+        setTimeout(() => {
+          if (window.updateFooterTranslations) {
+            console.log('Index: Initial footer translation...');
+            window.updateFooterTranslations();
+          }
+        }, 500);
     </script>
 
     <!-- Видео-карусель с прогрессивным стартом и циклическим сбросом -->

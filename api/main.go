@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,12 +20,16 @@ import (
 )
 
 type BlogPost struct {
-	ID          int      `json:"id"`
-	Img         string   `json:"img"`
-	Images      []string `json:"images"`
-	Title       string   `json:"title"`
-	Description string   `json:"description"`
-	Links       []string `json:"links"`
+	ID            int      `json:"id"`
+	Img           string   `json:"img"`
+	Images        []string `json:"images"`
+	Title         string   `json:"title"`
+	TitleUz       string   `json:"title_uz"`
+	TitleEn       string   `json:"title_en"`
+	Description   string   `json:"description"`
+	DescriptionUz string   `json:"description_uz"`
+	DescriptionEn string   `json:"description_en"`
+	Links         []string `json:"links"`
 }
 
 type FormRequest struct {
@@ -33,12 +39,34 @@ type FormRequest struct {
 }
 
 type Project struct {
-	ID          int      `json:"id"`
-	Img         string   `json:"img"`
-	Images      []string `json:"images"`
-	Title       string   `json:"title"`
-	Description string   `json:"description"`
-	Links       []string `json:"links"`
+	ID            int      `json:"id"`
+	Img           string   `json:"img"`
+	Images        []string `json:"images"`
+	Title         string   `json:"title"`
+	TitleUz       string   `json:"title_uz"`
+	TitleEn       string   `json:"title_en"`
+	Description   string   `json:"description"`
+	DescriptionUz string   `json:"description_uz"`
+	DescriptionEn string   `json:"description_en"`
+	Links         []string `json:"links"`
+}
+
+// LED Screens entity
+// price храним как float64, location текст
+// images как JSON TEXT, img — первое изображение
+// Совместимая схема и обработчики в стиле blog/projects
+
+type LedItem struct {
+	ID            int      `json:"id"`
+	Img           string   `json:"img"`
+	Images        []string `json:"images"`
+	Title         string   `json:"title"`
+	TitleUz       string   `json:"title_uz"`
+	TitleEn       string   `json:"title_en"`
+	Description   string   `json:"description"`
+	DescriptionUz string   `json:"description_uz"`
+	DescriptionEn string   `json:"description_en"`
+	Location      string   `json:"location"`
 }
 
 var db *sql.DB
@@ -76,6 +104,11 @@ func main() {
 	// Projects API
 	http.HandleFunc("/api/projects", withCORS(handleProjects))
 	http.HandleFunc("/api/projects/", withCORS(handleProjectByID))
+	// LED Screens API
+	http.HandleFunc("/api/led", withCORS(handleLed))
+	http.HandleFunc("/api/led/", withCORS(handleLedByID))
+	// Translation API
+	http.HandleFunc("/api/translate", withCORS(handleTranslate))
 
 	// Static files and HTML pages
 	rootDir := ".."
@@ -115,7 +148,11 @@ func initDB() {
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		img TEXT,
 		title TEXT,
-		description TEXT
+		title_uz TEXT,
+		title_en TEXT,
+		description TEXT,
+		description_uz TEXT,
+		description_en TEXT
 	)`)
 	if err != nil {
 		log.Fatal(err)
@@ -125,7 +162,27 @@ func initDB() {
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		img TEXT,
 		title TEXT,
-		description TEXT
+		title_uz TEXT,
+		title_en TEXT,
+		description TEXT,
+		description_uz TEXT,
+		description_en TEXT
+	)`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// LED Screens table
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS led (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		img TEXT,
+		title TEXT,
+		title_uz TEXT,
+		title_en TEXT,
+		description TEXT,
+		description_uz TEXT,
+		description_en TEXT,
+		location TEXT,
+		images TEXT
 	)`)
 	if err != nil {
 		log.Fatal(err)
@@ -137,10 +194,49 @@ func initDB() {
 	if err := ensureColumn("blog", "links", "TEXT"); err != nil {
 		log.Fatal(err)
 	}
+	if err := ensureColumn("blog", "title_uz", "TEXT"); err != nil {
+		log.Fatal(err)
+	}
+	if err := ensureColumn("blog", "title_en", "TEXT"); err != nil {
+		log.Fatal(err)
+	}
+	if err := ensureColumn("blog", "description_uz", "TEXT"); err != nil {
+		log.Fatal(err)
+	}
+	if err := ensureColumn("blog", "description_en", "TEXT"); err != nil {
+		log.Fatal(err)
+	}
 	if err := ensureColumn("projects", "images", "TEXT"); err != nil {
 		log.Fatal(err)
 	}
 	if err := ensureColumn("projects", "links", "TEXT"); err != nil {
+		log.Fatal(err)
+	}
+	if err := ensureColumn("projects", "title_uz", "TEXT"); err != nil {
+		log.Fatal(err)
+	}
+	if err := ensureColumn("projects", "title_en", "TEXT"); err != nil {
+		log.Fatal(err)
+	}
+	if err := ensureColumn("projects", "description_uz", "TEXT"); err != nil {
+		log.Fatal(err)
+	}
+	if err := ensureColumn("projects", "description_en", "TEXT"); err != nil {
+		log.Fatal(err)
+	}
+	if err := ensureColumn("led", "images", "TEXT"); err != nil {
+		log.Fatal(err)
+	}
+	if err := ensureColumn("led", "title_uz", "TEXT"); err != nil {
+		log.Fatal(err)
+	}
+	if err := ensureColumn("led", "title_en", "TEXT"); err != nil {
+		log.Fatal(err)
+	}
+	if err := ensureColumn("led", "description_uz", "TEXT"); err != nil {
+		log.Fatal(err)
+	}
+	if err := ensureColumn("led", "description_en", "TEXT"); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -236,6 +332,84 @@ func uniqueStrings(arr []string) []string {
 	return out
 }
 
+// Функция перевода текста через Google Translate API
+func translateText(text, targetLang string) (string, error) {
+	if text == "" {
+		return "", nil
+	}
+
+	// Определяем код языка для API
+	var langCode string
+	switch targetLang {
+	case "uz":
+		langCode = "uz"
+	case "en":
+		langCode = "en"
+	default:
+		return text, nil // Возвращаем оригинальный текст для неизвестных языков
+	}
+
+	// Запрос в Google Translate API (неофициальный)
+	url := fmt.Sprintf("https://translate.googleapis.com/translate_a/single?client=gtx&sl=ru&tl=%s&dt=t&q=%s",
+		langCode, url.QueryEscape(text))
+
+	log.Printf("[translate] Requesting: %s", url)
+
+	// Создаем клиент с заголовками
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Printf("[translate] Create request error: %v", err)
+		return "", err
+	}
+
+	// Добавляем заголовки для имитации браузера
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+	req.Header.Set("Accept-Language", "en-US,en;q=0.5")
+	// Убираем gzip из Accept-Encoding чтобы получить несжатый ответ
+	req.Header.Set("Connection", "keep-alive")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("[translate] HTTP error: %v", err)
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("[translate] Read body error: %v", err)
+		return "", err
+	}
+
+	log.Printf("[translate] Response: %s", string(body))
+
+	// Парсим JSON ответ от Google Translate
+	var data []interface{}
+	if err := json.NewDecoder(bytes.NewReader(body)).Decode(&data); err != nil {
+		log.Printf("[translate] JSON decode error: %v", err)
+		return "", err
+	}
+
+	log.Printf("[translate] Parsed data: %+v", data)
+
+	// Структура ответа: [translations, source_lang, target_lang, ...]
+	if len(data) > 0 {
+		if translations, ok := data[0].([]interface{}); ok && len(translations) > 0 {
+			if translation, ok := translations[0].([]interface{}); ok && len(translation) > 0 {
+				if translatedText, ok := translation[0].(string); ok {
+					log.Printf("[translate] Success: %s -> %s", text, translatedText)
+					return translatedText, nil
+				}
+			}
+		}
+	}
+
+	log.Printf("[translate] No translation found, returning original")
+	return text, nil // Возвращаем оригинальный текст в случае ошибки
+}
+
 // --- FORM HANDLER ---
 func handleForm(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -271,7 +445,7 @@ func handleForm(w http.ResponseWriter, r *http.Request) {
 func handleBlog(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		rows, err := db.Query("SELECT id, img, title, description, IFNULL(images,''), IFNULL(links,'') FROM blog ORDER BY id DESC")
+		rows, err := db.Query("SELECT id, img, title, IFNULL(title_uz,''), IFNULL(title_en,''), description, IFNULL(description_uz,''), IFNULL(description_en,''), IFNULL(images,''), IFNULL(links,'') FROM blog ORDER BY id DESC")
 		if err != nil {
 			http.Error(w, "DB error", http.StatusInternalServerError)
 			return
@@ -281,7 +455,7 @@ func handleBlog(w http.ResponseWriter, r *http.Request) {
 		for rows.Next() {
 			var p BlogPost
 			var imagesJSON, linksJSON string
-			if err := rows.Scan(&p.ID, &p.Img, &p.Title, &p.Description, &imagesJSON, &linksJSON); err == nil {
+			if err := rows.Scan(&p.ID, &p.Img, &p.Title, &p.TitleUz, &p.TitleEn, &p.Description, &p.DescriptionUz, &p.DescriptionEn, &imagesJSON, &linksJSON); err == nil {
 				if imagesJSON != "" {
 					_ = json.Unmarshal([]byte(imagesJSON), &p.Images)
 				}
@@ -328,14 +502,18 @@ func handleBlog(w http.ResponseWriter, r *http.Request) {
 			images = clampStrings(images, 10)
 			links := parseLinksFromForm(r)
 			title := r.FormValue("title")
+			titleUz := r.FormValue("title_uz")
+			titleEn := r.FormValue("title_en")
 			desc := r.FormValue("description")
+			descUz := r.FormValue("description_uz")
+			descEn := r.FormValue("description_en")
 			imagesJSON, _ := json.Marshal(images)
 			linksJSON, _ := json.Marshal(links)
 			imgSingle := ""
 			if len(images) > 0 {
 				imgSingle = images[0]
 			}
-			res, err := db.Exec("INSERT INTO blog (img, title, description, images, links) VALUES (?, ?, ?, ?, ?)", imgSingle, title, desc, string(imagesJSON), string(linksJSON))
+			res, err := db.Exec("INSERT INTO blog (img, title, title_uz, title_en, description, description_uz, description_en, images, links) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", imgSingle, title, titleUz, titleEn, desc, descUz, descEn, string(imagesJSON), string(linksJSON))
 			if err != nil {
 				http.Error(w, "DB error", http.StatusInternalServerError)
 				return
@@ -360,7 +538,7 @@ func handleBlog(w http.ResponseWriter, r *http.Request) {
 		}
 		imagesJSON, _ := json.Marshal(p.Images)
 		linksJSON, _ := json.Marshal(p.Links)
-		res, err := db.Exec("INSERT INTO blog (img, title, description, images, links) VALUES (?, ?, ?, ?, ?)", imgSingle, p.Title, p.Description, string(imagesJSON), string(linksJSON))
+		res, err := db.Exec("INSERT INTO blog (img, title, title_uz, title_en, description, description_uz, description_en, images, links) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", imgSingle, p.Title, p.TitleUz, p.TitleEn, p.Description, p.DescriptionUz, p.DescriptionEn, string(imagesJSON), string(linksJSON))
 		if err != nil {
 			http.Error(w, "DB error", http.StatusInternalServerError)
 			return
@@ -385,7 +563,7 @@ func handleBlogByID(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		var p BlogPost
 		var imagesJSON, linksJSON string
-		err := db.QueryRow("SELECT id, img, title, description, IFNULL(images,''), IFNULL(links,'') FROM blog WHERE id = ?", id).Scan(&p.ID, &p.Img, &p.Title, &p.Description, &imagesJSON, &linksJSON)
+		err := db.QueryRow("SELECT id, img, title, IFNULL(title_uz,''), IFNULL(title_en,''), description, IFNULL(description_uz,''), IFNULL(description_en,''), IFNULL(images,''), IFNULL(links,'') FROM blog WHERE id = ?", id).Scan(&p.ID, &p.Img, &p.Title, &p.TitleUz, &p.TitleEn, &p.Description, &p.DescriptionUz, &p.DescriptionEn, &imagesJSON, &linksJSON)
 		if err != nil {
 			http.Error(w, "Not found", http.StatusNotFound)
 			return
@@ -405,7 +583,11 @@ func handleBlogByID(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			title := r.FormValue("title")
+			titleUz := r.FormValue("title_uz")
+			titleEn := r.FormValue("title_en")
 			desc := r.FormValue("description")
+			descUz := r.FormValue("description_uz")
+			descEn := r.FormValue("description_en")
 			// Start with old images if provided
 			var images []string
 			if oldJSON := strings.TrimSpace(r.FormValue("imagesOld")); oldJSON != "" {
@@ -451,7 +633,7 @@ func handleBlogByID(w http.ResponseWriter, r *http.Request) {
 			if len(images) > 0 {
 				imgSingle = images[0]
 			}
-			_, err := db.Exec("UPDATE blog SET img=?, title=?, description=?, images=?, links=? WHERE id=?", imgSingle, title, desc, string(imagesJSON), string(linksJSON), id)
+			_, err := db.Exec("UPDATE blog SET img=?, title=?, title_uz=?, title_en=?, description=?, description_uz=?, description_en=?, images=?, links=? WHERE id=?", imgSingle, title, titleUz, titleEn, desc, descUz, descEn, string(imagesJSON), string(linksJSON), id)
 			if err != nil {
 				http.Error(w, "DB error", http.StatusInternalServerError)
 				return
@@ -474,7 +656,7 @@ func handleBlogByID(w http.ResponseWriter, r *http.Request) {
 		}
 		imagesJSON, _ := json.Marshal(p.Images)
 		linksJSON, _ := json.Marshal(p.Links)
-		_, err := db.Exec("UPDATE blog SET img=?, title=?, description=?, images=?, links=? WHERE id=?", imgSingle, p.Title, p.Description, string(imagesJSON), string(linksJSON), id)
+		_, err := db.Exec("UPDATE blog SET img=?, title=?, title_uz=?, title_en=?, description=?, description_uz=?, description_en=?, images=?, links=? WHERE id=?", imgSingle, p.Title, p.TitleUz, p.TitleEn, p.Description, p.DescriptionUz, p.DescriptionEn, string(imagesJSON), string(linksJSON), id)
 		if err != nil {
 			http.Error(w, "DB error", http.StatusInternalServerError)
 			return
@@ -498,7 +680,7 @@ func handleBlogByID(w http.ResponseWriter, r *http.Request) {
 func handleProjects(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		rows, err := db.Query("SELECT id, img, title, description, IFNULL(images,''), IFNULL(links,'') FROM projects ORDER BY id DESC")
+		rows, err := db.Query("SELECT id, img, title, IFNULL(title_uz,''), IFNULL(title_en,''), description, IFNULL(description_uz,''), IFNULL(description_en,''), IFNULL(images,''), IFNULL(links,'') FROM projects ORDER BY id DESC")
 		if err != nil {
 			http.Error(w, "DB error", http.StatusInternalServerError)
 			return
@@ -508,7 +690,7 @@ func handleProjects(w http.ResponseWriter, r *http.Request) {
 		for rows.Next() {
 			var p Project
 			var imagesJSON, linksJSON string
-			if err := rows.Scan(&p.ID, &p.Img, &p.Title, &p.Description, &imagesJSON, &linksJSON); err == nil {
+			if err := rows.Scan(&p.ID, &p.Img, &p.Title, &p.TitleUz, &p.TitleEn, &p.Description, &p.DescriptionUz, &p.DescriptionEn, &imagesJSON, &linksJSON); err == nil {
 				if imagesJSON != "" {
 					_ = json.Unmarshal([]byte(imagesJSON), &p.Images)
 				}
@@ -554,14 +736,18 @@ func handleProjects(w http.ResponseWriter, r *http.Request) {
 			images = clampStrings(images, 10)
 			links := parseLinksFromForm(r)
 			title := r.FormValue("title")
+			titleUz := r.FormValue("title_uz")
+			titleEn := r.FormValue("title_en")
 			desc := r.FormValue("description")
+			descUz := r.FormValue("description_uz")
+			descEn := r.FormValue("description_en")
 			imgSingle := ""
 			if len(images) > 0 {
 				imgSingle = images[0]
 			}
 			imagesJSON, _ := json.Marshal(images)
 			linksJSON, _ := json.Marshal(links)
-			res, err := db.Exec("INSERT INTO projects (img, title, description, images, links) VALUES (?, ?, ?, ?, ?)", imgSingle, title, desc, string(imagesJSON), string(linksJSON))
+			res, err := db.Exec("INSERT INTO projects (img, title, title_uz, title_en, description, description_uz, description_en, images, links) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", imgSingle, title, titleUz, titleEn, desc, descUz, descEn, string(imagesJSON), string(linksJSON))
 			if err != nil {
 				http.Error(w, "DB error", http.StatusInternalServerError)
 				return
@@ -585,7 +771,7 @@ func handleProjects(w http.ResponseWriter, r *http.Request) {
 		}
 		imagesJSON, _ := json.Marshal(p.Images)
 		linksJSON, _ := json.Marshal(p.Links)
-		res, err := db.Exec("INSERT INTO projects (img, title, description, images, links) VALUES (?, ?, ?, ?, ?)", imgSingle, p.Title, p.Description, string(imagesJSON), string(linksJSON))
+		res, err := db.Exec("INSERT INTO projects (img, title, title_uz, title_en, description, description_uz, description_en, images, links) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", imgSingle, p.Title, p.TitleUz, p.TitleEn, p.Description, p.DescriptionUz, p.DescriptionEn, string(imagesJSON), string(linksJSON))
 		if err != nil {
 			http.Error(w, "DB error", http.StatusInternalServerError)
 			return
@@ -610,7 +796,7 @@ func handleProjectByID(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		var p Project
 		var imagesJSON, linksJSON string
-		err := db.QueryRow("SELECT id, img, title, description, IFNULL(images,''), IFNULL(links,'') FROM projects WHERE id = ?", id).Scan(&p.ID, &p.Img, &p.Title, &p.Description, &imagesJSON, &linksJSON)
+		err := db.QueryRow("SELECT id, img, title, IFNULL(title_uz,''), IFNULL(title_en,''), description, IFNULL(description_uz,''), IFNULL(description_en,''), IFNULL(images,''), IFNULL(links,'') FROM projects WHERE id = ?", id).Scan(&p.ID, &p.Img, &p.Title, &p.TitleUz, &p.TitleEn, &p.Description, &p.DescriptionUz, &p.DescriptionEn, &imagesJSON, &linksJSON)
 		if err != nil {
 			http.Error(w, "Not found", http.StatusNotFound)
 			return
@@ -630,7 +816,11 @@ func handleProjectByID(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			title := r.FormValue("title")
+			titleUz := r.FormValue("title_uz")
+			titleEn := r.FormValue("title_en")
 			desc := r.FormValue("description")
+			descUz := r.FormValue("description_uz")
+			descEn := r.FormValue("description_en")
 			var images []string
 			if oldJSON := strings.TrimSpace(r.FormValue("imagesOld")); oldJSON != "" {
 				_ = json.Unmarshal([]byte(oldJSON), &images)
@@ -672,7 +862,7 @@ func handleProjectByID(w http.ResponseWriter, r *http.Request) {
 			if len(images) > 0 {
 				imgSingle = images[0]
 			}
-			_, err := db.Exec("UPDATE projects SET img=?, title=?, description=?, images=?, links=? WHERE id=?", imgSingle, title, desc, string(imagesJSON), string(linksJSON), id)
+			_, err := db.Exec("UPDATE projects SET img=?, title=?, title_uz=?, title_en=?, description=?, description_uz=?, description_en=?, images=?, links=? WHERE id=?", imgSingle, title, titleUz, titleEn, desc, descUz, descEn, string(imagesJSON), string(linksJSON), id)
 			if err != nil {
 				http.Error(w, "DB error", http.StatusInternalServerError)
 				return
@@ -694,7 +884,7 @@ func handleProjectByID(w http.ResponseWriter, r *http.Request) {
 		}
 		imagesJSON, _ := json.Marshal(p.Images)
 		linksJSON, _ := json.Marshal(p.Links)
-		_, err := db.Exec("UPDATE projects SET img=?, title=?, description=?, images=?, links=? WHERE id=?", imgSingle, p.Title, p.Description, string(imagesJSON), string(linksJSON), id)
+		_, err := db.Exec("UPDATE projects SET img=?, title=?, title_uz=?, title_en=?, description=?, description_uz=?, description_en=?, images=?, links=? WHERE id=?", imgSingle, p.Title, p.TitleUz, p.TitleEn, p.Description, p.DescriptionUz, p.DescriptionEn, string(imagesJSON), string(linksJSON), id)
 		if err != nil {
 			http.Error(w, "DB error", http.StatusInternalServerError)
 			return
@@ -712,4 +902,274 @@ func handleProjectByID(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
+}
+
+// --- LED CRUD ---
+func handleLed(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		rows, err := db.Query("SELECT id, img, title, IFNULL(title_uz,''), IFNULL(title_en,''), description, IFNULL(description_uz,''), IFNULL(description_en,''), IFNULL(location,''), IFNULL(images,'') FROM led ORDER BY id DESC")
+		if err != nil {
+			http.Error(w, "DB error", http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+		var items []LedItem
+		for rows.Next() {
+			var it LedItem
+			var imagesJSON string
+			if err := rows.Scan(&it.ID, &it.Img, &it.Title, &it.TitleUz, &it.TitleEn, &it.Description, &it.DescriptionUz, &it.DescriptionEn, &it.Location, &imagesJSON); err == nil {
+				if imagesJSON != "" {
+					_ = json.Unmarshal([]byte(imagesJSON), &it.Images)
+				}
+				items = append(items, it)
+			}
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(items)
+	case http.MethodPost:
+		if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
+			if err := r.ParseMultipartForm(10 << 20); err != nil {
+				http.Error(w, "Invalid form", http.StatusBadRequest)
+				return
+			}
+			var images []string
+			if files, ok := r.MultipartForm.File["imgs"]; ok {
+				for i, fh := range files {
+					if i >= 10 {
+						break
+					}
+					f, err := fh.Open()
+					if err != nil {
+						continue
+					}
+					path, err := saveUploadedFile(f, fh)
+					f.Close()
+					if err == nil {
+						images = append(images, path)
+					}
+				}
+			}
+			images = clampStrings(images, 10)
+			title := r.FormValue("title")
+			titleUz := r.FormValue("title_uz")
+			titleEn := r.FormValue("title_en")
+			desc := r.FormValue("description")
+			descUz := r.FormValue("description_uz")
+			descEn := r.FormValue("description_en")
+			loc := r.FormValue("location")
+			imgSingle := ""
+			if len(images) > 0 {
+				imgSingle = images[0]
+			}
+			imagesJSON, _ := json.Marshal(images)
+			res, err := db.Exec("INSERT INTO led (img, title, title_uz, title_en, description, description_uz, description_en, location, images) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", imgSingle, title, titleUz, titleEn, desc, descUz, descEn, loc, string(imagesJSON))
+			if err != nil {
+				http.Error(w, "DB error", http.StatusInternalServerError)
+				return
+			}
+			id, _ := res.LastInsertId()
+			it := LedItem{ID: int(id), Img: imgSingle, Images: images, Title: title, Description: desc, Location: loc}
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(it)
+			return
+		}
+		var it LedItem
+		if err := json.NewDecoder(r.Body).Decode(&it); err != nil {
+			http.Error(w, "Invalid JSON", http.StatusBadRequest)
+			return
+		}
+		it.Images = clampStrings(it.Images, 10)
+		imgSingle := ""
+		if len(it.Images) > 0 {
+			imgSingle = it.Images[0]
+		}
+		imagesJSON, _ := json.Marshal(it.Images)
+		res, err := db.Exec("INSERT INTO led (img, title, title_uz, title_en, description, description_uz, description_en, location, images) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", imgSingle, it.Title, it.TitleUz, it.TitleEn, it.Description, it.DescriptionUz, it.DescriptionEn, it.Location, string(imagesJSON))
+		if err != nil {
+			http.Error(w, "DB error", http.StatusInternalServerError)
+			return
+		}
+		id, _ := res.LastInsertId()
+		it.ID = int(id)
+		it.Img = imgSingle
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(it)
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func handleLedByID(w http.ResponseWriter, r *http.Request) {
+	id := strings.TrimPrefix(r.URL.Path, "/api/led/")
+	if id == "" {
+		http.Error(w, "Missing id", http.StatusBadRequest)
+		return
+	}
+	switch r.Method {
+	case http.MethodGet:
+		var it LedItem
+		var imagesJSON string
+		err := db.QueryRow("SELECT id, img, title, IFNULL(title_uz,''), IFNULL(title_en,''), description, IFNULL(description_uz,''), IFNULL(description_en,''), IFNULL(location,''), IFNULL(images,'') FROM led WHERE id=?", id).Scan(&it.ID, &it.Img, &it.Title, &it.TitleUz, &it.TitleEn, &it.Description, &it.DescriptionUz, &it.DescriptionEn, &it.Location, &imagesJSON)
+		if err != nil {
+			http.Error(w, "Not found", http.StatusNotFound)
+			return
+		}
+		if imagesJSON != "" {
+			_ = json.Unmarshal([]byte(imagesJSON), &it.Images)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(it)
+	case http.MethodPost, http.MethodPut:
+		if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
+			if err := r.ParseMultipartForm(10 << 20); err != nil {
+				http.Error(w, "Invalid form", http.StatusBadRequest)
+				return
+			}
+			title := r.FormValue("title")
+			titleUz := r.FormValue("title_uz")
+			titleEn := r.FormValue("title_en")
+			desc := r.FormValue("description")
+			descUz := r.FormValue("description_uz")
+			descEn := r.FormValue("description_en")
+			loc := r.FormValue("location")
+			var images []string
+			if oldJSON := strings.TrimSpace(r.FormValue("imagesOld")); oldJSON != "" {
+				_ = json.Unmarshal([]byte(oldJSON), &images)
+			}
+			if len(images) == 0 {
+				var cur string
+				_ = db.QueryRow("SELECT IFNULL(images,'') FROM led WHERE id=?", id).Scan(&cur)
+				if cur != "" {
+					_ = json.Unmarshal([]byte(cur), &images)
+				}
+			}
+			if files, ok := r.MultipartForm.File["imgs"]; ok {
+				for i, fh := range files {
+					if i >= 10 {
+						break
+					}
+					f, err := fh.Open()
+					if err != nil {
+						continue
+					}
+					path, err := saveUploadedFile(f, fh)
+					f.Close()
+					if err == nil {
+						images = append(images, path)
+					}
+				}
+			}
+			images = clampStrings(images, 10)
+			imgSingle := ""
+			if len(images) > 0 {
+				imgSingle = images[0]
+			}
+			imagesJSON, _ := json.Marshal(images)
+			_, err := db.Exec("UPDATE led SET img=?, title=?, title_uz=?, title_en=?, description=?, description_uz=?, description_en=?, location=?, images=? WHERE id=?", imgSingle, title, titleUz, titleEn, desc, descUz, descEn, loc, string(imagesJSON), id)
+			if err != nil {
+				http.Error(w, "DB error", http.StatusInternalServerError)
+				return
+			}
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{"status":"ok"}`))
+			return
+		}
+		var it LedItem
+		if err := json.NewDecoder(r.Body).Decode(&it); err != nil {
+			http.Error(w, "Invalid JSON", http.StatusBadRequest)
+			return
+		}
+		it.Images = clampStrings(it.Images, 10)
+		imgSingle := ""
+		if len(it.Images) > 0 {
+			imgSingle = it.Images[0]
+		}
+		imagesJSON, _ := json.Marshal(it.Images)
+		_, err := db.Exec("UPDATE led SET img=?, title=?, title_uz=?, title_en=?, description=?, description_uz=?, description_en=?, location=?, images=? WHERE id=?", imgSingle, it.Title, it.TitleUz, it.TitleEn, it.Description, it.DescriptionUz, it.DescriptionEn, it.Location, string(imagesJSON), id)
+		if err != nil {
+			http.Error(w, "DB error", http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"status":"ok"}`))
+	case http.MethodDelete:
+		_, err := db.Exec("DELETE FROM led WHERE id=?", id)
+		if err != nil {
+			http.Error(w, "DB error", http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"status":"ok"}`))
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+// --- TRANSLATION API ---
+type TranslateRequest struct {
+	Text string `json:"text"`
+	Lang string `json:"lang"` // "uz" или "en"
+}
+
+type TranslateResponse struct {
+	Original     string            `json:"original"`
+	Translated   string            `json:"translated,omitempty"`
+	Translations map[string]string `json:"translations,omitempty"`
+	Lang         string            `json:"lang"`
+}
+
+func handleTranslate(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req TranslateRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	if req.Text == "" {
+		http.Error(w, "Text is required", http.StatusBadRequest)
+		return
+	}
+
+	if req.Lang != "uz" && req.Lang != "en" && req.Lang != "all" {
+		http.Error(w, "Lang must be 'uz', 'en' or 'all'", http.StatusBadRequest)
+		return
+	}
+
+	var response TranslateResponse
+	response.Original = req.Text
+	response.Lang = req.Lang
+
+	if req.Lang == "all" {
+		// Переводим на все языки
+		translations := make(map[string]string)
+
+		// Перевод на UZ
+		if uzTranslated, err := translateText(req.Text, "uz"); err == nil {
+			translations["uz"] = uzTranslated
+		}
+
+		// Перевод на EN
+		if enTranslated, err := translateText(req.Text, "en"); err == nil {
+			translations["en"] = enTranslated
+		}
+
+		response.Translations = translations
+	} else {
+		// Перевод на один язык
+		translated, err := translateText(req.Text, req.Lang)
+		if err != nil {
+			http.Error(w, "Translation failed", http.StatusInternalServerError)
+			return
+		}
+		response.Translated = translated
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }

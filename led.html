@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LED экраны - Influence Lab</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: { 'brand-blue': '#002247','brand-blue-medium': '#034AA6','brand-blue-soft': '#2977E2','brand-white': '#F0F0F0','brand-black': '#000000' } } } }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style> body { font-family: 'Inter', sans-serif; } </style>
+</head>
+<body class="bg-white">
+  <div id="site-header"></div>
+
+  <section class="bg-gray-50 py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h1 class="text-4xl lg:text-5xl font-bold text-black mb-4" id="page-title">LED экраны</h1>
+      <p class="text-lg text-gray-600" id="page-description">Продакшн и размещение контента на LED-экранах. Разработка креативов, медиа-планирование и запуск кампаний.</p>
+    </div>
+  </section>
+
+  <!-- Map -->
+  <section class="py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div id="led-map" class="w-full h-96 rounded-2xl border border-gray-200"></div>
+    </div>
+  </section>
+
+  <!-- LED list -->
+  <section class="py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div id="led-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+    </div>
+  </section>
+
+  <!-- Modal -->
+  <div id="led-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl lg:max-w-4xl p-0 relative">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <h3 id="led-modal-title" class="text-2xl font-bold"></h3>
+        <button id="led-modal-close" class="text-gray-400 hover:text-black text-3xl leading-none px-2">&times;</button>
+      </div>
+      <div class="px-6 py-6 space-y-6 overflow-y-auto max-h-[75vh]">
+        <div class="space-y-3">
+          <img id="led-modal-main" src="" alt="" class="w-full max-h-96 object-cover rounded-xl" />
+          <div id="led-modal-thumbs" class="grid grid-cols-5 gap-2"></div>
+        </div>
+        <p id="led-modal-desc" class="text-gray-700 text-lg leading-relaxed"></p>
+        <div class="text-sm text-brand-blue-soft inline-flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span id="led-modal-location"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="site-footer"></div>
+
+  <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey=YOUR_API_KEY_HERE" type="text/javascript"></script>
+  <script>
+    // Функция получения языка из localStorage
+    function getCurrentLanguage() {
+      return localStorage.getItem('site_lang') || 'RU';
+    }
+
+    // Переводы для интерфейса
+    const translations = {
+      RU: {
+        pageTitle: 'LED экраны',
+        pageDescription: 'Продакшн и размещение контента на LED-экранах. Разработка креативов, медиа-планирование и запуск кампаний.'
+      },
+      UZ: {
+        pageTitle: 'LED ekranlar',
+        pageDescription: 'LED ekranlarda kontent ishlab chiqarish va joylashtirish. Ijodiy ishlanmalar, media rejalashtirish va ishga tushirish.'
+      },
+      EN: {
+        pageTitle: 'LED Screens',
+        pageDescription: 'Production and placement of content on LED screens. Creative, media planning and campaign launch.'
+      }
+    };
+
+    // Yandex map state (declared early to avoid TDZ)
+    var ymapsReady = false;
+    var yaMap = null;
+    var yaClusterer = null;
+
+    function getTranslated(field, item) {
+      const lang = getCurrentLanguage();
+      if (lang === 'UZ' && item[`${field}_uz`]) return item[`${field}_uz`];
+      if (lang === 'EN' && item[`${field}_en`]) return item[`${field}_en`];
+      return item[field] || '';
+    }
+
+    // Helpers: parse "lat, lng" and build Yandex Maps URL
+    function parseLatLng(location) {
+      const text = String(location || '');
+      // Match pairs like "num, num" or "num num"
+      const regex = /(-?\d+(?:\.\d+)?)[,\s]+(-?\d+(?:\.\d+)?)/g;
+      let match;
+      let best = null;
+      while ((match = regex.exec(text)) !== null) {
+        let lat = parseFloat(match[1]);
+        let lng = parseFloat(match[2]);
+        if (Number.isNaN(lat) || Number.isNaN(lng)) continue;
+        if (Math.abs(lat) > 90 && Math.abs(lng) <= 90) {
+          const tmp = lat; lat = lng; lng = tmp;
+        }
+        if (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) {
+          const precisionScore = ((match[1].includes('.') ? match[1].split('.')[1].length : 0) + (match[2].includes('.') ? match[2].split('.')[1].length : 0));
+          if (!best || precisionScore >= best.precision) {
+            best = { lat, lng, precision: precisionScore };
+          }
+        }
+      }
+      return best ? { lat: best.lat, lng: best.lng } : null;
+    }
+    function buildYandexUrl(lat, lng) {
+      const ll = `${lng},${lat}`;
+      return `https://yandex.ru/maps/?ll=${encodeURIComponent(ll)}&z=16&pt=${lng},${lat},pm2rdm`;
+    }
+
+    // Обновление интерфейса на выбранном языке
+    function updateInterface() {
+      const lang = getCurrentLanguage();
+      const t = translations[lang] || translations['RU'];
+      if (document.getElementById('page-title')) document.getElementById('page-title').textContent = t.pageTitle;
+      if (document.getElementById('page-description')) document.getElementById('page-description').textContent = t.pageDescription;
+      // перерисуем карточки при смене языка
+      if (window.ledData && renderLedList) renderLedList(window.ledData);
+      if (ymapsReady && window.ledData) renderMapMarkers(window.ledData);
+    }
+
+    // Рендер списка LED карточек
+    function renderLedList(items) {
+      const root = document.getElementById('led-list');
+      if (!root) return;
+      const list = Array.isArray(items) ? items : [];
+      root.innerHTML = list.map((it, i) => {
+        const cover = (Array.isArray(it.images) && it.images.length) ? it.images[0] : (it.img || 'img/img1.jpg');
+        const title = getTranslated('title', it) || (it.title || '');
+        const description = getTranslated('description', it) || (it.description || '');
+        const location = it.location || '';
+        const coords = parseLatLng(location);
+        return `
+        <div class="group bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-start cursor-pointer" onclick="openLedModal(${i})">
+          <img src="${cover}" alt="${title}" class="w-full h-56 object-contain bg-gray-50 rounded-xl mb-6" />
+          <h3 class="text-xl font-bold text-black mb-2">${title}</h3>
+          <p class="text-gray-600 mb-4 line-clamp-3">${description}</p>
+          <div class="w-full flex items-center justify-between gap-2 mt-auto">
+            <div class="inline-flex items-center gap-2 text-sm text-brand-blue-soft"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1118 0z\"/><circle cx=\"12\" cy=\"10\" r=\"3\"/></svg>${coords ? ('<a href="' + buildYandexUrl(coords.lat, coords.lng) + '" target="_blank" rel="noopener" class="underline" onclick="event.stopPropagation()">' + location + '</a>') : ('<span>' + location + '</span>')}</div>
+            <button class="px-6 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200" onclick="openLedModal(${i}); event.stopPropagation();">${(function(){const l=(localStorage.getItem('site_lang')||'RU');return l==='UZ'?'Ochish':(l==='EN'?'Open':'Открыть');})()}</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // Данные и загрузка
+    window.ledData = [];
+    function loadLedData() {
+      fetch('/api/led')
+        .then(r => r.json())
+        .then(data => { window.ledData = Array.isArray(data) ? data : []; try { console.table(window.ledData.map(x => ({id:x.id, location:x.location, parsed: parseLatLng(x.location)}))); } catch(_){} renderLedList(window.ledData); if (ymapsReady) renderMapMarkers(window.ledData); })
+        .catch(() => { window.ledData = []; renderLedList(window.ledData); });
+    }
+
+    // Модальное окно
+    function openLedModal(idx) {
+      const it = (window.ledData || [])[idx];
+      if (!it) return;
+      focusOnItemOnMap(idx);
+      const title = getTranslated('title', it) || (it.title || '');
+      const desc = getTranslated('description', it) || (it.description || '');
+      const images = (Array.isArray(it.images) && it.images.length) ? it.images.slice(0,10) : (it.img ? [it.img] : []);
+      document.getElementById('led-modal-title').textContent = title;
+      document.getElementById('led-modal-desc').textContent = desc;
+      (function(){
+        const locEl = document.getElementById('led-modal-location');
+        const location = it.location || '';
+        const coords = parseLatLng(location);
+        if (locEl) {
+          if (coords) {
+            const url = buildYandexUrl(coords.lat, coords.lng);
+            locEl.innerHTML = '<a href="' + url + '" target="_blank" rel="noopener" class="underline">' + location + '</a>';
+          } else {
+            locEl.textContent = location;
+          }
+        }
+      })();
+      const main = document.getElementById('led-modal-main');
+      const thumbs = document.getElementById('led-modal-thumbs');
+      main.src = images[0] || '';
+      thumbs.innerHTML = images.map((src, i) => `<img data-i="${i}" src="${src}" class="h-16 w-full object-cover rounded border cursor-pointer">`).join('');
+      thumbs.querySelectorAll('img').forEach(img => img.onclick = () => { main.src = img.src; });
+      document.getElementById('led-modal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeLedModal() {
+      document.getElementById('led-modal').classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+    document.getElementById('led-modal-close').onclick = closeLedModal;
+    document.getElementById('led-modal').onclick = function(e){ if (e.target === this) closeLedModal(); };
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLedModal(); });
+
+    // Слушатель изменения языка
+    window.addEventListener('storage', function(e) {
+      if (e.key === 'site_lang') {
+        updateInterface();
+      }
+    });
+
+    // Глобальная функция для обновления контента при смене языка
+    window.updateContentOnLanguageChange = function() {
+      updateInterface();
+      // Обновляем footer
+      if (window.updateFooterTranslations) {
+        window.updateFooterTranslations();
+      }
+    };
+    
+    // Инициализация
+    updateInterface();
+    loadLedData();
+    initYandexMap();
+    
+    // Загружаем header и footer
+    Promise.all([
+        fetch('components/header.html').then(r => r.text()),
+        fetch('components/footer.html').then(r => r.text())
+    ]).then(([headerHtml, footerHtml]) => {
+        document.getElementById('site-header').innerHTML = headerHtml;
+        document.getElementById('site-footer').innerHTML = footerHtml;
+        
+        // Извлекаем и выполняем скрипты из header
+        const headerScripts = document.getElementById('site-header').querySelectorAll('script');
+        headerScripts.forEach((script) => {
+          const newScript = document.createElement('script');
+          newScript.textContent = script.textContent;
+          document.head.appendChild(newScript);
+        });
+        
+        // Принудительно обновляем хидер сразу
+        (function(){
+          const currentLang = localStorage.getItem('site_lang') || 'RU';
+          const b = document.getElementById('lang-toggle');
+          const bm = document.getElementById('lang-toggle-mobile');
+          if (b) b.textContent = currentLang;
+          if (bm) bm.textContent = currentLang;
+          if (window.updateHeaderTranslations) window.updateHeaderTranslations();
+        })();
+        
+        // Извлекаем и выполняем скрипты из footer
+        const footerScripts = document.getElementById('site-footer').querySelectorAll('script');
+        footerScripts.forEach((script) => {
+          const newScript = document.createElement('script');
+          newScript.textContent = script.textContent;
+          document.head.appendChild(newScript);
+        });
+        
+        // Инициализируем переводы footer
+        setTimeout(() => {
+          if (window.updateFooterTranslations) {
+            window.updateFooterTranslations();
+          }
+        }, 200);
+    });
+
+    // Yandex Map state
+    function initYandexMap() {
+      if (!document.getElementById('led-map')) return;
+      if (typeof ymaps === 'undefined') return;
+      ymaps.ready(function(){
+        ymapsReady = true;
+        yaMap = new ymaps.Map('led-map', {
+          center: [41.311081, 69.240562],
+          zoom: 11,
+          controls: ['zoomControl']
+        }, { suppressMapOpenBlock: true });
+        yaClusterer = new ymaps.Clusterer({
+          preset: 'islands#invertedBlueClusterIcons',
+          groupByCoordinates: false,
+          clusterDisableClickZoom: false,
+          clusterOpenBalloonOnClick: true
+        });
+        yaMap.geoObjects.add(yaClusterer);
+        // If data already loaded, render
+        if (Array.isArray(window.ledData) && window.ledData.length) {
+          renderMapMarkers(window.ledData);
+        }
+      });
+    }
+
+    function renderMapMarkers(items) {
+      if (!ymapsReady || !yaMap || !yaClusterer) return;
+      yaClusterer.removeAll();
+      const placemarks = [];
+      (items || []).forEach((it, idx) => {
+        const coords = parseLatLng(it.location);
+        if (!coords) return;
+        const title = getTranslated('title', it) || (it.title || '');
+        const desc = getTranslated('description', it) || (it.description || '');
+        const pm = new ymaps.Placemark([coords.lat, coords.lng], {
+          balloonContentHeader: title,
+          balloonContentBody: desc,
+          hintContent: title
+        }, {
+          preset: 'islands#blueIcon'
+        });
+        pm.events.add('click', function(){
+          // Open modal on marker click
+          openLedModal(idx);
+        });
+        placemarks.push(pm);
+      });
+      if (placemarks.length) {
+        yaClusterer.add(placemarks);
+        try {
+          const bounds = yaClusterer.getBounds();
+          if (bounds) yaMap.setBounds(bounds, { checkZoomRange: true, zoomMargin: 40 });
+        } catch(e) {}
+      }
+    }
+
+    function focusOnItemOnMap(idx) {
+      if (!ymapsReady || !yaMap) return;
+      const it = (window.ledData || [])[idx];
+      if (!it) return;
+      const coords = parseLatLng(it.location);
+      if (!coords) return;
+      yaMap.setCenter([coords.lat, coords.lng], 15, { duration: 300 });
+    }
+  </script>
+</body>
+</html> 

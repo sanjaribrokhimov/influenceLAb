@@ -17,6 +17,25 @@
     const loadHeader = async () => {
       const html = await fetch('components/header.html').then(r => r.text());
       document.getElementById('site-header').innerHTML = html;
+      
+      // Извлекаем и выполняем скрипты из header
+      const scripts = document.getElementById('site-header').querySelectorAll('script');
+      scripts.forEach((script) => {
+        const newScript = document.createElement('script');
+        newScript.textContent = script.textContent;
+        document.head.appendChild(newScript);
+      });
+      
+      // Принудительно обновляем хидер сразу
+      (function(){
+        const currentLang = localStorage.getItem('site_lang') || 'RU';
+        const b = document.getElementById('lang-toggle');
+        const bm = document.getElementById('lang-toggle-mobile');
+        if (b) b.textContent = currentLang;
+        if (bm) bm.textContent = currentLang;
+        if (window.updateHeaderTranslations) window.updateHeaderTranslations();
+      })();
+      
       const menuBtn = document.getElementById('mobile-menu-button');
       const menu = document.getElementById('mobile-menu');
       const overlay = document.getElementById('mobile-menu-overlay');
@@ -36,8 +55,8 @@
    <!-- Hero -->
   <section class="bg-gray-50 py-20">
     <div class="max-w-3xl mx-auto px-4 text-center">
-      <h1 class="text-4xl lg:text-5xl font-bold text-black mb-4">Связаться с нами</h1>
-      <p class="text-lg text-gray-600">Оставьте заявку — свяжемся в течение 24 часов и обсудим ваш проект</p>
+      <h1 class="text-4xl lg:text-5xl font-bold text-black mb-4" id="contact-title">Связаться с нами</h1>
+      <p class="text-lg text-gray-600" id="contact-description">Оставьте заявку — свяжемся в течение 24 часов и обсудим ваш проект</p>
     </div>
   </section>
 
@@ -49,36 +68,36 @@
         <div>
           <form id="contact-form" class="space-y-5 bg-white p-8 rounded-2xl shadow border border-gray-100">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Имя *</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2" id="label-name">Имя *</label>
               <input id="name" type="text" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue-soft focus:border-transparent" placeholder="Ваше имя">
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Телефон *</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2" id="label-phone">Телефон *</label>
               <input id="phone" type="tel" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue-soft focus:border-transparent" placeholder="Например: +998 90 000 00 00">
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Кратко о задаче *</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2" id="label-description">Кратко о задаче *</label>
               <textarea id="description" rows="6" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue-soft focus:border-transparent" placeholder="Расскажите о проекте"></textarea>
             </div>
             <div class="flex items-start space-x-3">
               <input id="agree" type="checkbox" required class="mt-1 h-4 w-4 text-brand-blue-soft focus:ring-brand-blue-soft border-gray-300 rounded">
-              <label for="agree" class="text-sm text-gray-600">Согласен на обработку персональных данных</label>
+              <label for="agree" class="text-sm text-gray-600" id="label-agree">Согласен на обработку персональных данных</label>
             </div>
-            <button type="submit" class="w-full bg-brand-blue-soft hover:bg-brand-blue-medium text-white py-4 rounded-lg font-semibold transition-colors">Отправить заявку</button>
+            <button id="submit-btn" type="submit" class="w-full bg-brand-blue-soft hover:bg-brand-blue-medium text-white py-4 rounded-lg font-semibold transition-colors">Отправить заявку</button>
             <div id="form-success" class="hidden text-green-600 text-sm">Заявка отправлена! Мы скоро свяжемся.</div>
             <div id="form-error" class="hidden text-red-600 text-sm">Ошибка отправки. Попробуйте позже.</div>
           </form>
         </div>
         <!-- Contacts (Right) -->
         <div class="space-y-6">
-          <h2 class="text-3xl font-bold text-black">Контактная информация</h2>
+          <h2 class="text-3xl font-bold text-black" id="contact-info-title">Контактная информация</h2>
           <div class="space-y-6">
             <div class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
               <div class="w-12 h-12 bg-brand-blue-soft rounded-lg flex items-center justify-center">
                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
               </div>
               <div>
-                <div class="text-lg font-semibold text-black">Email</div>
+                <div class="text-lg font-semibold text-black" id="email-label">Email</div>
                 <p class="text-gray-600"><a href="mailto:prosmm2001@gmail.com" class="hover:underline">prosmm2001@gmail.com</a></p>
               </div>
             </div>
@@ -87,7 +106,7 @@
                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
               </div>
               <div>
-                <div class="text-lg font-semibold text-black">Телефон</div>
+                <div class="text-lg font-semibold text-black" id="phone-info-label">Телефон</div>
                 <p class="text-gray-600"><a href="tel:+998910441757" class="hover:underline">+998 91 044-17-57</a></p>
               </div>
             </div>
@@ -96,7 +115,7 @@
                 <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M9.036 15.787l-.375 5.297c.537 0 .77-.23 1.048-.507l2.516-2.414 5.213 3.814c.956.529 1.637.252 1.901-.885l3.447-16.14.001-.001c.306-1.423-.514-1.977-1.44-1.63L1.39 9.7c-1.39.54-1.369 1.316-.237 1.667l5.73 1.787L18.86 6.27c.592-.389 1.13-.173.687.216L9.036 15.787z"/></svg>
               </div>
               <div>
-                <div class="text-lg font-semibold text-black">Telegram</div>
+                <div class="text-lg font-semibold text-black" id="telegram-label">Telegram</div>
                 <p class="text-gray-600"><a href="https://t.me/influencelab_1757" target="_blank" class="hover:underline">@influencelab_1757</a></p>
               </div>
             </div>
@@ -105,7 +124,7 @@
                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
               </div>
               <div>
-                <div class="text-lg font-semibold text-black">Адрес</div>
+                <div class="text-lg font-semibold text-black" id="address-label">Адрес</div>
                 <p class="text-gray-600">Тошкент, Ш. Беруний 13 Б</p>
               </div>
             </div>
@@ -119,25 +138,25 @@
   <section class="bg-gray-50 py-16">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-12">
-        <h2 class="text-3xl font-bold text-black mb-3">Часто задаваемые вопросы</h2>
-        <p class="text-gray-600">Ответы на популярные вопросы о нашей работе</p>
+        <h2 class="text-3xl font-bold text-black mb-3" id="faq-title">Часто задаваемые вопросы</h2>
+        <p class="text-gray-600" id="faq-subtitle">Ответы на популярные вопросы о нашей работе</p>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
-          <h3 class="text-lg font-semibold text-black mb-2">Сколько времени занимает проект?</h3>
-          <p class="text-gray-600">Срок зависит от задач: экспресс — 1-2 недели, полный пакет — 3-6 недель.</p>
+          <h3 class="text-lg font-semibold text-black mb-2" id="faq1-title">Сколько времени занимает проект?</h3>
+          <p class="text-gray-600" id="faq1-desc">Срок зависит от задач: экспресс — 1-2 недели, полный пакет — 3-6 недель.</p>
         </div>
         <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
-          <h3 class="text-lg font-semibold text-black mb-2">Как мы общаемся?</h3>
-          <p class="text-gray-600">Удобные каналы: Telegram, звонки и e‑mail. Прозрачно на каждом этапе.</p>
+          <h3 class="text-lg font-semibold text-black mb-2" id="faq2-title">Как мы общаемся?</h3>
+          <p class="text-gray-600" id="faq2-desc">Удобные каналы: Telegram, звонки и e‑mail. Прозрачно на каждом этапе.</p>
         </div>
         <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
-          <h3 class="text-lg font-semibold text-black mb-2">Какие форматы предоставляем?</h3>
-          <p class="text-gray-600">Передаём готовые материалы и нужные исходники, согласно задачам проекта.</p>
+          <h3 class="text-lg font-semibold text-black mb-2" id="faq3-title">Какие форматы предоставляем?</h3>
+          <p class="text-gray-600" id="faq3-desc">Передаём готовые материалы и нужные исходники, согласно задачам проекта.</p>
         </div>
         <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
-          <h3 class="text-lg font-semibold text-black mb-2">Есть поддержка после сдачи?</h3>
-          <p class="text-gray-600">Да, мы остаёмся на связи и помогаем с внедрением и вопросами.</p>
+          <h3 class="text-lg font-semibold text-black mb-2" id="faq4-title">Есть поддержка после сдачи?</h3>
+          <p class="text-gray-600" id="faq4-desc">Да, мы остаёмся на связи и помогаем с внедрением и вопросами.</p>
         </div>
       </div>
     </div>
@@ -145,8 +164,174 @@
 
   <div id="site-footer"></div>
   <script>
+    // Функция получения языка из localStorage
+    function getCurrentLanguage() {
+      return localStorage.getItem('site_lang') || 'RU';
+    }
+
+    // Переводы для интерфейса
+    const translations = {
+      RU: {
+        contactTitle: 'Связаться с нами',
+        contactDescription: 'Оставьте заявку — свяжемся в течение 24 часов и обсудим ваш проект',
+        nameLabel: 'Имя *',
+        phoneLabel: 'Телефон *',
+        taskLabel: 'Кратко о задаче *',
+        agreeLabel: 'Согласен на обработку персональных данных',
+        submitBtn: 'Отправить заявку',
+        successMsg: 'Заявка отправлена! Мы скоро свяжемся.',
+        errorMsg: 'Ошибка отправки. Попробуйте позже.',
+        namePlaceholder: 'Ваше имя',
+        phonePlaceholder: 'Например: +998 90 000 00 00',
+        descriptionPlaceholder: 'Расскажите о проекте',
+        contactInfoTitle: 'Контактная информация',
+        emailLabel: 'Email',
+        phoneInfoLabel: 'Телефон',
+        telegramLabel: 'Telegram',
+        addressLabel: 'Адрес',
+        faqTitle: 'Часто задаваемые вопросы',
+        faqSubtitle: 'Ответы на популярные вопросы о нашей работе',
+        faq1Title: 'Сколько времени занимает проект?',
+        faq1Desc: 'Срок зависит от задач: экспресс — 1-2 недели, полный пакет — 3-6 недель.',
+        faq2Title: 'Как мы общаемся?',
+        faq2Desc: 'Удобные каналы: Telegram, звонки и e‑mail. Прозрачно на каждом этапе.',
+        faq3Title: 'Какие форматы предоставляем?',
+        faq3Desc: 'Передаём готовые материалы и нужные исходники, согласно задачам проекта.',
+        faq4Title: 'Есть поддержка после сдачи?',
+        faq4Desc: 'Да, мы остаёмся на связи и помогаем с внедрением и вопросами.'
+      },
+      UZ: {
+        contactTitle: 'Biz bilan bog\'laning',
+        contactDescription: 'Arizani qoldiring — 24 soat ichida bog\'lanamiz va loyihangizni muhokama qilamiz',
+        nameLabel: 'Ism *',
+        phoneLabel: 'Telefon *',
+        taskLabel: 'Vazifa haqida qisqacha *',
+        agreeLabel: 'Shaxsiy ma\'lumotlarni qayta ishlashga roziman',
+        submitBtn: 'Ariza yuborish',
+        successMsg: 'Ariza yuborildi! Tez orada bog\'lanamiz.',
+        errorMsg: 'Yuborishda xatolik. Keyinroq urinib ko\'ring.',
+        namePlaceholder: 'Ismingiz',
+        phonePlaceholder: 'Masalan: +998 90 000 00 00',
+        descriptionPlaceholder: 'Loyiha haqida yozing',
+        contactInfoTitle: 'Aloqa ma\'lumotlari',
+        emailLabel: 'Email',
+        phoneInfoLabel: 'Telefon',
+        telegramLabel: 'Telegram',
+        addressLabel: 'Manzil',
+        faqTitle: 'Tez-tez beriladigan savollar',
+        faqSubtitle: 'Ishimiz haqida mashhur savollarga javoblar',
+        faq1Title: 'Loyiha qancha vaqt oladi?',
+        faq1Desc: 'Vazifaga qarab: tezkor — 1-2 hafta, to\'liq paket — 3-6 hafta.',
+        faq2Title: 'Qanday aloqa qilamiz?',
+        faq2Desc: 'Qulay kanallar: Telegram, qo\'ng\'iroqlar va e‑mail. Har bosqichda shaffoflik.',
+        faq3Title: 'Qanday formatlar taqdim etamiz?',
+        faq3Desc: 'Vazifalarga muvofiq tayyor materiallar va kerakli fayllarni topshiramiz.',
+        faq4Title: 'Topshirgandan keyin qo\'llab-quvvatlash bormi?',
+        faq4Desc: 'Ha, biz aloqada qolamiz va joriy etishda yordam beramiz.'
+      },
+      EN: {
+        contactTitle: 'Contact us',
+        contactDescription: 'Leave a request — we will contact you within 24 hours and discuss your project',
+        nameLabel: 'Name *',
+        phoneLabel: 'Phone *',
+        taskLabel: 'Briefly about the task *',
+        agreeLabel: 'I agree to the processing of personal data',
+        submitBtn: 'Send request',
+        successMsg: 'Request sent! We will contact you soon.',
+        errorMsg: 'Submission error. Please try again later.',
+        namePlaceholder: 'Your name',
+        phonePlaceholder: 'For example: +1 555 000 00 00',
+        descriptionPlaceholder: 'Tell us about the project',
+        contactInfoTitle: 'Contact information',
+        emailLabel: 'Email',
+        phoneInfoLabel: 'Phone',
+        telegramLabel: 'Telegram',
+        addressLabel: 'Address',
+        faqTitle: 'Frequently Asked Questions',
+        faqSubtitle: 'Answers to popular questions about our work',
+        faq1Title: 'How long does a project take?',
+        faq1Desc: 'Depends on scope: express — 1-2 weeks, full package — 3-6 weeks.',
+        faq2Title: 'How do we communicate?',
+        faq2Desc: 'Convenient channels: Telegram, calls and e‑mail. Transparent at every step.',
+        faq3Title: 'What formats do we provide?',
+        faq3Desc: 'We deliver ready materials and required assets according to the tasks.',
+        faq4Title: 'Is there support after delivery?',
+        faq4Desc: 'Yes, we stay in touch and help with implementation and questions.'
+      }
+    };
+
+    // Обновление интерфейса на выбранном языке
+    function updateInterface() {
+      const lang = getCurrentLanguage();
+      const t = translations[lang] || translations['RU']; // Fallback на русский
+      
+      if (t) {
+        if (document.getElementById('contact-title')) document.getElementById('contact-title').textContent = t.contactTitle;
+        if (document.getElementById('contact-description')) document.getElementById('contact-description').textContent = t.contactDescription;
+        
+        if (document.getElementById('label-name')) document.getElementById('label-name').textContent = t.nameLabel;
+        if (document.getElementById('label-phone')) document.getElementById('label-phone').textContent = t.phoneLabel;
+        if (document.getElementById('label-description')) document.getElementById('label-description').textContent = t.taskLabel;
+        if (document.getElementById('label-agree')) document.getElementById('label-agree').textContent = t.agreeLabel;
+        if (document.getElementById('submit-btn')) document.getElementById('submit-btn').textContent = t.submitBtn;
+        if (document.getElementById('form-success')) document.getElementById('form-success').textContent = t.successMsg;
+        if (document.getElementById('form-error')) document.getElementById('form-error').textContent = t.errorMsg;
+        
+        const nameInput = document.getElementById('name'); if (nameInput) nameInput.placeholder = t.namePlaceholder;
+        const phoneInput = document.getElementById('phone'); if (phoneInput) phoneInput.placeholder = t.phonePlaceholder;
+        const descInput = document.getElementById('description'); if (descInput) descInput.placeholder = t.descriptionPlaceholder;
+        
+        if (document.getElementById('contact-info-title')) document.getElementById('contact-info-title').textContent = t.contactInfoTitle;
+        if (document.getElementById('email-label')) document.getElementById('email-label').textContent = t.emailLabel;
+        if (document.getElementById('phone-info-label')) document.getElementById('phone-info-label').textContent = t.phoneInfoLabel;
+        if (document.getElementById('telegram-label')) document.getElementById('telegram-label').textContent = t.telegramLabel;
+        if (document.getElementById('address-label')) document.getElementById('address-label').textContent = t.addressLabel;
+        
+        if (document.getElementById('faq-title')) document.getElementById('faq-title').textContent = t.faqTitle;
+        if (document.getElementById('faq-subtitle')) document.getElementById('faq-subtitle').textContent = t.faqSubtitle;
+        if (document.getElementById('faq1-title')) document.getElementById('faq1-title').textContent = t.faq1Title;
+        if (document.getElementById('faq1-desc')) document.getElementById('faq1-desc').textContent = t.faq1Desc;
+        if (document.getElementById('faq2-title')) document.getElementById('faq2-title').textContent = t.faq2Title;
+        if (document.getElementById('faq2-desc')) document.getElementById('faq2-desc').textContent = t.faq2Desc;
+        if (document.getElementById('faq3-title')) document.getElementById('faq3-title').textContent = t.faq3Title;
+        if (document.getElementById('faq3-desc')) document.getElementById('faq3-desc').textContent = t.faq3Desc;
+        if (document.getElementById('faq4-title')) document.getElementById('faq4-title').textContent = t.faq4Title;
+        if (document.getElementById('faq4-desc')) document.getElementById('faq4-desc').textContent = t.faq4Desc;
+      }
+    }
+
+    // Глобальная функция для обновления контента при смене языка
+    window.updateContentOnLanguageChange = function() {
+      updateInterface();
+      
+      // Обновляем footer
+      if (window.updateFooterTranslations) {
+        window.updateFooterTranslations();
+      }
+    };
+
+    // Инициализация
+    updateInterface();
+
     fetch('components/header.html').then(r => r.text()).then(t => document.getElementById('site-header').innerHTML = t);
-    fetch('components/footer.html').then(r => r.text()).then(t => document.getElementById('site-footer').innerHTML = t);
+    fetch('components/footer.html').then(r => r.text()).then(t => {
+        document.getElementById('site-footer').innerHTML = t;
+        
+        // Извлекаем и выполняем скрипты из footer
+        const scripts = document.getElementById('site-footer').querySelectorAll('script');
+        scripts.forEach((script) => {
+            const newScript = document.createElement('script');
+            newScript.textContent = script.textContent;
+            document.head.appendChild(newScript);
+        });
+        
+        // Инициализируем переводы footer
+        setTimeout(() => {
+            if (window.updateFooterTranslations) {
+                window.updateFooterTranslations();
+            }
+        }, 200);
+    });
 
     // API submit
     const form = document.getElementById('contact-form');
@@ -166,9 +351,11 @@
           method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
         });
         if (!res.ok) throw new Error('fail');
+        okEl.textContent = (translations[getCurrentLanguage()] || translations['RU']).successMsg;
         okEl.classList.remove('hidden');
         form.reset();
       } catch (_) {
+        errEl.textContent = (translations[getCurrentLanguage()] || translations['RU']).errorMsg;
         errEl.classList.remove('hidden');
       }
     });
