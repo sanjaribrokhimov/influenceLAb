@@ -304,7 +304,9 @@
             const linksHtml = (Array.isArray(p.links) && p.links.length) ? `<div class=\"w-full flex flex-wrap gap-1 mt-1 mb-3\">${p.links.slice(0,5).map(u => `<a href=\"${u}\" target=\"_blank\" class=\"inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-[11px]\">Link</a>`).join('')}</div>` : '';
             return `
             <div class=\"bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-start h-full\"> 
-              <img src=\"${cover}\" alt=\"${title}\" class=\"w-full h-48 object-cover rounded-xl mb-6\" />
+              <div class=\"relative w-full pt-[56.25%] rounded-xl mb-6 overflow-hidden\"> 
+                <img src=\"${cover}\" alt=\"${title}\" class=\"absolute inset-0 w-full h-full object-cover\" />
+              </div>
               <h3 class=\"text-xl font-bold text-black mb-3\">${title}</h3>
               <p class=\"text-gray-600 mb-4 line-clamp-3\">${description}</p>
               <div class=\"w-full flex items-center justify-between gap-2 mt-auto\"> 
@@ -438,7 +440,9 @@
             const location = it.location || '';
             return `
             <div class=\"bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-start\">
-              <img src=\"${cover}\" alt=\"${title}\" class=\"w-full h-48 object-cover rounded-xl mb-6\" />
+              <div class=\"relative w-full pt-[56.25%] rounded-xl mb-6 overflow-hidden\"> 
+                <img src=\"${cover}\" alt=\"${title}\" class=\"absolute inset-0 w-full h-full object-cover\" />
+              </div>
               <h3 class=\"text-xl font-bold text-black mb-3\">${title}</h3>
               <p class=\"text-gray-600 mb-4 line-clamp-3\">${description}</p>
               <div class=\"mt-auto inline-flex items-center gap-2 text-sm text-brand-blue-soft\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1118 0z\"/><circle cx=\"12\" cy=\"10\" r=\"3\"/></svg><span>${location}</span></div>
@@ -573,8 +577,10 @@
         const description = getTranslated('description', p) || (p.description || '');
         const linksHtml = (Array.isArray(p.links) && p.links.length) ? p.links.slice(0,5).map(u => `<a href=\"${u}\" target=\"_blank\" class=\"inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-xs\">Link</a>`).join('') : '';
         return `
-        <div class=\"bg-white px-6 pt-6 pb-4 rounded-2xl shadow-lg flex flex-col items-start\">
-          <img src=\"${cover}\" alt=\"${title}\" class=\"w-full h-48 object-cover rounded-xl mb-4\" />
+        <div class=\"bg-white px-6 pt-6 pb-4 rounded-2xl shadow-lg flex flex-col items-start\"> 
+          <div class=\"relative w-full pt-[56.25%] rounded-xl mb-4 overflow-hidden\"> 
+            <img src=\"${cover}\" alt=\"${title}\" class=\"absolute inset-0 w-full h-full object-cover\" />
+          </div>
           <h3 class=\"text-lg font-bold mb-2\">${title}</h3>
           <p class=\"text-gray-600 mb-2 line-clamp-3\">${description}</p>
           <div class=\"w-full flex items-center justify-between gap-2 mt-auto\">\n            <div class=\"flex flex-wrap gap-2\">${linksHtml}</div>\n            <a href=\"blog.html\" class=\"px-6 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200\">${(function(){const l=(localStorage.getItem('site_lang')||'RU');return l==='UZ'?'Batafsil':(l==='EN'?'More':'Подробнее');})()}</a>\n          </div>
@@ -586,7 +592,9 @@
       window.homeBlogData = [];
       document.getElementById('blog-list-home').innerHTML = defaultHomeBlog.map(p => `
         <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col items-start">
-          <img src="${p.img}" alt="${p.title}" class="w-full h-48 object-cover rounded-xl mb-4" />
+          <div class="relative w-full pt-[56.25%] rounded-xl mb-4 overflow-hidden">
+            <img src="${p.img}" alt="${p.title}" class="absolute inset-0 w-full h-full object-cover" />
+          </div>
           <h3 class="text-lg font-bold mb-2">${p.title}</h3>
           <p class="text-gray-600 mb-4 line-clamp-3">${p.description}</p>
           <a href="blog.html" class="mt-auto inline-block px-5 py-2 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200">Читать</a>
@@ -912,8 +920,10 @@
               const title = getTranslated('title', p) || (p.title || '');
               const description = getTranslated('description', p) || (p.description || '');
               return `
-              <div class=\"bg-white px-6 pt-6 pb-4 rounded-2xl shadow-lg flex flex-col items-start\">
-                <img src=\"${cover}\" alt=\"${title}\" class=\"w-full h-48 object-cover rounded-xl mb-4\" />
+              <div class=\"bg-white px-6 pt-6 pb-4 rounded-2xl shadow-lg flex flex-col items-start\"> 
+                <div class=\"relative w-full pt-[56.25%] rounded-xl mb-4 overflow-hidden\"> 
+                  <img src=\"${cover}\" alt=\"${title}\" class=\"absolute inset-0 w-full h-full object-cover\" />
+                </div>
                 <h3 class=\"text-lg font-bold mb-2\">${title}</h3>
                 <p class=\"text-gray-600 mb-2 line-clamp-3\">${description}</p>
                 <a href=\"blog.html\" class=\"mt-auto inline-block px-5 py-2 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200\">Читать</a>

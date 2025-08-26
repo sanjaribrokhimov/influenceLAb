@@ -88,7 +88,9 @@
                          <!-- Body (scrollable) -->
              <div class="px-6 py-6 space-y-6 overflow-y-auto max-h-[75vh]">
                  <div class="space-y-3">
-                   <img id="project-modal-main" src="" alt="" class="w-full max-h-96 object-cover rounded-xl" />
+                   <div class="relative w-full pt-[56.25%] rounded-xl overflow-hidden">
+                     <img id="project-modal-main" src="" alt="" class="absolute inset-0 w-full h-full object-cover" />
+                   </div>
                    <div id="project-modal-thumbs" class="grid grid-cols-5 gap-2"></div>
                  </div>
                  <p id="modal-desc" class="text-gray-700 text-lg leading-relaxed"></p>
@@ -219,7 +221,9 @@
         
         return `
           <div class="group bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-start cursor-pointer h-full" onclick="openModal(${i})"> 
-            <img src="${cover}" alt="${title}" class="w-full h-56 object-contain bg-gray-50 rounded-xl mb-6" />
+            <div class="relative w-full pt-[56.25%] bg-gray-50 rounded-xl mb-6 overflow-hidden">
+              <img src="${cover}" alt="${title}" class="absolute inset-0 w-full h-full object-cover" />
+            </div>
             <div class="w-full flex items-center gap-3 mb-2">
               <h3 class="text-xl font-bold text-black">${title}</h3>
             </div>
@@ -284,8 +288,12 @@
       const main = document.getElementById('project-modal-main');
       const thumbs = document.getElementById('project-modal-thumbs');
       main.src = images[0] || '';
-      thumbs.innerHTML = images.map((src, i) => `<img data-i="${i}" src="${src}" class="h-16 w-full object-cover rounded border cursor-pointer">`).join('');
-      thumbs.querySelectorAll('img').forEach(img => img.onclick = () => { main.src = img.src; });
+      thumbs.innerHTML = images.map((src, i) => `
+        <div class="relative w-full pt-[56.25%] rounded overflow-hidden cursor-pointer" data-i="${i}">
+          <img src="${src}" class="absolute inset-0 w-full h-full object-cover" />
+        </div>
+      `).join('');
+      thumbs.querySelectorAll('[data-i]').forEach(el => el.onclick = () => { const img = el.querySelector('img'); if (img) main.src = img.src; });
       
       const linksBox = document.getElementById('project-modal-links');
       const links = Array.isArray(p.links) ? p.links.slice(0,5) : [];

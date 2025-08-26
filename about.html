@@ -229,7 +229,7 @@
               const linksHtml = (Array.isArray(p.links) && p.links.length) ? p.links.slice(0,5).map(u => `<a href=\"${u}\" target=\"_blank\" class=\"inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-xs\">Link</a>`).join('') : '';
               return `
               <div class=\"bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-start h-full\">
-                <img src=\"${cover}\" alt=\"${title}\" class=\"w-full h-48 object-cover rounded-xl mb-6\" />
+                <div class=\"relative w-full pt-[56.25%] rounded-xl mb-6 overflow-hidden\">\n                  <img src=\"${cover}\" alt=\"${title}\" class=\"absolute inset-0 w-full h-full object-cover\" />\n                </div>
                 <h3 class=\"text-xl font-bold text-black mb-3\">${title}</h3>
                 <p class=\"text-gray-600 mb-4 line-clamp-3\">${description}</p>
                 <div class=\"w-full flex items-center justify-between gap-2 mt-auto\">
