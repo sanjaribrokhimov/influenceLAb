@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Загрузка...</title>
+  
+  <!-- SEO Meta Tags (будут обновлены динамически) -->
+  <meta name="description" content="Загрузка...">
+  <meta name="keywords" content="блогеры в Узбекистане, реклама у блогеров, инфлюенсер-маркетинг, Influence Lab">
+  <meta name="author" content="Influence Lab">
+  <meta name="robots" content="index, follow">
+  <meta name="language" content="ru">
+  <meta name="geo.region" content="UZ">
+  <meta name="geo.placename" content="Ташкент">
+  <meta name="geo.position" content="41.2995;69.2401">
+  <meta name="ICBM" content="41.2995, 69.2401">
+  
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://influencelab.uz/blog-post.html">
+  
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://influencelab.uz/blog-post.html">
+  <meta property="og:title" content="Загрузка...">
+  <meta property="og:description" content="Загрузка...">
+  <meta property="og:image" content="https://influencelab.uz/img/logo.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:site_name" content="Influence Lab">
+  <meta property="og:locale" content="ru_RU">
+  
+  <!-- Twitter Card Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://influencelab.uz/blog-post.html">
+  <meta name="twitter:title" content="Загрузка...">
+  <meta name="twitter:description" content="Загрузка...">
+  <meta name="twitter:image" content="https://influencelab.uz/img/logo.png">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="img/logo.png">
+  <link rel="apple-touch-icon" href="img/logo.png">
+  <link rel="shortcut icon" href="img/logo.png">
+  
+  <!-- Preload critical resources -->
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"></noscript>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'brand-blue': '#002247',
+            'brand-blue-medium': '#034AA6',
+            'brand-blue-soft': '#2977E2',
+            'brand-white': '#F0F0F0',
+            'brand-black': '#000000'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .gradient-text {
+      background: linear-gradient(135deg, #002247 0%, #2977E2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+  </style>
+</head>
+<body class="bg-white">
+  <div id="site-header"></div>
+  
+  <!-- Loading State -->
+  <div id="loading-state" class="min-h-screen flex items-center justify-center">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-blue mx-auto mb-4"></div>
+      <p class="text-gray-600">Загрузка поста...</p>
+    </div>
+  </div>
+  
+  <!-- Content -->
+  <div id="content" class="hidden">
+    <!-- Breadcrumb -->
+    <nav class="bg-gray-50 py-4">
+      <div class="max-w-4xl mx-auto px-4">
+        <ol class="flex items-center space-x-2 text-sm">
+          <li><a href="/" class="text-brand-blue hover:underline">Главная</a></li>
+          <li class="text-gray-400">/</li>
+          <li><a href="/blog.html" class="text-brand-blue hover:underline">Блог</a></li>
+          <li class="text-gray-400">/</li>
+          <li id="breadcrumb-title" class="text-gray-600 truncate">Пост</li>
+        </ol>
+      </div>
+    </nav>
+    
+    <!-- Article -->
+    <article class="max-w-4xl mx-auto px-4 py-8">
+      <header class="mb-8">
+        <h1 id="article-title" class="text-4xl font-bold text-gray-900 mb-4"></h1>
+        <div class="flex items-center text-gray-600 text-sm mb-6">
+          <span>Influence Lab</span>
+          <span class="mx-2">•</span>
+          <time id="article-date" datetime=""></time>
+        </div>
+        <div id="article-image" class="mb-6"></div>
+      </header>
+      
+      <div id="article-content" class="prose prose-lg max-w-none">
+        <p id="article-description" class="text-xl text-gray-700 leading-relaxed"></p>
+      </div>
+      
+      <!-- Links -->
+      <div id="article-links" class="mt-8 p-6 bg-gray-50 rounded-lg"></div>
+      
+      <!-- Back to Blog -->
+      <div class="mt-8 text-center">
+        <a href="/blog.html" class="inline-flex items-center px-6 py-3 bg-brand-blue text-white rounded-lg hover:bg-brand-blue-medium transition-colors">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          Вернуться к блогу
+        </a>
+      </div>
+    </article>
+  </div>
+  
+  <!-- Error State -->
+  <div id="error-state" class="hidden min-h-screen flex items-center justify-center">
+    <div class="text-center">
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">Пост не найден</h2>
+      <p class="text-gray-600 mb-6">Запрашиваемый пост не существует или был удален.</p>
+      <a href="/blog.html" class="inline-flex items-center px-6 py-3 bg-brand-blue text-white rounded-lg hover:bg-brand-blue-medium transition-colors">
+        Вернуться к блогу
+      </a>
+    </div>
+  </div>
+  
+  <div id="site-footer"></div>
+  
+  <!-- SEO Templates -->
+  <script src="seo-templates.js"></script>
+  
+  <script>
+    // Загрузка компонентов
+    const loadHeader = async () => {
+      const html = await fetch('components/header.html').then(r => r.text());
+      document.getElementById('site-header').innerHTML = html;
+      
+      const scripts = document.getElementById('site-header').querySelectorAll('script');
+      scripts.forEach((script) => {
+        const newScript = document.createElement('script');
+        newScript.textContent = script.textContent;
+        document.head.appendChild(newScript);
+      });
+      
+      if (window.updateHeaderTranslations) window.updateHeaderTranslations();
+    };
+    
+    const loadFooter = async () => {
+      const html = await fetch('components/footer.html').then(r => r.text());
+      document.getElementById('site-footer').innerHTML = html;
+    };
+    
+    // Загрузка поста
+    async function loadBlogPost() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const postId = urlParams.get('id');
+      
+      if (!postId) {
+        showError();
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/blog/${postId}`);
+        if (!response.ok) {
+          showError();
+          return;
+        }
+        
+        const post = await response.json();
+        displayPost(post);
+        updateSEOTags(post);
+      } catch (error) {
+        console.error('Error loading post:', error);
+        showError();
+      }
+    }
+    
+    function displayPost(post) {
+      // Обновляем контент
+      document.getElementById('article-title').textContent = post.title || post.title_ru || 'Без названия';
+      document.getElementById('article-description').textContent = post.description || post.description_ru || '';
+      document.getElementById('breadcrumb-title').textContent = post.title || post.title_ru || 'Пост';
+      
+      // Устанавливаем дату
+      const dateElement = document.getElementById('article-date');
+      dateElement.textContent = new Date().toLocaleDateString('ru-RU');
+      dateElement.setAttribute('datetime', new Date().toISOString());
+      
+      // Добавляем изображение
+      const imageContainer = document.getElementById('article-image');
+      if (post.img) {
+        imageContainer.innerHTML = `
+          <img src="${post.img}" alt="${post.title || post.title_ru || ''}" 
+               class="w-full h-64 md:h-96 object-cover rounded-lg shadow-lg" loading="lazy">
+        `;
+      }
+      
+      // Добавляем ссылки
+      const linksContainer = document.getElementById('article-links');
+      if (post.links && post.links.length > 0) {
+        linksContainer.innerHTML = `
+          <h3 class="text-lg font-semibold mb-4">Связанные ссылки:</h3>
+          <ul class="space-y-2">
+            ${post.links.map(link => `
+              <li>
+                <a href="${link}" target="_blank" rel="noopener noreferrer" 
+                   class="text-brand-blue hover:underline break-all">
+                  ${link}
+                </a>
+              </li>
+            `).join('')}
+          </ul>
+        `;
+      } else {
+        linksContainer.style.display = 'none';
+      }
+      
+      // Показываем контент
+      document.getElementById('loading-state').classList.add('hidden');
+      document.getElementById('content').classList.remove('hidden');
+    }
+    
+    function updateSEOTags(post) {
+      const seoData = generateSEOMeta(post, 'blog', 'ru');
+      
+      // Обновляем meta теги
+      document.title = seoData.title;
+      document.querySelector('meta[name="description"]').setAttribute('content', seoData.description);
+      document.querySelector('meta[property="og:title"]').setAttribute('content', seoData.ogTitle);
+      document.querySelector('meta[property="og:description"]').setAttribute('content', seoData.ogDescription);
+      document.querySelector('meta[name="twitter:title"]').setAttribute('content', seoData.twitterTitle);
+      document.querySelector('meta[name="twitter:description"]').setAttribute('content', seoData.twitterDescription);
+      
+      // Обновляем canonical URL
+      const canonicalUrl = `https://influencelab.uz/blog-post.html?id=${post.id}`;
+      document.querySelector('link[rel="canonical"]').setAttribute('href', canonicalUrl);
+      document.querySelector('meta[property="og:url"]').setAttribute('content', canonicalUrl);
+      document.querySelector('meta[name="twitter:url"]').setAttribute('content', canonicalUrl);
+      
+      // Обновляем изображение
+      if (post.img) {
+        const imageUrl = post.img.startsWith('http') ? post.img : `https://influencelab.uz${post.img}`;
+        document.querySelector('meta[property="og:image"]').setAttribute('content', imageUrl);
+        document.querySelector('meta[name="twitter:image"]').setAttribute('content', imageUrl);
+      }
+      
+      // Добавляем структурированные данные
+      const structuredData = generateStructuredData(post, 'blog', 'ru');
+      const script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.textContent = JSON.stringify(structuredData);
+      document.head.appendChild(script);
+    }
+    
+    function showError() {
+      document.getElementById('loading-state').classList.add('hidden');
+      document.getElementById('error-state').classList.remove('hidden');
+    }
+    
+    // Инициализация
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadHeader();
+      await loadFooter();
+      await loadBlogPost();
+    });
+  </script>
+</body>
+</html>

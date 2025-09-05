@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://influencelab.uz/sitemap.xml
+
+# Disallow admin area
+Disallow: /admin/
+
+# Allow all other content
+Allow: /img/
+Allow: /video/
+Allow: /components/
+Allow: /api/
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1

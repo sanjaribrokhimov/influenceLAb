@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SEO Test - Influence Lab</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold mb-8">🔍 SEO Testing Page</h1>
+    
+    <!-- Test Blog SEO -->
+    <div class="bg-white p-6 rounded-lg shadow mb-6">
+      <h2 class="text-xl font-bold mb-4">📝 Blog SEO Test</h2>
+      <div id="blog-test-results"></div>
+    </div>
+    
+    <!-- Test Project SEO -->
+    <div class="bg-white p-6 rounded-lg shadow mb-6">
+      <h2 class="text-xl font-bold mb-4">🚀 Project SEO Test</h2>
+      <div id="project-test-results"></div>
+    </div>
+    
+    <!-- Test LED SEO -->
+    <div class="bg-white p-6 rounded-lg shadow mb-6">
+      <h2 class="text-xl font-bold mb-4">📺 LED SEO Test</h2>
+      <div id="led-test-results"></div>
+    </div>
+    
+    <!-- Test Structured Data -->
+    <div class="bg-white p-6 rounded-lg shadow mb-6">
+      <h2 class="text-xl font-bold mb-4">📊 Structured Data Test</h2>
+      <div id="structured-data-test"></div>
+    </div>
+    
+    <!-- Test Results -->
+    <div class="bg-white p-6 rounded-lg shadow">
+      <h2 class="text-xl font-bold mb-4">✅ Test Results</h2>
+      <div id="test-results"></div>
+    </div>
+  </div>
+  
+  <script src="seo-templates.js"></script>
+  <script>
+    // Test data
+    const testBlogPost = {
+      id: 1,
+      title: "Как работать с блогерами в Узбекистане",
+      title_ru: "Как работать с блогерами в Узбекистане",
+      title_uz: "O'zbekistonda bloggerlar bilan qanday ishlash kerak",
+      title_en: "How to work with bloggers in Uzbekistan",
+      description: "Подробное руководство по работе с блогерами и инфлюенсерами в Узбекистане. Узнайте секреты успешного сотрудничества с топовыми блогерами.",
+      description_ru: "Подробное руководство по работе с блогерами и инфлюенсерами в Узбекистане. Узнайте секреты успешного сотрудничества с топовыми блогерами.",
+      description_uz: "O'zbekistonda bloggerlar va influencerlar bilan ishlash bo'yicha batafsil qo'llanma. Top bloggerlar bilan muvaffaqiyatli hamkorlik sirlarini biling.",
+      description_en: "Detailed guide on working with bloggers and influencers in Uzbekistan. Learn the secrets of successful collaboration with top bloggers.",
+      img: "/img/blog-test.jpg"
+    };
+    
+    const testProject = {
+      id: 1,
+      title: "Реклама для Alif Bank",
+      title_ru: "Реклама для Alif Bank",
+      title_uz: "Alif Bank uchun reklama",
+      title_en: "Advertising for Alif Bank",
+      description: "Успешная рекламная кампания для Alif Bank с участием топовых блогеров Узбекистана. Результаты превзошли все ожидания.",
+      description_ru: "Успешная рекламная кампания для Alif Bank с участием топовых блогеров Узбекистана. Результаты превзошли все ожидания.",
+      description_uz: "Alif Bank uchun O'zbekistonning top bloggerlari ishtirokida muvaffaqiyatli reklama kampaniyasi. Natijalar barcha kutishlardan oshdi.",
+      description_en: "Successful advertising campaign for Alif Bank with participation of top bloggers from Uzbekistan. Results exceeded all expectations.",
+      img: "/img/project-test.jpg"
+    };
+    
+    const testLed = {
+      id: 1,
+      title: "LED экран в центре Ташкента",
+      title_ru: "LED экран в центре Ташкента",
+      title_uz: "Toshkent markazidagi LED ekran",
+      title_en: "LED screen in Tashkent center",
+      description: "Премиум LED экран в самом центре Ташкента. Высокая проходимость, отличная видимость, быстрая установка рекламы.",
+      description_ru: "Премиум LED экран в самом центре Ташкента. Высокая проходимость, отличная видимость, быстрая установка рекламы.",
+      description_uz: "Toshkent markazidagi premium LED ekran. Yuqori o'tish, ajoyib ko'rinish, tez reklama o'rnatish.",
+      description_en: "Premium LED screen in the very center of Tashkent. High traffic, excellent visibility, fast advertising installation.",
+      location: "Центр Ташкента",
+      img: "/img/led-test.jpg"
+    };
+    
+    // Test functions
+    function testBlogSEO() {
+      const results = [];
+      const languages = ['ru', 'uz', 'en'];
+      
+      languages.forEach(lang => {
+        const seoData = generateSEOMeta(testBlogPost, 'blog', lang);
+        results.push(`
+          <div class="mb-4 p-4 bg-gray-50 rounded">
+            <h3 class="font-bold text-lg mb-2">${lang.toUpperCase()} Language</h3>
+            <p><strong>Title:</strong> ${seoData.title}</p>
+            <p><strong>Description:</strong> ${seoData.description}</p>
+            <p><strong>OG Title:</strong> ${seoData.ogTitle}</p>
+            <p><strong>OG Description:</strong> ${seoData.ogDescription}</p>
+            <p><strong>Twitter Title:</strong> ${seoData.twitterTitle}</p>
+            <p><strong>Twitter Description:</strong> ${seoData.twitterDescription}</p>
+          </div>
+        `);
+      });
+      
+      document.getElementById('blog-test-results').innerHTML = results.join('');
+    }
+    
+    function testProjectSEO() {
+      const results = [];
+      const languages = ['ru', 'uz', 'en'];
+      
+      languages.forEach(lang => {
+        const seoData = generateSEOMeta(testProject, 'project', lang);
+        results.push(`
+          <div class="mb-4 p-4 bg-gray-50 rounded">
+            <h3 class="font-bold text-lg mb-2">${lang.toUpperCase()} Language</h3>
+            <p><strong>Title:</strong> ${seoData.title}</p>
+            <p><strong>Description:</strong> ${seoData.description}</p>
+            <p><strong>OG Title:</strong> ${seoData.ogTitle}</p>
+            <p><strong>OG Description:</strong> ${seoData.ogDescription}</p>
+            <p><strong>Twitter Title:</strong> ${seoData.twitterTitle}</p>
+            <p><strong>Twitter Description:</strong> ${seoData.twitterDescription}</p>
+          </div>
+        `);
+      });
+      
+      document.getElementById('project-test-results').innerHTML = results.join('');
+    }
+    
+    function testLedSEO() {
+      const results = [];
+      const languages = ['ru', 'uz', 'en'];
+      
+      languages.forEach(lang => {
+        const seoData = generateSEOMeta(testLed, 'led', lang);
+        results.push(`
+          <div class="mb-4 p-4 bg-gray-50 rounded">
+            <h3 class="font-bold text-lg mb-2">${lang.toUpperCase()} Language</h3>
+            <p><strong>Title:</strong> ${seoData.title}</p>
+            <p><strong>Description:</strong> ${seoData.description}</p>
+            <p><strong>OG Title:</strong> ${seoData.ogTitle}</p>
+            <p><strong>OG Description:</strong> ${seoData.ogDescription}</p>
+            <p><strong>Twitter Title:</strong> ${seoData.twitterTitle}</p>
+            <p><strong>Twitter Description:</strong> ${seoData.twitterDescription}</p>
+          </div>
+        `);
+      });
+      
+      document.getElementById('led-test-results').innerHTML = results.join('');
+    }
+    
+    function testStructuredData() {
+      const blogData = generateStructuredData(testBlogPost, 'blog', 'ru');
+      const projectData = generateStructuredData(testProject, 'project', 'ru');
+      const ledData = generateStructuredData(testLed, 'led', 'ru');
+      
+      document.getElementById('structured-data-test').innerHTML = `
+        <div class="mb-4 p-4 bg-gray-50 rounded">
+          <h3 class="font-bold text-lg mb-2">Blog Structured Data</h3>
+          <pre class="text-xs overflow-auto">${JSON.stringify(blogData, null, 2)}</pre>
+        </div>
+        <div class="mb-4 p-4 bg-gray-50 rounded">
+          <h3 class="font-bold text-lg mb-2">Project Structured Data</h3>
+          <pre class="text-xs overflow-auto">${JSON.stringify(projectData, null, 2)}</pre>
+        </div>
+        <div class="mb-4 p-4 bg-gray-50 rounded">
+          <h3 class="font-bold text-lg mb-2">LED Structured Data</h3>
+          <pre class="text-xs overflow-auto">${JSON.stringify(ledData, null, 2)}</pre>
+        </div>
+      `;
+    }
+    
+    function runAllTests() {
+      const results = [];
+      
+      try {
+        testBlogSEO();
+        results.push('✅ Blog SEO templates working');
+      } catch (error) {
+        results.push(`❌ Blog SEO error: ${error.message}`);
+      }
+      
+      try {
+        testProjectSEO();
+        results.push('✅ Project SEO templates working');
+      } catch (error) {
+        results.push(`❌ Project SEO error: ${error.message}`);
+      }
+      
+      try {
+        testLedSEO();
+        results.push('✅ LED SEO templates working');
+      } catch (error) {
+        results.push(`❌ LED SEO error: ${error.message}`);
+      }
+      
+      try {
+        testStructuredData();
+        results.push('✅ Structured data generation working');
+      } catch (error) {
+        results.push(`❌ Structured data error: ${error.message}`);
+      }
+      
+      // Check if functions exist
+      if (typeof generateSEOMeta === 'function') {
+        results.push('✅ generateSEOMeta function exists');
+      } else {
+        results.push('❌ generateSEOMeta function missing');
+      }
+      
+      if (typeof generateStructuredData === 'function') {
+        results.push('✅ generateStructuredData function exists');
+      } else {
+        results.push('❌ generateStructuredData function missing');
+      }
+      
+      if (typeof SEOTemplates === 'object') {
+        results.push('✅ SEOTemplates object exists');
+      } else {
+        results.push('❌ SEOTemplates object missing');
+      }
+      
+      document.getElementById('test-results').innerHTML = results.map(result => 
+        `<p class="mb-2">${result}</p>`
+      ).join('');
+    }
+    
+    // Run tests when page loads
+    document.addEventListener('DOMContentLoaded', runAllTests);
+  </script>
+</body>
+</html>

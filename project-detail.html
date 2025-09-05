@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Загрузка...</title>
+  
+  <!-- SEO Meta Tags (будут обновлены динамически) -->
+  <meta name="description" content="Загрузка...">
+  <meta name="keywords" content="проекты Influence Lab, кейсы инфлюенсер-маркетинга, реклама у блогеров Узбекистан">
+  <meta name="author" content="Influence Lab">
+  <meta name="robots" content="index, follow">
+  <meta name="language" content="ru">
+  <meta name="geo.region" content="UZ">
+  <meta name="geo.placename" content="Ташкент">
+  <meta name="geo.position" content="41.2995;69.2401">
+  <meta name="ICBM" content="41.2995, 69.2401">
+  
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://influencelab.uz/project-detail.html">
+  
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://influencelab.uz/project-detail.html">
+  <meta property="og:title" content="Загрузка...">
+  <meta property="og:description" content="Загрузка...">
+  <meta property="og:image" content="https://influencelab.uz/img/logo.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:site_name" content="Influence Lab">
+  <meta property="og:locale" content="ru_RU">
+  
+  <!-- Twitter Card Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://influencelab.uz/project-detail.html">
+  <meta name="twitter:title" content="Загрузка...">
+  <meta name="twitter:description" content="Загрузка...">
+  <meta name="twitter:image" content="https://influencelab.uz/img/logo.png">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="img/logo.png">
+  <link rel="apple-touch-icon" href="img/logo.png">
+  <link rel="shortcut icon" href="img/logo.png">
+  
+  <!-- Preload critical resources -->
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"></noscript>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'brand-blue': '#002247',
+            'brand-blue-medium': '#034AA6',
+            'brand-blue-soft': '#2977E2',
+            'brand-white': '#F0F0F0',
+            'brand-black': '#000000'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .gradient-text {
+      background: linear-gradient(135deg, #002247 0%, #2977E2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+  </style>
+</head>
+<body class="bg-white">
+  <div id="site-header"></div>
+  
+  <!-- Loading State -->
+  <div id="loading-state" class="min-h-screen flex items-center justify-center">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-blue mx-auto mb-4"></div>
+      <p class="text-gray-600">Загрузка проекта...</p>
+    </div>
+  </div>
+  
+  <!-- Content -->
+  <div id="content" class="hidden">
+    <!-- Breadcrumb -->
+    <nav class="bg-gray-50 py-4">
+      <div class="max-w-4xl mx-auto px-4">
+        <ol class="flex items-center space-x-2 text-sm">
+          <li><a href="/" class="text-brand-blue hover:underline">Главная</a></li>
+          <li class="text-gray-400">/</li>
+          <li><a href="/projects.html" class="text-brand-blue hover:underline">Проекты</a></li>
+          <li class="text-gray-400">/</li>
+          <li id="breadcrumb-title" class="text-gray-600 truncate">Проект</li>
+        </ol>
+      </div>
+    </nav>
+    
+    <!-- Project -->
+    <article class="max-w-4xl mx-auto px-4 py-8">
+      <header class="mb-8">
+        <h1 id="project-title" class="text-4xl font-bold text-gray-900 mb-4"></h1>
+        <div class="flex items-center text-gray-600 text-sm mb-6">
+          <span>Influence Lab</span>
+          <span class="mx-2">•</span>
+          <span>Проект</span>
+        </div>
+        <div id="project-image" class="mb-6"></div>
+      </header>
+      
+      <div id="project-content" class="prose prose-lg max-w-none">
+        <p id="project-description" class="text-xl text-gray-700 leading-relaxed"></p>
+      </div>
+      
+      <!-- Gallery -->
+      <div id="project-gallery" class="mt-8"></div>
+      
+      <!-- Links -->
+      <div id="project-links" class="mt-8 p-6 bg-gray-50 rounded-lg"></div>
+      
+      <!-- Back to Projects -->
+      <div class="mt-8 text-center">
+        <a href="/projects.html" class="inline-flex items-center px-6 py-3 bg-brand-blue text-white rounded-lg hover:bg-brand-blue-medium transition-colors">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          Вернуться к проектам
+        </a>
+      </div>
+    </article>
+  </div>
+  
+  <!-- Error State -->
+  <div id="error-state" class="hidden min-h-screen flex items-center justify-center">
+    <div class="text-center">
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">Проект не найден</h2>
+      <p class="text-gray-600 mb-6">Запрашиваемый проект не существует или был удален.</p>
+      <a href="/projects.html" class="inline-flex items-center px-6 py-3 bg-brand-blue text-white rounded-lg hover:bg-brand-blue-medium transition-colors">
+        Вернуться к проектам
+      </a>
+    </div>
+  </div>
+  
+  <div id="site-footer"></div>
+  
+  <!-- SEO Templates -->
+  <script src="seo-templates.js"></script>
+  
+  <script>
+    // Загрузка компонентов
+    const loadHeader = async () => {
+      const html = await fetch('components/header.html').then(r => r.text());
+      document.getElementById('site-header').innerHTML = html;
+      
+      const scripts = document.getElementById('site-header').querySelectorAll('script');
+      scripts.forEach((script) => {
+        const newScript = document.createElement('script');
+        newScript.textContent = script.textContent;
+        document.head.appendChild(newScript);
+      });
+      
+      if (window.updateHeaderTranslations) window.updateHeaderTranslations();
+    };
+    
+    const loadFooter = async () => {
+      const html = await fetch('components/footer.html').then(r => r.text());
+      document.getElementById('site-footer').innerHTML = html;
+    };
+    
+    // Загрузка проекта
+    async function loadProject() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const projectId = urlParams.get('id');
+      
+      if (!projectId) {
+        showError();
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/projects/${projectId}`);
+        if (!response.ok) {
+          showError();
+          return;
+        }
+        
+        const project = await response.json();
+        displayProject(project);
+        updateSEOTags(project);
+      } catch (error) {
+        console.error('Error loading project:', error);
+        showError();
+      }
+    }
+    
+    function displayProject(project) {
+      // Обновляем контент
+      document.getElementById('project-title').textContent = project.title || project.title_ru || 'Без названия';
+      document.getElementById('project-description').textContent = project.description || project.description_ru || '';
+      document.getElementById('breadcrumb-title').textContent = project.title || project.title_ru || 'Проект';
+      
+      // Добавляем главное изображение
+      const imageContainer = document.getElementById('project-image');
+      if (project.img) {
+        imageContainer.innerHTML = `
+          <img src="${project.img}" alt="${project.title || project.title_ru || ''}" 
+               class="w-full h-64 md:h-96 object-cover rounded-lg shadow-lg" loading="lazy">
+        `;
+      }
+      
+      // Добавляем галерею
+      const galleryContainer = document.getElementById('project-gallery');
+      if (project.images && project.images.length > 1) {
+        galleryContainer.innerHTML = `
+          <h3 class="text-2xl font-bold mb-6">Галерея проекта</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            ${project.images.slice(1).map(image => `
+              <img src="${image}" alt="${project.title || project.title_ru || ''}" 
+                   class="w-full h-48 object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer" 
+                   loading="lazy" onclick="openImageModal('${image}')">
+            `).join('')}
+          </div>
+        `;
+      } else {
+        galleryContainer.style.display = 'none';
+      }
+      
+      // Добавляем ссылки
+      const linksContainer = document.getElementById('project-links');
+      if (project.links && project.links.length > 0) {
+        linksContainer.innerHTML = `
+          <h3 class="text-lg font-semibold mb-4">Связанные ссылки:</h3>
+          <ul class="space-y-2">
+            ${project.links.map(link => `
+              <li>
+                <a href="${link}" target="_blank" rel="noopener noreferrer" 
+                   class="text-brand-blue hover:underline break-all">
+                  ${link}
+                </a>
+              </li>
+            `).join('')}
+          </ul>
+        `;
+      } else {
+        linksContainer.style.display = 'none';
+      }
+      
+      // Показываем контент
+      document.getElementById('loading-state').classList.add('hidden');
+      document.getElementById('content').classList.remove('hidden');
+    }
+    
+    function updateSEOTags(project) {
+      const seoData = generateSEOMeta(project, 'project', 'ru');
+      
+      // Обновляем meta теги
+      document.title = seoData.title;
+      document.querySelector('meta[name="description"]').setAttribute('content', seoData.description);
+      document.querySelector('meta[property="og:title"]').setAttribute('content', seoData.ogTitle);
+      document.querySelector('meta[property="og:description"]').setAttribute('content', seoData.ogDescription);
+      document.querySelector('meta[name="twitter:title"]').setAttribute('content', seoData.twitterTitle);
+      document.querySelector('meta[name="twitter:description"]').setAttribute('content', seoData.twitterDescription);
+      
+      // Обновляем canonical URL
+      const canonicalUrl = `https://influencelab.uz/project-detail.html?id=${project.id}`;
+      document.querySelector('link[rel="canonical"]').setAttribute('href', canonicalUrl);
+      document.querySelector('meta[property="og:url"]').setAttribute('content', canonicalUrl);
+      document.querySelector('meta[name="twitter:url"]').setAttribute('content', canonicalUrl);
+      
+      // Обновляем изображение
+      if (project.img) {
+        const imageUrl = project.img.startsWith('http') ? project.img : `https://influencelab.uz${project.img}`;
+        document.querySelector('meta[property="og:image"]').setAttribute('content', imageUrl);
+        document.querySelector('meta[name="twitter:image"]').setAttribute('content', imageUrl);
+      }
+      
+      // Добавляем структурированные данные
+      const structuredData = generateStructuredData(project, 'project', 'ru');
+      const script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.textContent = JSON.stringify(structuredData);
+      document.head.appendChild(script);
+    }
+    
+    function showError() {
+      document.getElementById('loading-state').classList.add('hidden');
+      document.getElementById('error-state').classList.remove('hidden');
+    }
+    
+    // Модальное окно для изображений
+    function openImageModal(imageSrc) {
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4';
+      modal.innerHTML = `
+        <div class="relative max-w-4xl max-h-full">
+          <img src="${imageSrc}" alt="Изображение проекта" class="max-w-full max-h-full object-contain rounded-lg">
+          <button onclick="this.parentElement.parentElement.remove()" 
+                  class="absolute top-4 right-4 text-white text-2xl hover:text-gray-300">
+            ×
+          </button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+    
+    // Инициализация
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadHeader();
+      await loadFooter();
+      await loadProject();
+    });
+  </script>
+</body>
+</html>
