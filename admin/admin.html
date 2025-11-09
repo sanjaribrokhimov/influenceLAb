@@ -6,9 +6,14 @@
   <title>Админка Influence Lab</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Quill Rich Text Editor -->
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
   <style>
     body { font-family: 'Inter', sans-serif; }
     .modal-bg { background: rgba(0,0,0,0.5); }
+    .ql-editor { min-height: 200px; }
+    .ql-container { font-size: 16px; }
   </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -77,7 +82,7 @@
         
         <!-- Картинки -->
         <div class="bg-gray-50 p-4 rounded-lg">
-          <label class="block mb-2 font-semibold text-lg">📸 Картинки (до 10)</label>
+          <label class="block mb-2 font-semibold text-lg">📸 Картинки (до 30)</label>
           <input type="file" id="modal-imgs" name="imgs[]" multiple class="w-full px-4 py-3 border rounded-lg bg-white" accept="image/*">
           <input type="hidden" id="modal-images-old">
           <div id="img-preview" class="mt-3 grid grid-cols-4 gap-3"></div>
@@ -105,18 +110,23 @@
         <div class="bg-green-50 p-4 rounded-lg">
           <label class="block mb-3 font-semibold text-lg">📄 Описания</label>
           
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div class="space-y-4">
             <div>
               <label class="block mb-2 font-semibold text-sm text-gray-700">🇷🇺 Русский (RU)</label>
-              <textarea id="modal-desc" class="w-full px-4 py-3 border rounded-lg" rows="4" required></textarea>
+              <div id="modal-desc-editor" class="bg-white border rounded-lg"></div>
+              <textarea id="modal-desc" class="hidden"></textarea>
             </div>
             <div>
               <label class="block mb-2 font-semibold text-sm text-gray-700">🇺🇿 O'zbekcha (UZ)</label>
-              <textarea id="modal-desc-uz" class="w-full px-4 py-3 border rounded-lg bg-gray-50" rows="4" placeholder="Переведется автоматически"></textarea>
+              <div id="modal-desc-uz-editor" class="bg-gray-50 border rounded-lg"></div>
+              <textarea id="modal-desc-uz" class="hidden"></textarea>
+              <p class="text-xs text-gray-500 mt-1">Переведется автоматически или можете отредактировать</p>
             </div>
             <div>
               <label class="block mb-2 font-semibold text-sm text-gray-700">🇺🇸 English (EN)</label>
-              <textarea id="modal-desc-en" class="w-full px-4 py-3 border rounded-lg bg-gray-50" rows="4" placeholder="Переведется автоматически"></textarea>
+              <div id="modal-desc-en-editor" class="bg-gray-50 border rounded-lg"></div>
+              <textarea id="modal-desc-en" class="hidden"></textarea>
+              <p class="text-xs text-gray-500 mt-1">Переведется автоматически или можете отредактировать</p>
             </div>
           </div>
         </div>
@@ -130,7 +140,7 @@
         </div>
         <!-- Ссылки -->
         <div id="links-block" class="bg-purple-50 p-4 rounded-lg">
-          <label class="block mb-3 font-semibold text-lg">🔗 Ссылки (до 5)</label>
+          <label class="block mb-3 font-semibold text-lg">🔗 Ссылки (до 10)</label>
           <div id="links-container" class="space-y-3"></div>
           <button type="button" id="add-link-btn" class="mt-3 px-4 py-2 text-sm rounded bg-purple-500 text-white hover:bg-purple-600 transition font-semibold">+ Добавить ссылку</button>
         </div>
@@ -292,6 +302,53 @@
     const modalTitleInput = document.getElementById('modal-title-input');
     const modalDesc = document.getElementById('modal-desc');
     const imgPreview = document.getElementById('img-preview');
+    
+    // Инициализация Quill редакторов
+    let quillDesc, quillDescUz, quillDescEn;
+    
+    function initQuillEditors() {
+      const toolbarOptions = [
+        [{ 'header': [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ 'color': [] }, { 'background': [] }],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        [{ 'align': [] }],
+        ['link'],
+        ['clean']
+      ];
+      
+      quillDesc = new Quill('#modal-desc-editor', {
+        theme: 'snow',
+        modules: { toolbar: toolbarOptions },
+        placeholder: 'Введите описание с форматированием...'
+      });
+      
+      quillDescUz = new Quill('#modal-desc-uz-editor', {
+        theme: 'snow',
+        modules: { toolbar: toolbarOptions },
+        placeholder: 'Переведется автоматически или можете отредактировать...'
+      });
+      
+      quillDescEn = new Quill('#modal-desc-en-editor', {
+        theme: 'snow',
+        modules: { toolbar: toolbarOptions },
+        placeholder: 'Переведется автоматически или можете отредактировать...'
+      });
+      
+      // Синхронизация с hidden textarea
+      quillDesc.on('text-change', () => {
+        modalDesc.value = quillDesc.root.innerHTML;
+      });
+      quillDescUz.on('text-change', () => {
+        document.getElementById('modal-desc-uz').value = quillDescUz.root.innerHTML;
+      });
+      quillDescEn.on('text-change', () => {
+        document.getElementById('modal-desc-en').value = quillDescEn.root.innerHTML;
+      });
+    }
+    
+    // Инициализируем редакторы после загрузки страницы
+    setTimeout(initQuillEditors, 100);
     const linksContainer = document.getElementById('links-container');
     const addLinkBtn = document.getElementById('add-link-btn');
     const linksBlock = document.getElementById('links-block');
@@ -302,8 +359,8 @@
     let currentImagesOld = [];
     let newFiles = [];
     function limitTotal() {
-      if (currentImagesOld.length + newFiles.length > 10) {
-        newFiles = newFiles.slice(0, 10 - currentImagesOld.length);
+      if (currentImagesOld.length + newFiles.length > 30) {
+        newFiles = newFiles.slice(0, 30 - currentImagesOld.length);
       }
     }
     function renderPreviews() {
@@ -362,12 +419,12 @@
     };
     function renderLinks(values) {
       linksContainer.innerHTML = '';
-      (values || []).slice(0,5).forEach((v, idx) => addLinkInput(v));
+      (values || []).slice(0,10).forEach((v, idx) => addLinkInput(v));
       if (!values || values.length === 0) addLinkInput('');
     }
     function addLinkInput(value) {
       const count = linksContainer.querySelectorAll('input[type="url"]').length;
-      if (count >= 5) return;
+      if (count >= 10) return;
       const wrap = document.createElement('div');
       wrap.className = 'flex gap-2';
       wrap.innerHTML = `<input type="url" placeholder="https://..." class="flex-1 px-4 py-3 border rounded-lg" value="${value || ''}">
@@ -396,9 +453,46 @@
       modalTitleInput.value = post ? post.title : '';
       document.getElementById('modal-title-uz').value = post ? (post.title_uz || '') : '';
       document.getElementById('modal-title-en').value = post ? (post.title_en || '') : '';
-      modalDesc.value = post ? post.description : '';
-      document.getElementById('modal-desc-uz').value = post ? (post.description_uz || '') : '';
-      document.getElementById('modal-desc-en').value = post ? (post.description_en || '') : '';
+      
+      // Устанавливаем содержимое Quill редакторов
+      if (quillDesc) {
+        const descContent = post ? (post.description || '') : '';
+        console.log('Загрузка описания в редактор:', {
+          length: descContent.length,
+          hasHTML: descContent.includes('<'),
+          content: descContent.substring(0, 100)
+        });
+        // Проверяем есть ли HTML теги, если нет - это старый plain text
+        if (descContent && !descContent.includes('<')) {
+          // Старый текст без HTML - используем setText чтобы Quill добавил форматирование
+          console.log('Старый текст без HTML - конвертируем');
+          quillDesc.setText(descContent);
+        } else {
+          // Новый текст с HTML - загружаем как есть
+          console.log('Новый текст с HTML - загружаем напрямую');
+          quillDesc.root.innerHTML = descContent;
+        }
+        modalDesc.value = quillDesc.root.innerHTML;
+        console.log('После загрузки в Quill:', modalDesc.value.substring(0, 100));
+      }
+      if (quillDescUz) {
+        const descUzContent = post ? (post.description_uz || '') : '';
+        if (descUzContent && !descUzContent.includes('<')) {
+          quillDescUz.setText(descUzContent);
+        } else {
+          quillDescUz.root.innerHTML = descUzContent;
+        }
+        document.getElementById('modal-desc-uz').value = quillDescUz.root.innerHTML;
+      }
+      if (quillDescEn) {
+        const descEnContent = post ? (post.description_en || '') : '';
+        if (descEnContent && !descEnContent.includes('<')) {
+          quillDescEn.setText(descEnContent);
+        } else {
+          quillDescEn.root.innerHTML = descEnContent;
+        }
+        document.getElementById('modal-desc-en').value = quillDescEn.root.innerHTML;
+      }
       // toggle blocks
       if (modalContext === 'led') {
         linksBlock.classList.add('hidden');
@@ -415,12 +509,28 @@
     function closeModal() {
       modalBg.classList.add('hidden');
       modalForm.reset();
+      // Очищаем Quill редакторы
+      if (quillDesc) quillDesc.setText('');
+      if (quillDescUz) quillDescUz.setText('');
+      if (quillDescEn) quillDescEn.setText('');
     }
     modalForm.onsubmit = async (e) => {
       e.preventDefault();
       
+      // Обновляем скрытые textarea из Quill редакторов
+      if (quillDesc) modalDesc.value = quillDesc.root.innerHTML;
+      if (quillDescUz) document.getElementById('modal-desc-uz').value = quillDescUz.root.innerHTML;
+      if (quillDescEn) document.getElementById('modal-desc-en').value = quillDescEn.root.innerHTML;
+      
       const title = modalTitleInput.value.trim();
-      const desc = modalDesc.value.trim();
+      const desc = quillDesc ? quillDesc.getText().trim() : modalDesc.value.trim();
+      
+      // Логируем что будем сохранять
+      console.log('Сохранение данных:');
+      console.log('Title:', title);
+      console.log('Description HTML:', modalDesc.value.substring(0, 200));
+      console.log('Description UZ HTML:', document.getElementById('modal-desc-uz').value.substring(0, 200));
+      console.log('Description EN HTML:', document.getElementById('modal-desc-en').value.substring(0, 200));
       
       // Автоматический перевод перед сохранением, если поля UZ/EN пустые
       const titleUz = document.getElementById('modal-title-uz').value.trim();
@@ -457,15 +567,21 @@
           });
           const descData = await descResponse.json();
           if (descData.translations) {
-            if (!descUz) document.getElementById('modal-desc-uz').value = descData.translations.uz || '';
-            if (!descEn) document.getElementById('modal-desc-en').value = descData.translations.en || '';
+            if (!descUz && quillDescUz) {
+              quillDescUz.setText(descData.translations.uz || '');
+              document.getElementById('modal-desc-uz').value = quillDescUz.root.innerHTML;
+            }
+            if (!descEn && quillDescEn) {
+              quillDescEn.setText(descData.translations.en || '');
+              document.getElementById('modal-desc-en').value = quillDescEn.root.innerHTML;
+            }
           }
         }
         
         // Теперь сохраняем
         const id = modalId.value;
         const formData = new FormData();
-        const files = newFiles.slice(0, 10 - currentImagesOld.length);
+        const files = newFiles.slice(0, 30 - currentImagesOld.length);
         files.forEach(f => formData.append('imgs', f));
         formData.append('imagesOld', JSON.stringify(currentImagesOld));
         formData.append('imgOld', (currentImagesOld[0] || ''));
@@ -481,28 +597,47 @@
           base = '/api/led';
           formData.append('location', modalLocation.value || '');
         } else {
-          const links = Array.from(linksContainer.querySelectorAll('input[type="url"]')).map(i => i.value.trim()).filter(Boolean).slice(0,5);
+          const links = Array.from(linksContainer.querySelectorAll('input[type="url"]')).map(i => i.value.trim()).filter(Boolean).slice(0,10);
           links.forEach(v => formData.append('links', v));
         }
         
+        console.log('Отправка данных:', { id, base, context: modalContext });
+        console.log('FormData содержит:');
+        console.log('- description:', formData.get('description')?.substring(0, 100));
+        console.log('- description_uz:', formData.get('description_uz')?.substring(0, 100));
+        console.log('- description_en:', formData.get('description_en')?.substring(0, 100));
+        
         if (id) {
+          console.log('Редактирование существующего поста ID:', id);
           const response = await fetch(`${base}/${id}`, { method: 'POST', body: formData });
-          if (!response.ok) throw new Error('fail');
+          console.log('Response status:', response.status);
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Server error:', errorText);
+            throw new Error(`Ошибка сервера (${response.status}): ${errorText}`);
+          }
           closeModal(); 
           modalContext === 'projects' ? loadProjects() : (modalContext === 'led' ? loadLed() : loadBlog());
         } else {
           if ((currentImagesOld.length + files.length) === 0) { 
             alert('Пожалуйста, выберите минимум одну картинку'); 
+            saveBtn.textContent = originalText;
+            saveBtn.disabled = false;
             return; 
           }
           const response = await fetch(base, { method: 'POST', body: formData });
-          if (!response.ok) throw new Error('fail');
+          console.log('Response status:', response.status);
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Server error:', errorText);
+            throw new Error(`Ошибка сервера (${response.status}): ${errorText}`);
+          }
           closeModal(); 
           modalContext === 'projects' ? loadProjects() : (modalContext === 'led' ? loadLed() : loadBlog());
         }
       } catch (error) {
         console.error('Save error:', error);
-        alert('Ошибка при сохранении.');
+        alert(`Ошибка при сохранении:\n${error.message}\n\nПроверьте консоль браузера (F12) для подробностей.`);
       } finally {
         saveBtn.textContent = originalText;
         saveBtn.disabled = false;
@@ -559,7 +694,7 @@
     // Функция перевода всех полей
     document.getElementById('translate-all-btn').onclick = () => {
       const title = modalTitleInput.value.trim();
-      const desc = modalDesc.value.trim();
+      const desc = quillDesc ? quillDesc.getText().trim() : modalDesc.value.trim();
       
       if (!title && !desc) {
         alert('Сначала введите заголовок или описание на русском языке');
@@ -607,8 +742,15 @@
                 document.getElementById('modal-title-uz').value = result.data.translations.uz || '';
                 document.getElementById('modal-title-en').value = result.data.translations.en || '';
               } else if (result.type === 'desc') {
-                document.getElementById('modal-desc-uz').value = result.data.translations.uz || '';
-                document.getElementById('modal-desc-en').value = result.data.translations.en || '';
+                // Обновляем Quill редакторы
+                if (quillDescUz) {
+                  quillDescUz.setText(result.data.translations.uz || '');
+                  document.getElementById('modal-desc-uz').value = quillDescUz.root.innerHTML;
+                }
+                if (quillDescEn) {
+                  quillDescEn.setText(result.data.translations.en || '');
+                  document.getElementById('modal-desc-en').value = quillDescEn.root.innerHTML;
+                }
               }
             }
           });

@@ -232,6 +232,20 @@
           100% { opacity: 1; transform: translateY(0); }
         }
         .animate-fade-in { animation: fadeInUp 1.2s cubic-bezier(0.4,0,0.2,1) both; }
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
     </style>
 </head>
 <body class="bg-white">
@@ -424,21 +438,28 @@
           const container = document.getElementById('projects-list-home');
           if (!container) return;
           const list = (Array.isArray(items) && items.length) ? items.slice(0,3) : defaultHomeProjects;
+          // Функция для удаления HTML тегов
+          function stripHtml(html) {
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html;
+            return tmp.textContent || tmp.innerText || '';
+          }
           container.innerHTML = list.map(p => {
             const cover = (Array.isArray(p.images) && p.images.length) ? p.images[0] : (p.img || 'img/img1.jpg');
             const title = getTranslated('title', p) || (p.title || '');
-            const description = getTranslated('description', p) || (p.description || '');
-            const linksHtml = (Array.isArray(p.links) && p.links.length) ? `<div class=\"w-full flex flex-wrap gap-1 mt-1 mb-3\">${p.links.slice(0,5).map(u => `<a href=\"${u}\" target=\"_blank\" class=\"inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-[11px]\">Link</a>`).join('')}</div>` : '';
+            const descriptionHtml = getTranslated('description', p) || (p.description || '');
+            const description = stripHtml(descriptionHtml); // Убираем HTML теги
+            const linksHtml = (Array.isArray(p.links) && p.links.length) ? p.links.slice(0,5).map(u => `<a href=\"${u}\" target=\"_blank\" class=\"inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-[11px]\">Link</a>`).join('') : '';
             return `
-            <div class=\"bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-start h-full\"> 
-              <div class=\"relative w-full pt-[56.25%] rounded-xl mb-6 overflow-hidden\"> 
+            <div class=\"bg-white p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col h-full\"> 
+              <div class=\"relative w-full pt-[56.25%] rounded-xl mb-4 overflow-hidden\"> 
                 <img src=\"${cover}\" alt=\"${title}\" class=\"absolute inset-0 w-full h-full object-cover\" />
               </div>
-              <h3 class=\"text-xl font-bold text-black mb-3\">${title}</h3>
-              <p class=\"text-gray-600 mb-4 line-clamp-3\">${description}</p>
+              <h3 class=\"text-lg font-bold text-black mb-2 line-clamp-2 min-h-[3rem]\">${title}</h3>
+              <p class=\"text-gray-600 mb-4 line-clamp-3 text-sm flex-grow\">${description}</p>
               <div class=\"w-full flex items-center justify-between gap-2 mt-auto\"> 
                 <div class=\"flex flex-wrap gap-2\">${linksHtml}</div>
-                <a href=\"projects.html\" class=\"px-6 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200\">${(function(){const l=(localStorage.getItem('site_lang')||'RU');return l==='UZ'?'Batafsil':(l==='EN'?'More':'Подробнее');})()}</a>
+                <a href=\"projects.html\" class=\"px-6 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200 text-sm whitespace-nowrap\">${(function(){const l=(localStorage.getItem('site_lang')||'RU');return l==='UZ'?'Batafsil':(l==='EN'?'More':'Подробнее');})()}</a>
               </div>
               
             </div>`;
@@ -566,12 +587,12 @@
             const description = getTranslated('description', it) || (it.description || '');
             const location = it.location || '';
             return `
-            <div class=\"bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-start\">
-              <div class=\"relative w-full pt-[56.25%] rounded-xl mb-6 overflow-hidden\"> 
+            <div class=\"bg-white p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col h-full\">
+              <div class=\"relative w-full pt-[56.25%] rounded-xl mb-4 overflow-hidden\"> 
                 <img src=\"${cover}\" alt=\"${title}\" class=\"absolute inset-0 w-full h-full object-cover\" />
               </div>
-              <h3 class=\"text-xl font-bold text-black mb-3\">${title}</h3>
-              <p class=\"text-gray-600 mb-4 line-clamp-3\">${description}</p>
+              <h3 class=\"text-lg font-bold text-black mb-2 line-clamp-2 min-h-[3rem]\">${title}</h3>
+              <p class=\"text-gray-600 mb-4 line-clamp-3 text-sm flex-grow\">${description}</p>
               <div class=\"mt-auto inline-flex items-center gap-2 text-sm text-brand-blue-soft\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1118 0z\"/><circle cx=\"12\" cy=\"10\" r=\"3\"/></svg><span>${location}</span></div>
             </div>`;
           }).join('');
@@ -674,7 +695,7 @@
       </h2>
       <p class="text-xl text-gray-600 max-w-2xl mx-auto" id="blog-description">Читайте полезные материалы и узнавайте о последних трендах в digital-маркетинге и IT.</p>
             </div>
-    <div id="blog-list-home" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12"></div>
+    <div id="blog-list-home" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12 items-stretch"></div>
     <div class="text-center">
       <a href="blog.html" class="inline-block px-10 py-4 bg-brand-blue-soft text-white rounded-xl font-semibold hover:bg-brand-blue-medium transition-all duration-200 text-lg shadow-lg"><span id="go-to-blog-btn">Перейти в блог</span></a>
                     </div>
@@ -698,33 +719,47 @@
         if (lang === 'EN' && item[`${field}_en`]) return item[`${field}_en`];
         return item[field] || '';
       }
+      // Функция для удаления HTML тегов
+      function stripHtml(html) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        return tmp.textContent || tmp.innerText || '';
+      }
       const html = posts.map(p => {
         const cover = (Array.isArray(p.images) && p.images.length) ? p.images[0] : (p.img || 'img/img1.jpg');
         const title = getTranslated('title', p) || (p.title || '');
-        const description = getTranslated('description', p) || (p.description || '');
+        const descriptionHtml = getTranslated('description', p) || (p.description || '');
+        const description = stripHtml(descriptionHtml); // Убираем HTML теги
         const linksHtml = (Array.isArray(p.links) && p.links.length) ? p.links.slice(0,5).map(u => `<a href=\"${u}\" target=\"_blank\" class=\"inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-xs\">Link</a>`).join('') : '';
         return `
-        <div class=\"bg-white px-6 pt-6 pb-4 rounded-2xl shadow-lg flex flex-col items-start\"> 
+        <div class=\"bg-white px-6 pt-6 pb-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col h-full\"> 
           <div class=\"relative w-full pt-[56.25%] rounded-xl mb-4 overflow-hidden\"> 
             <img src=\"${cover}\" alt=\"${title}\" class=\"absolute inset-0 w-full h-full object-cover\" />
           </div>
-          <h3 class=\"text-lg font-bold mb-2\">${title}</h3>
-          <p class=\"text-gray-600 mb-2 line-clamp-3\">${description}</p>
-          <div class=\"w-full flex items-center justify-between gap-2 mt-auto\">\n            <div class=\"flex flex-wrap gap-2\">${linksHtml}</div>\n            <a href=\"blog.html\" class=\"px-6 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200\">${(function(){const l=(localStorage.getItem('site_lang')||'RU');return l==='UZ'?'Batafsil':(l==='EN'?'More':'Подробнее');})()}</a>\n          </div>
+          <h3 class=\"text-lg font-bold mb-2 line-clamp-2 min-h-[3rem]\">${title}</h3>
+          <p class=\"text-gray-600 mb-4 line-clamp-3 text-sm flex-grow\">${description}</p>
+          <div class=\"w-full flex items-center justify-between gap-2 mt-auto\">\n            <div class=\"flex flex-wrap gap-2\">${linksHtml}</div>\n            <a href=\"blog.html\" class=\"px-6 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200 text-sm\">${(function(){const l=(localStorage.getItem('site_lang')||'RU');return l==='UZ'?'Batafsil':(l==='EN'?'More':'Подробнее');})()}</a>\n          </div>
             </div>`;
       }).join('');
       document.getElementById('blog-list-home').innerHTML = html;
     })
     .catch(() => {
       window.homeBlogData = [];
+      function stripHtml(html) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        return tmp.textContent || tmp.innerText || '';
+      }
       document.getElementById('blog-list-home').innerHTML = defaultHomeBlog.map(p => `
-        <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col items-start">
+        <div class="bg-white px-6 pt-6 pb-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col h-full">
           <div class="relative w-full pt-[56.25%] rounded-xl mb-4 overflow-hidden">
             <img src="${p.img}" alt="${p.title}" class="absolute inset-0 w-full h-full object-cover" />
           </div>
-          <h3 class="text-lg font-bold mb-2">${p.title}</h3>
-          <p class="text-gray-600 mb-4 line-clamp-3">${p.description}</p>
-          <a href="blog.html" class="mt-auto inline-block px-5 py-2 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200">Читать</a>
+          <h3 class="text-lg font-bold mb-2 line-clamp-2 min-h-[3rem]">${p.title}</h3>
+          <p class="text-gray-600 mb-4 line-clamp-3 text-sm flex-grow">${stripHtml(p.description)}</p>
+          <div class="w-full flex items-center justify-end mt-auto">
+            <a href="blog.html" class="px-6 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200 text-sm">Подробнее</a>
+          </div>
         </div>
       `).join('');
     });
@@ -1090,18 +1125,26 @@
               if (lang === 'EN' && item[`${field}_en`]) return item[`${field}_en`];
               return item[field] || '';
             }
+            function stripHtml(html) {
+              const tmp = document.createElement('div');
+              tmp.innerHTML = html;
+              return tmp.textContent || tmp.innerText || '';
+            }
             document.getElementById('blog-list-home').innerHTML = posts.map(p => {
               const cover = (Array.isArray(p.images) && p.images.length) ? p.images[0] : (p.img || 'img/img1.jpg');
               const title = getTranslated('title', p) || (p.title || '');
-              const description = getTranslated('description', p) || (p.description || '');
+              const descriptionHtml = getTranslated('description', p) || (p.description || '');
+              const description = stripHtml(descriptionHtml);
               return `
-              <div class=\"bg-white px-6 pt-6 pb-4 rounded-2xl shadow-lg flex flex-col items-start\"> 
+              <div class=\"bg-white px-6 pt-6 pb-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col h-full\"> 
                 <div class=\"relative w-full pt-[56.25%] rounded-xl mb-4 overflow-hidden\"> 
                   <img src=\"${cover}\" alt=\"${title}\" class=\"absolute inset-0 w-full h-full object-cover\" />
                 </div>
-                <h3 class=\"text-lg font-bold mb-2\">${title}</h3>
-                <p class=\"text-gray-600 mb-2 line-clamp-3\">${description}</p>
-                <a href=\"blog.html\" class=\"mt-auto inline-block px-5 py-2 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200\">Читать</a>
+                <h3 class=\"text-lg font-bold mb-2 line-clamp-2 min-h-[3rem]\">${title}</h3>
+                <p class=\"text-gray-600 mb-4 line-clamp-3 text-sm flex-grow\">${description}</p>
+                <div class=\"w-full flex items-center justify-end mt-auto\">
+                  <a href=\"blog.html\" class=\"px-6 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200 text-sm\">${(function(){const l=(localStorage.getItem('site_lang')||'RU');return l==='UZ'?'Batafsil':(l==='EN'?'More':'Подробнее');})()}</a>
+                </div>
               </div>`;
             }).join('');
           }

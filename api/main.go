@@ -306,15 +306,15 @@ func parseLinksFromForm(r *http.Request) []string {
 				}
 			}
 		}
-		// Также поддержим link1..link5
-		for i := 1; i <= 5; i++ {
+		// Также поддержим link1..link10
+		for i := 1; i <= 10; i++ {
 			v := strings.TrimSpace(r.FormValue(fmt.Sprintf("link%d", i)))
 			if v != "" {
 				links = append(links, v)
 			}
 		}
 	}
-	return clampStrings(uniqueStrings(links), 5)
+	return clampStrings(uniqueStrings(links), 10)
 }
 
 func uniqueStrings(arr []string) []string {
@@ -469,7 +469,7 @@ func handleBlog(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(posts)
 	case http.MethodPost:
 		if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
-			if err := r.ParseMultipartForm(10 << 20); err != nil { // 10MB
+			if err := r.ParseMultipartForm(100 << 20); err != nil { // 100MB
 				http.Error(w, "Invalid form", http.StatusBadRequest)
 				return
 			}
@@ -477,7 +477,7 @@ func handleBlog(w http.ResponseWriter, r *http.Request) {
 			var images []string
 			if files, ok := r.MultipartForm.File["imgs"]; ok {
 				for i, fh := range files {
-					if i >= 10 {
+					if i >= 30 {
 						break
 					}
 					f, err := fh.Open()
@@ -499,7 +499,7 @@ func handleBlog(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
-			images = clampStrings(images, 10)
+			images = clampStrings(images, 30)
 			links := parseLinksFromForm(r)
 			title := r.FormValue("title")
 			titleUz := r.FormValue("title_uz")
@@ -530,8 +530,8 @@ func handleBlog(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid JSON", http.StatusBadRequest)
 			return
 		}
-		p.Images = clampStrings(p.Images, 10)
-		p.Links = clampStrings(uniqueStrings(p.Links), 5)
+		p.Images = clampStrings(p.Images, 30)
+		p.Links = clampStrings(uniqueStrings(p.Links), 10)
 		imgSingle := ""
 		if len(p.Images) > 0 {
 			imgSingle = p.Images[0]
@@ -578,7 +578,7 @@ func handleBlogByID(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(p)
 	case http.MethodPost, http.MethodPut:
 		if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
-			if err := r.ParseMultipartForm(10 << 20); err != nil {
+			if err := r.ParseMultipartForm(100 << 20); err != nil {
 				http.Error(w, "Invalid form", http.StatusBadRequest)
 				return
 			}
@@ -604,7 +604,7 @@ func handleBlogByID(w http.ResponseWriter, r *http.Request) {
 			// Add new files
 			if files, ok := r.MultipartForm.File["imgs"]; ok {
 				for i, fh := range files {
-					if i >= 10 {
+					if i >= 30 {
 						break
 					}
 					f, err := fh.Open()
@@ -625,7 +625,7 @@ func handleBlogByID(w http.ResponseWriter, r *http.Request) {
 					images = append([]string{path}, images...)
 				}
 			}
-			images = clampStrings(images, 10)
+			images = clampStrings(images, 30)
 			links := parseLinksFromForm(r)
 			imagesJSON, _ := json.Marshal(images)
 			linksJSON, _ := json.Marshal(links)
@@ -648,8 +648,8 @@ func handleBlogByID(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid JSON", http.StatusBadRequest)
 			return
 		}
-		p.Images = clampStrings(p.Images, 10)
-		p.Links = clampStrings(uniqueStrings(p.Links), 5)
+		p.Images = clampStrings(p.Images, 30)
+		p.Links = clampStrings(uniqueStrings(p.Links), 10)
 		imgSingle := ""
 		if len(p.Images) > 0 {
 			imgSingle = p.Images[0]
@@ -704,14 +704,14 @@ func handleProjects(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(items)
 	case http.MethodPost:
 		if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
-			if err := r.ParseMultipartForm(10 << 20); err != nil {
+			if err := r.ParseMultipartForm(100 << 20); err != nil {
 				http.Error(w, "Invalid form", http.StatusBadRequest)
 				return
 			}
 			var images []string
 			if files, ok := r.MultipartForm.File["imgs"]; ok {
 				for i, fh := range files {
-					if i >= 10 {
+					if i >= 30 {
 						break
 					}
 					f, err := fh.Open()
@@ -733,7 +733,7 @@ func handleProjects(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
-			images = clampStrings(images, 10)
+			images = clampStrings(images, 30)
 			links := parseLinksFromForm(r)
 			title := r.FormValue("title")
 			titleUz := r.FormValue("title_uz")
@@ -763,8 +763,8 @@ func handleProjects(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid JSON", http.StatusBadRequest)
 			return
 		}
-		p.Images = clampStrings(p.Images, 10)
-		p.Links = clampStrings(uniqueStrings(p.Links), 5)
+		p.Images = clampStrings(p.Images, 30)
+		p.Links = clampStrings(uniqueStrings(p.Links), 10)
 		imgSingle := ""
 		if len(p.Images) > 0 {
 			imgSingle = p.Images[0]
@@ -811,7 +811,7 @@ func handleProjectByID(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(p)
 	case http.MethodPost, http.MethodPut:
 		if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
-			if err := r.ParseMultipartForm(10 << 20); err != nil {
+			if err := r.ParseMultipartForm(100 << 20); err != nil {
 				http.Error(w, "Invalid form", http.StatusBadRequest)
 				return
 			}
@@ -834,7 +834,7 @@ func handleProjectByID(w http.ResponseWriter, r *http.Request) {
 			}
 			if files, ok := r.MultipartForm.File["imgs"]; ok {
 				for i, fh := range files {
-					if i >= 10 {
+					if i >= 30 {
 						break
 					}
 					f, err := fh.Open()
@@ -854,7 +854,7 @@ func handleProjectByID(w http.ResponseWriter, r *http.Request) {
 					images = append([]string{path}, images...)
 				}
 			}
-			images = clampStrings(images, 10)
+			images = clampStrings(images, 30)
 			links := parseLinksFromForm(r)
 			imagesJSON, _ := json.Marshal(images)
 			linksJSON, _ := json.Marshal(links)
@@ -876,8 +876,8 @@ func handleProjectByID(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid JSON", http.StatusBadRequest)
 			return
 		}
-		p.Images = clampStrings(p.Images, 10)
-		p.Links = clampStrings(uniqueStrings(p.Links), 5)
+		p.Images = clampStrings(p.Images, 30)
+		p.Links = clampStrings(uniqueStrings(p.Links), 10)
 		imgSingle := ""
 		if len(p.Images) > 0 {
 			imgSingle = p.Images[0]
@@ -929,14 +929,14 @@ func handleLed(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(items)
 	case http.MethodPost:
 		if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
-			if err := r.ParseMultipartForm(10 << 20); err != nil {
+			if err := r.ParseMultipartForm(100 << 20); err != nil {
 				http.Error(w, "Invalid form", http.StatusBadRequest)
 				return
 			}
 			var images []string
 			if files, ok := r.MultipartForm.File["imgs"]; ok {
 				for i, fh := range files {
-					if i >= 10 {
+					if i >= 30 {
 						break
 					}
 					f, err := fh.Open()
@@ -950,7 +950,7 @@ func handleLed(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
-			images = clampStrings(images, 10)
+			images = clampStrings(images, 30)
 			title := r.FormValue("title")
 			titleUz := r.FormValue("title_uz")
 			titleEn := r.FormValue("title_en")
@@ -979,7 +979,7 @@ func handleLed(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid JSON", http.StatusBadRequest)
 			return
 		}
-		it.Images = clampStrings(it.Images, 10)
+		it.Images = clampStrings(it.Images, 30)
 		imgSingle := ""
 		if len(it.Images) > 0 {
 			imgSingle = it.Images[0]
@@ -1022,7 +1022,7 @@ func handleLedByID(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(it)
 	case http.MethodPost, http.MethodPut:
 		if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
-			if err := r.ParseMultipartForm(10 << 20); err != nil {
+			if err := r.ParseMultipartForm(100 << 20); err != nil {
 				http.Error(w, "Invalid form", http.StatusBadRequest)
 				return
 			}
@@ -1046,7 +1046,7 @@ func handleLedByID(w http.ResponseWriter, r *http.Request) {
 			}
 			if files, ok := r.MultipartForm.File["imgs"]; ok {
 				for i, fh := range files {
-					if i >= 10 {
+					if i >= 30 {
 						break
 					}
 					f, err := fh.Open()
@@ -1060,7 +1060,7 @@ func handleLedByID(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
-			images = clampStrings(images, 10)
+			images = clampStrings(images, 30)
 			imgSingle := ""
 			if len(images) > 0 {
 				imgSingle = images[0]
@@ -1080,7 +1080,7 @@ func handleLedByID(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid JSON", http.StatusBadRequest)
 			return
 		}
-		it.Images = clampStrings(it.Images, 10)
+		it.Images = clampStrings(it.Images, 30)
 		imgSingle := ""
 		if len(it.Images) > 0 {
 			imgSingle = it.Images[0]

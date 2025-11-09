@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Инструкция по использованию редактора - Influence Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .example-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 20px;
+            color: white;
+            margin: 20px 0;
+        }
+        .step {
+            background: white;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .toolbar-button {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 5px;
+            background: #f0f0f0;
+            border-radius: 6px;
+            font-weight: 600;
+            border: 2px solid #ddd;
+        }
+        .toolbar-button:hover {
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+        }
+        kbd {
+            background: #333;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-4xl mx-auto p-6">
+        <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+            <h1 class="text-4xl font-bold mb-4 text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                🎨 Инструкция по использованию редактора
+            </h1>
+            <p class="text-center text-gray-600 text-lg">
+                Полное руководство по форматированию текста в блогах и проектах
+            </p>
+        </div>
+
+        <div class="example-box">
+            <h2 class="text-2xl font-bold mb-4">📍 Где находится редактор?</h2>
+            <ol class="space-y-2 text-lg">
+                <li>1️⃣ Откройте <strong>/admin/admin.html</strong></li>
+                <li>2️⃣ Войдите (логин: <kbd>infadmin</kbd>, пароль: <kbd>infadmin123</kbd>)</li>
+                <li>3️⃣ Нажмите <strong>"+ Пост"</strong> или <strong>"+ Проект"</strong></li>
+                <li>4️⃣ Найдите раздел <strong>"📄 Описания"</strong></li>
+            </ol>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800">🛠 Панель инструментов</h2>
+            
+            <div class="bg-gray-100 p-4 rounded-lg mb-6">
+                <div class="flex flex-wrap gap-2 justify-center">
+                    <span class="toolbar-button">▼ Заголовок</span>
+                    <span class="toolbar-button"><strong>B</strong></span>
+                    <span class="toolbar-button"><em>I</em></span>
+                    <span class="toolbar-button"><u>U</u></span>
+                    <span class="toolbar-button"><s>S</s></span>
+                    <span class="toolbar-button">🎨 A▼</span>
+                    <span class="toolbar-button">🖍 ■▼</span>
+                    <span class="toolbar-button">≡ Список</span>
+                    <span class="toolbar-button">🔗 Ссылка</span>
+                    <span class="toolbar-button">🗑 Очистить</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="step">
+                    <h3 class="font-bold text-lg mb-2">🔤 <strong>B</strong> - Жирный текст</h3>
+                    <p class="text-gray-600">Выделите текст → Нажмите <strong>B</strong></p>
+                    <p class="mt-2">Результат: <strong>Жирный текст</strong></p>
+                </div>
+
+                <div class="step">
+                    <h3 class="font-bold text-lg mb-2">💬 <em>I</em> - Курсив</h3>
+                    <p class="text-gray-600">Выделите текст → Нажмите <em>I</em></p>
+                    <p class="mt-2">Результат: <em>Курсивный текст</em></p>
+                </div>
+
+                <div class="step">
+                    <h3 class="font-bold text-lg mb-2">🎨 A▼ - Цвет текста</h3>
+                    <p class="text-gray-600">Выделите → Нажмите A▼ → Выберите цвет</p>
+                    <p class="mt-2">Результат: <span style="color: #e74c3c;">Красный текст</span></p>
+                </div>
+
+                <div class="step">
+                    <h3 class="font-bold text-lg mb-2">🖍 ■▼ - Фон текста</h3>
+                    <p class="text-gray-600">Выделите → Нажмите ■▼ → Выберите цвет</p>
+                    <p class="mt-2">Результат: <span style="background: #fff3cd; padding: 2px 6px;">Выделенный текст</span></p>
+                </div>
+
+                <div class="step">
+                    <h3 class="font-bold text-lg mb-2">📏 Заголовки H1, H2, H3</h3>
+                    <p class="text-gray-600">Выделите → Нажмите ▼ → Выберите размер</p>
+                    <div class="mt-2 space-y-1">
+                        <div style="font-size: 2em; font-weight: bold;">H1 - Большой</div>
+                        <div style="font-size: 1.5em; font-weight: bold;">H2 - Средний</div>
+                        <div style="font-size: 1.25em; font-weight: bold;">H3 - Маленький</div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h3 class="font-bold text-lg mb-2">📋 ≡ - Списки</h3>
+                    <p class="text-gray-600">Выделите → Нажмите ≡ → Выберите тип</p>
+                    <div class="mt-2">
+                        <ul class="list-disc ml-6">
+                            <li>Пункт списка 1</li>
+                            <li>Пункт списка 2</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h3 class="font-bold text-lg mb-2">🔗 Ссылка</h3>
+                    <p class="text-gray-600">Выделите текст → Нажмите 🔗 → Вставьте URL</p>
+                    <p class="mt-2">Результат: <a href="#" class="text-blue-600 underline">Кликабельная ссылка</a></p>
+                </div>
+
+                <div class="step">
+                    <h3 class="font-bold text-lg mb-2">🗑 Очистить форматирование</h3>
+                    <p class="text-gray-600">Выделите → Нажмите 🗑</p>
+                    <p class="mt-2">Убирает все форматирование</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+            <h2 class="text-3xl font-bold mb-6 text-gray-800">📝 Пример создания блога</h2>
+            
+            <div class="space-y-4">
+                <div class="bg-blue-50 p-6 rounded-lg">
+                    <h3 class="font-bold text-xl mb-3">Шаг 1: Напишите заголовок</h3>
+                    <p>Напишите: <strong>"Как увеличить продажи с помощью блогеров"</strong></p>
+                    <p class="text-sm text-gray-600 mt-2">Выделите → Нажмите "▼ Заголовок" → Выберите "Heading 1"</p>
+                </div>
+
+                <div class="bg-green-50 p-6 rounded-lg">
+                    <h3 class="font-bold text-xl mb-3">Шаг 2: Добавьте введение</h3>
+                    <p>Напишите первый абзац с описанием</p>
+                    <p class="text-sm text-gray-600 mt-2">Для абзацев просто нажимайте <kbd>Enter</kbd></p>
+                </div>
+
+                <div class="bg-yellow-50 p-6 rounded-lg">
+                    <h3 class="font-bold text-xl mb-3">Шаг 3: Выделите важное</h3>
+                    <p>Выделите ключевые слова:</p>
+                    <ul class="mt-2 ml-6 list-disc">
+                        <li>Выделите слово → Нажмите <strong>B</strong> (жирный)</li>
+                        <li>Или измените цвет → Нажмите 🎨 A▼</li>
+                    </ul>
+                </div>
+
+                <div class="bg-purple-50 p-6 rounded-lg">
+                    <h3 class="font-bold text-xl mb-3">Шаг 4: Добавьте список</h3>
+                    <p>Создайте список преимуществ:</p>
+                    <ol class="mt-2 ml-6 list-decimal text-sm text-gray-600">
+                        <li>Напишите 3-5 пунктов построчно</li>
+                        <li>Выделите все строки</li>
+                        <li>Нажмите кнопку ≡ → Выберите нумерованный или маркированный</li>
+                    </ol>
+                </div>
+
+                <div class="bg-red-50 p-6 rounded-lg">
+                    <h3 class="font-bold text-xl mb-3">Шаг 5: Сохраните</h3>
+                    <p>Нажмите кнопку <strong>"💾 Сохранить"</strong> внизу формы</p>
+                    <p class="text-sm text-gray-600 mt-2">✨ Ваш блог с форматированием готов!</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="example-box mb-6">
+            <h2 class="text-2xl font-bold mb-4">💡 Полезные советы</h2>
+            <ul class="space-y-2 text-lg">
+                <li>✅ Используйте заголовки для структуры текста</li>
+                <li>✅ Выделяйте важное жирным шрифтом</li>
+                <li>✅ Используйте списки для перечислений</li>
+                <li>✅ Цветной текст привлекает внимание (не переборщите!)</li>
+                <li>✅ Делайте абзацы — так легче читать</li>
+                <li>✅ Проверяйте как выглядит на странице блога</li>
+            </ul>
+        </div>
+
+        <div class="bg-gradient-to-r from-green-400 to-blue-500 text-white rounded-xl shadow-lg p-8 text-center">
+            <h2 class="text-3xl font-bold mb-4">🎉 Готово!</h2>
+            <p class="text-xl mb-4">Теперь вы можете создавать красивые блоги и проекты!</p>
+            <a href="/admin/admin.html" class="inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transition">
+                Открыть админку →
+            </a>
+        </div>
+
+        <div class="mt-8 text-center text-gray-500">
+            <p>Если есть вопросы — просто спросите! 😊</p>
+        </div>
+    </div>
+</body>
+</html>
+

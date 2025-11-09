@@ -56,6 +56,36 @@
         body { font-family: 'Inter', sans-serif; }
         /* Приклеиваем футер к низу при малом контенте */
         #site-footer { margin-top: auto; }
+        /* Стили для форматированного контента */
+        .formatted-content p { margin-bottom: 1em; line-height: 1.8; }
+        .formatted-content h1 { font-size: 2em; font-weight: bold; margin-bottom: 0.5em; margin-top: 1em; }
+        .formatted-content h2 { font-size: 1.5em; font-weight: bold; margin-bottom: 0.5em; margin-top: 0.8em; }
+        .formatted-content h3 { font-size: 1.25em; font-weight: bold; margin-bottom: 0.5em; margin-top: 0.6em; }
+        .formatted-content strong { font-weight: bold; }
+        .formatted-content em { font-style: italic; }
+        .formatted-content u { text-decoration: underline; }
+        .formatted-content ul { list-style-type: disc; margin-left: 1.5em; margin-bottom: 1em; }
+        .formatted-content ol { list-style-type: decimal; margin-left: 1.5em; margin-bottom: 1em; }
+        .formatted-content li { margin-bottom: 0.5em; line-height: 1.8; }
+        .formatted-content a { color: #2977E2; text-decoration: underline; }
+        
+        /* Анимация для модального окна */
+        @keyframes fade-in { 
+            from { opacity: 0; transform: scale(0.95);} 
+            to { opacity: 1; transform: scale(1);} 
+        }
+        .animate-fade-in { animation: fade-in 0.3s ease-out; }
+        
+        /* Стили для thumbnails */
+        #blog-modal-thumbs > div {
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 3px solid transparent;
+        }
+        #blog-modal-thumbs > div:hover {
+            transform: scale(1.05);
+            border-color: #2977E2;
+        }
     </style>
 </head>
 <body class="bg-white min-h-screen flex flex-col">
@@ -87,7 +117,6 @@
         }
         
         // Обновляем переводы после загрузки header
-        console.log('Blog page: Header loaded, updating translations...');
         setTimeout(() => {
           if (window.updateContentOnLanguageChange) {
             window.updateContentOnLanguageChange();
@@ -108,30 +137,36 @@
         </div>
     </section>
     <!-- Модальное окно -->
-    <div id="blog-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
-      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl lg:max-w-4xl p-0 relative animate-fade-in">
-        <!-- Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h3 id="blog-modal-title" class="text-2xl font-bold"></h3>
-          <button id="blog-modal-close" class="text-gray-400 hover:text-black text-3xl leading-none px-2">&times;</button>
+    <div id="blog-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 hidden p-4">
+      <div class="bg-white rounded-3xl shadow-2xl w-full h-full max-w-7xl max-h-[95vh] p-0 relative animate-fade-in overflow-hidden flex flex-col">
+        <!-- Header с градиентом -->
+        <div class="flex items-center justify-between px-8 py-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white">
+          <h3 id="blog-modal-title" class="text-3xl font-bold"></h3>
+          <button id="blog-modal-close" class="text-white hover:bg-white/20 rounded-full w-12 h-12 flex items-center justify-center text-3xl transition-all duration-200 hover:rotate-90">&times;</button>
         </div>
+        
         <!-- Body (scrollable) -->
-        <div class="px-6 py-6 space-y-6 overflow-y-auto max-h-[75vh]">
-          <div class="space-y-3">
-            <div class="relative w-full pt-[56.25%] rounded-xl overflow-hidden">
-            <img id="blog-modal-main" src="" alt="" class="absolute inset-0 w-full h-full object-cover" />
-          </div>
-            <div id="blog-modal-thumbs" class="grid grid-cols-5 gap-2"></div>
-          </div>
-          <p id="blog-modal-desc" class="text-gray-700 text-lg leading-relaxed"></p>
-          <div id="blog-modal-links" class="space-y-2"></div>
-        </div>
-                </div>
+        <div class="flex-1 overflow-y-auto">
+          <div class="px-8 py-8 space-y-8">
+            <!-- Изображения -->
+            <div class="space-y-4">
+              <div class="relative w-full rounded-2xl overflow-hidden shadow-xl" style="padding-top: 56.25%;">
+                <img id="blog-modal-main" src="" alt="" class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 hover:scale-105" />
+              </div>
+              <div id="blog-modal-thumbs" class="grid grid-cols-6 lg:grid-cols-8 gap-3"></div>
             </div>
-    <style>
-    @keyframes fade-in { from { opacity: 0; transform: scale(0.98);} to { opacity: 1; transform: scale(1);} }
-    .animate-fade-in { animation: fade-in 0.2s; }
-    </style>
+            
+            <!-- Контент -->
+            <div class="prose prose-lg max-w-none">
+              <div id="blog-modal-desc" class="text-gray-800 text-lg leading-relaxed formatted-content"></div>
+            </div>
+            
+            <!-- Ссылки -->
+            <div id="blog-modal-links" class="flex flex-wrap gap-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
     <script>
     // Функция получения языка из localStorage
     function getCurrentLanguage() {
@@ -191,6 +226,13 @@
         return item[field] || '';
       }
     }
+    
+    // Функция для извлечения текста без HTML тегов
+    function stripHtml(html) {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      return tmp.textContent || tmp.innerText || '';
+    }
 
     const defaultBlog = [
       {
@@ -245,9 +287,10 @@
       const html = posts.map((p, i) => {
         const cover = (Array.isArray(p.images) && p.images.length) ? p.images[0] : (p.img || 'img/img1.jpg');
         const title = getTranslatedContent(p, 'title');
-        const description = getTranslatedContent(p, 'description');
+        const descriptionHtml = getTranslatedContent(p, 'description');
+        const description = stripHtml(descriptionHtml);
         
-        const links = (Array.isArray(p.links) && p.links.length) ? p.links.slice(0,5) : [];
+        const links = (Array.isArray(p.links) && p.links.length) ? p.links.slice(0,10) : [];
         const linksHtml = links.length ? links.map(u => 
           `<a href="${u}" target="_blank" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-xs">${t.linkText}</a>`
         ).join('') : '';
@@ -277,31 +320,21 @@
     window.blogData = blogData;
     
     function loadBlogData() {
-      console.log('Loading blog data...');
       fetch('/api/blog')
-        .then(r => {
-          console.log('Response status:', r.status);
-          return r.json();
-        })
+        .then(r => r.json())
         .then(data => {
-          console.log('Blog data received:', data);
           if (Array.isArray(data) && data.length > 0) {
             blogData = data;
             window.blogData = data;
-            console.log('Using API data, count:', data.length);
           } else {
             blogData = defaultBlog;
             window.blogData = defaultBlog;
-            console.log('Using default data, count:', defaultBlog.length);
           }
-          console.log('Final blog data:', blogData);
           renderBlog(blogData);
         })
-        .catch((error) => {
-          console.error('Error loading blog data:', error);
+        .catch(() => {
           blogData = defaultBlog;
           window.blogData = defaultBlog;
-          console.log('Using default data due to error');
           renderBlog(blogData);
         });
     }
@@ -309,35 +342,45 @@
     // Переопределяем функции открытия/закрытия модалки для лучшего UX
     window.openBlogModal = function(idx) {
       const p = blogData[idx];
-      const images = (Array.isArray(p.images) && p.images.length) ? p.images.slice(0,10) : (p.img ? [p.img] : []);
+      const images = (Array.isArray(p.images) && p.images.length) ? p.images.slice(0,30) : (p.img ? [p.img] : []);
       
       const title = getTranslatedContent(p, 'title');
       const description = getTranslatedContent(p, 'description');
       
-      console.log('Opening blog modal for post:', { title, description, lang: getCurrentLanguage() });
-      
       document.getElementById('blog-modal-title').textContent = title;
-      document.getElementById('blog-modal-desc').textContent = description;
+      document.getElementById('blog-modal-desc').innerHTML = description;
       
       const main = document.getElementById('blog-modal-main');
       const thumbs = document.getElementById('blog-modal-thumbs');
       main.src = images[0] || '';
       thumbs.innerHTML = images.map((src, i) => `
-        <div class="relative w-full pt-[56.25%] rounded overflow-hidden cursor-pointer" data-i="${i}">
+        <div class="relative w-full pt-[100%] rounded-lg overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all" data-i="${i}">
           <img src="${src}" class="absolute inset-0 w-full h-full object-cover" />
         </div>
       `).join('');
-      thumbs.querySelectorAll('[data-i]').forEach(el => el.onclick = () => { const img = el.querySelector('img'); if (img) main.src = img.src; });
+      thumbs.querySelectorAll('[data-i]').forEach(el => {
+        el.onclick = () => { 
+          const img = el.querySelector('img'); 
+          if (img) {
+            main.src = img.src;
+            main.style.transform = 'scale(0.98)';
+            setTimeout(() => { main.style.transform = 'scale(1)'; }, 100);
+          }
+        };
+      });
       
       const linksBox = document.getElementById('blog-modal-links');
-      const links = Array.isArray(p.links) ? p.links.slice(0,5) : [];
+      const links = Array.isArray(p.links) ? p.links.slice(0,10) : [];
       const lang = getCurrentLanguage();
       const t = translations[lang] || translations['RU'];
       
       linksBox.innerHTML = links.length ? 
-        `<div class="flex flex-wrap gap-2">${links.map(u => 
-          `<a href="${u}" target="_blank" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-sm">${t.linkText}</a>`
-        ).join('')}</div>` : '';
+        links.map((u, idx) => 
+          `<a href="${u}" target="_blank" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+            ${t.linkText} ${idx + 1}
+          </a>`
+        ).join('') : '';
       
       const modal = document.getElementById('blog-modal');
       modal.classList.remove('hidden');
@@ -360,18 +403,15 @@
     });
 
     // Инициализация
-    console.log('Blog page: Initializing...');
     loadBlogData();
     
     // Инициализируем переводы
     setTimeout(() => {
-      console.log('Blog page: Initializing translations...');
       updateInterface();
     }, 200);
     
     // Глобальная функция для обновления контента при смене языка
     window.updateContentOnLanguageChange = function() {
-      console.log('Blog page: Language changed to:', getCurrentLanguage());
       updateInterface();
       renderBlog(window.blogData || blogData);
       if (window.updateFooterTranslations) {
@@ -382,7 +422,6 @@
     // Слушатель изменений в localStorage (для изменений из других вкладок)
     window.addEventListener('storage', function(e) {
       if (e.key === 'site_lang') {
-        console.log('Blog page: Language changed to:', e.newValue);
         window.updateContentOnLanguageChange();
       }
     });
@@ -390,10 +429,8 @@
     <div id="site-footer"></div>
     <script>
         // Загружаем только footer (header уже загружен выше)
-        console.log('Blog page: Loading footer...');
         fetch('components/footer.html').then(r => r.text()).then((footerHtml) => {
             document.getElementById('site-footer').innerHTML = footerHtml;
-            console.log('Blog page: Footer set to DOM');
             
             // Извлекаем и выполняем скрипты из footer
             const footerScripts = document.getElementById('site-footer').querySelectorAll('script');
@@ -409,9 +446,7 @@
                 window.updateFooterTranslations();
               }
             }, 200);
-        }).catch(error => {
-            console.error('Blog page: Error loading footer:', error);
-        });
+        }).catch(() => {});
     </script>
   </body>
 </html> 
