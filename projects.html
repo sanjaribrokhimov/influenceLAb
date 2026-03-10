@@ -108,6 +108,11 @@
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"></noscript>
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+      import * as pdfjsLib from "/assets/pdfjs/pdf.min.mjs";
+      pdfjsLib.GlobalWorkerOptions.workerSrc = "/assets/pdfjs/pdf.worker.min.mjs";
+      window.pdfjsLib = pdfjsLib;
+    </script>
     <script>
         tailwind.config = {
             theme: {
@@ -394,6 +399,99 @@
         }
     ];
 
+    function pdfPlaceholderDataURL(text) {
+      const safe = (text || 'PDF').toString().slice(0, 24);
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675">
+          <defs>
+            <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#002247"/>
+              <stop offset="1" stop-color="#2977E2"/>
+            </linearGradient>
+          </defs>
+          <rect width="1200" height="675" fill="url(#g)"/>
+          <rect x="110" y="90" width="980" height="495" rx="36" fill="rgba(255,255,255,0.12)"/>
+          <text x="140" y="220" font-family="Inter, Arial, sans-serif" font-size="88" fill="#ffffff" font-weight="700">PDF</text>
+          <text x="140" y="310" font-family="Inter, Arial, sans-serif" font-size="42" fill="rgba(255,255,255,0.9)" font-weight="600">${safe.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</text>
+          <text x="140" y="380" font-family="Inter, Arial, sans-serif" font-size="28" fill="rgba(255,255,255,0.8)">Открыть в полном экране</text>
+        </svg>
+      `.trim();
+      return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+    }
+
+    function initPdfJs() {
+      try {
+        if (window.pdfjsLib && window.pdfjsLib.GlobalWorkerOptions) {
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+            "/assets/pdfjs/pdf.worker.min.mjs";
+        }
+      } catch (e) {}
+    }
+
+    function normalizePdfUrl(u) {
+      const raw = (u || "").toString().trim();
+      if (!raw) return "";
+      try {
+        return new URL(raw, window.location.origin).toString();
+      } catch (e) {
+        return raw;
+      }
+    }
+
+    async function renderPdfFirstPageToCanvas(canvas, pdfUrl) {
+      if (!window.pdfjsLib || !pdfUrl) return;
+      const container = canvas.parentElement;
+      const targetWidth = (container ? container.clientWidth : canvas.clientWidth) || 600;
+      const dpr = window.devicePixelRatio || 1;
+
+      const url = normalizePdfUrl(pdfUrl);
+      const loadingTask = window.pdfjsLib.getDocument({ url });
+      const pdf = await loadingTask.promise;
+      const page = await pdf.getPage(1);
+
+      const viewport1 = page.getViewport({ scale: 1 });
+      const scale = targetWidth / viewport1.width;
+      const viewport = page.getViewport({ scale });
+
+      canvas.width = Math.floor(viewport.width * dpr);
+      canvas.height = Math.floor(viewport.height * dpr);
+      // Keep CSS sizing controlled by layout (absolute inset-0 w-full h-full)
+      canvas.style.width = "100%";
+      canvas.style.height = "100%";
+
+      const ctx = canvas.getContext("2d", { alpha: false });
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      await page.render({ canvasContext: ctx, viewport }).promise;
+    }
+
+    function renderAllPdfThumbs(root) {
+      const canvases = Array.from((root || document).querySelectorAll("canvas[data-pdf]"));
+      canvases.forEach(async (c) => {
+        const url = (c.getAttribute("data-pdf") || "").trim();
+        if (!url) return;
+        if (c.dataset.rendering === "1" || c.dataset.rendered === "1") return;
+        if (!window.pdfjsLib) {
+          c.style.display = "none";
+          const ph = c.parentElement && c.parentElement.querySelector("[data-pdf-fallback]");
+          if (ph) ph.classList.remove("hidden");
+          return;
+        }
+        try {
+          c.dataset.rendering = "1";
+          await renderPdfFirstPageToCanvas(c, url);
+          c.dataset.rendered = "1";
+        } catch (e) {
+          console.warn("PDF thumbnail render failed:", url, e);
+          // fallback: show placeholder via background
+          c.style.display = "none";
+          const ph = c.parentElement && c.parentElement.querySelector("[data-pdf-fallback]");
+          if (ph) ph.classList.remove("hidden");
+        } finally {
+          c.dataset.rendering = "0";
+        }
+      });
+    }
+
     function renderProjects(projects) {
       const lang = getCurrentLanguage();
       const t = translations[lang] || translations['RU']; // Fallback на русский
@@ -406,33 +504,42 @@
       }
       
       const html = projects.map((p, i) => {
-        const cover = (Array.isArray(p.images) && p.images.length) ? p.images[0] : (p.img || 'img/img1.jpg');
+        const hasPdf = Boolean((p.pdf || '').trim());
         const title = getTranslatedContent(p, 'title');
-        const descriptionHtml = getTranslatedContent(p, 'description');
-        const description = stripHtml(descriptionHtml);
+        const pdfUrl = (p.pdf || '').trim();
+        const coverImg = (Array.isArray(p.images) && p.images.length)
+          ? p.images[0]
+          : (p.img || (hasPdf ? '' : 'img/img1.jpg'));
         
         const links = (Array.isArray(p.links) && p.links.length) ? p.links.slice(0,10) : [];
         const linksHtml = links.length ? links.map(u => 
           `<a href="${u}" target="_blank" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-xs">${t.linkText}</a>`
         ).join('') : '';
         
+        const onClick = hasPdf && p.id ? `openProjectPDF(${p.id});` : `openModal(${i});`;
+        const buttonLabel = t.readButton;
+        const coverHtml = hasPdf && pdfUrl
+          ? `<canvas data-pdf="${pdfUrl}" class="absolute inset-0 w-full h-full" style="background:#f3f4f6;"></canvas>
+             <img data-pdf-fallback class="hidden absolute inset-0 w-full h-full object-cover" src="${pdfPlaceholderDataURL(title)}" alt="${title}">`
+          : `<img src="${coverImg || pdfPlaceholderDataURL(title)}" alt="${title}" class="absolute inset-0 w-full h-full object-cover" />`;
         return `
-          <div class="group bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-start cursor-pointer h-full" onclick="openModal(${i})"> 
+          <div class="group bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col items-start cursor-pointer h-full" onclick="${onClick}"> 
             <div class="relative w-full pt-[56.25%] bg-gray-50 rounded-xl mb-6 overflow-hidden">
-              <img src="${cover}" alt="${title}" class="absolute inset-0 w-full h-full object-cover" />
+              ${coverHtml}
             </div>
             <div class="w-full flex items-center gap-3 mb-2">
               <h3 class="text-xl font-bold text-black">${title}</h3>
             </div>
-            <p class="text-gray-600 mb-4 line-clamp-3">${description}</p>
             <div class="w-full flex flex-wrap items-center justify-between gap-2 mt-auto">
               <div class="flex flex-wrap gap-2">${linksHtml}</div>
-              <button class="px-6 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200" onclick="openModal(${i}); event.stopPropagation();">${t.readButton}</button>
+              <button class="px-6 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200" onclick="${onClick} event.stopPropagation();">${buttonLabel}</button>
             </div>
            </div>`;
       }).join('');
       
       projectsListElement.innerHTML = html;
+      // wait one frame so containers have real width
+      requestAnimationFrame(() => renderAllPdfThumbs(projectsListElement));
     }
 
     let projectsData = [];
@@ -462,6 +569,10 @@
 
     window.openModal = function(idx) {
       const p = projectsData[idx];
+      if (p && (p.pdf || '').trim() && p.id) {
+        openProjectPDF(p.id);
+        return;
+      }
       const images = (Array.isArray(p.images) && p.images.length) ? p.images.slice(0,30) : (p.img ? [p.img] : []);
       
       const title = getTranslatedContent(p, 'title');
@@ -506,6 +617,12 @@
       modal.classList.remove('hidden');
       document.body.style.overflow = 'hidden';
     };
+
+    window.openProjectPDF = function(projectId) {
+      window.location.href = `/project-pdf-view.html?id=${encodeURIComponent(projectId)}`;
+    };
+
+    initPdfJs();
 
     function closeProjectModal() {
       document.getElementById('project-modal').classList.add('hidden');

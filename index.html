@@ -134,6 +134,11 @@
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"></noscript>
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+      import * as pdfjsLib from "/assets/pdfjs/pdf.min.mjs";
+      pdfjsLib.GlobalWorkerOptions.workerSrc = "/assets/pdfjs/pdf.worker.min.mjs";
+      window.pdfjsLib = pdfjsLib;
+    </script>
     <script>
         tailwind.config = {
             theme: {
@@ -312,8 +317,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <!-- Left Content -->
-                <div class="animate-slide-up">
-                    <br>
+                <div class="animate-slide-up pt-[110px] lg:pt-[110px]">
                     <div class="inline-flex items-center px-4 py-2 bg-brand-blue-soft/10 text-brand-blue-soft rounded-full text-sm font-medium mb-6">
                         <span class="w-2 h-2 bg-brand-blue-soft rounded-full mr-2 animate-pulse"></span>
                         <span id="hero-badge">Создаем будущее брендов</span>
@@ -438,25 +442,20 @@
           const container = document.getElementById('projects-list-home');
           if (!container) return;
           const list = (Array.isArray(items) && items.length) ? items.slice(0,3) : defaultHomeProjects;
-          // Функция для удаления HTML тегов
-          function stripHtml(html) {
-            const tmp = document.createElement('div');
-            tmp.innerHTML = html;
-            return tmp.textContent || tmp.innerText || '';
-          }
           container.innerHTML = list.map(p => {
-            const cover = (Array.isArray(p.images) && p.images.length) ? p.images[0] : (p.img || 'img/img1.jpg');
             const title = getTranslated('title', p) || (p.title || '');
-            const descriptionHtml = getTranslated('description', p) || (p.description || '');
-            const description = stripHtml(descriptionHtml); // Убираем HTML теги
+            const pdfUrl = ((p.pdf || '').trim());
+            const hasPdf = Boolean(pdfUrl);
+            const coverHtml = hasPdf
+              ? `<canvas data-pdf=\"${pdfUrl}\" class=\"absolute inset-0 w-full h-full\" style=\"background:#f3f4f6;\"></canvas>`
+              : `<img src=\"${(Array.isArray(p.images) && p.images.length) ? p.images[0] : (p.img || 'img/img1.jpg')}\" alt=\"${title}\" class=\"absolute inset-0 w-full h-full object-cover\" />`;
             const linksHtml = (Array.isArray(p.links) && p.links.length) ? p.links.slice(0,5).map(u => `<a href=\"${u}\" target=\"_blank\" class=\"inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-brand-blue-soft text-brand-blue-soft hover:bg-brand-blue-soft hover:text-white transition text-[11px]\">Link</a>`).join('') : '';
             return `
             <div class=\"bg-white p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 flex flex-col h-full\"> 
               <div class=\"relative w-full pt-[56.25%] rounded-xl mb-4 overflow-hidden\"> 
-                <img src=\"${cover}\" alt=\"${title}\" class=\"absolute inset-0 w-full h-full object-cover\" />
+                ${coverHtml}
               </div>
               <h3 class=\"text-lg font-bold text-black mb-2 line-clamp-2 min-h-[3rem]\">${title}</h3>
-              <p class=\"text-gray-600 mb-4 line-clamp-3 text-sm flex-grow\">${description}</p>
               <div class=\"w-full flex items-center justify-between gap-2 mt-auto\"> 
                 <div class=\"flex flex-wrap gap-2\">${linksHtml}</div>
                 <a href=\"projects.html\" class=\"px-6 py-3 bg-brand-blue-soft text-white rounded-lg font-semibold hover:bg-brand-blue-medium transition-all duration-200 text-sm whitespace-nowrap\">${(function(){const l=(localStorage.getItem('site_lang')||'RU');return l==='UZ'?'Batafsil':(l==='EN'?'More':'Подробнее');})()}</a>
@@ -464,6 +463,36 @@
               
             </div>`;
           }).join('');
+
+          // render PDF thumbs
+          try {
+            if (window.pdfjsLib && window.pdfjsLib.GlobalWorkerOptions) {
+              window.pdfjsLib.GlobalWorkerOptions.workerSrc = "/assets/pdfjs/pdf.worker.min.mjs";
+            }
+            Array.from(container.querySelectorAll("canvas[data-pdf]")).forEach(async (c) => {
+              const raw = (c.getAttribute("data-pdf") || "").trim();
+              if (!raw || !window.pdfjsLib) return;
+              let url = raw;
+              try { url = new URL(raw, window.location.origin).toString(); } catch (e) {}
+              const wrap = c.parentElement;
+              // wait layout
+              await new Promise((res) => requestAnimationFrame(res));
+              const targetWidth = (wrap ? wrap.clientWidth : c.clientWidth) || 600;
+              const dpr = window.devicePixelRatio || 1;
+              const pdf = await window.pdfjsLib.getDocument({ url }).promise;
+              const page = await pdf.getPage(1);
+              const viewport1 = page.getViewport({ scale: 1 });
+              const scale = targetWidth / viewport1.width;
+              const viewport = page.getViewport({ scale });
+              c.width = Math.floor(viewport.width * dpr);
+              c.height = Math.floor(viewport.height * dpr);
+              c.style.width = "100%";
+              c.style.height = "100%";
+              const ctx = c.getContext("2d", { alpha: false });
+              ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+              await page.render({ canvasContext: ctx, viewport }).promise;
+            });
+          } catch (e) {}
         }
         
         // Expose for re-render on language change

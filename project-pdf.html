@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PDF</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background: #0b0f19;
+      }
+      #pdf-frame {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        border: 0;
+        outline: 0;
+        background: #0b0f19;
+      }
+      #fallback {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        color: #fff;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+        text-align: center;
+      }
+      a {
+        color: #7db5ff;
+        text-decoration: underline;
+        word-break: break-all;
+      }
+    </style>
+  </head>
+  <body>
+    <iframe id="pdf-frame" title="PDF" referrerpolicy="no-referrer"></iframe>
+    <div id="fallback">
+      <div>
+        <div style="font-size: 18px; font-weight: 700; margin-bottom: 8px">Не удалось открыть PDF встроенно</div>
+        <div style="opacity: 0.9; margin-bottom: 16px">Откройте файл по ссылке:</div>
+        <div><a id="fallback-link" href="#" target="_blank" rel="noopener noreferrer">Открыть PDF</a></div>
+      </div>
+    </div>
+
+    <script>
+      function showFallback(pdfUrl) {
+        const frame = document.getElementById("pdf-frame");
+        const fb = document.getElementById("fallback");
+        const link = document.getElementById("fallback-link");
+        frame.style.display = "none";
+        fb.style.display = "flex";
+        link.href = pdfUrl;
+        link.textContent = pdfUrl;
+      }
+
+      async function init() {
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
+        const direct = params.get("pdf");
+
+        try {
+          let pdfUrl = "";
+          let title = "PDF";
+
+          if (direct) {
+            pdfUrl = direct;
+          } else if (id) {
+            const r = await fetch(`/api/projects/${encodeURIComponent(id)}`);
+            if (!r.ok) throw new Error("Project not found");
+            const project = await r.json();
+            title = project.title || "PDF";
+            pdfUrl = (project.pdf || "").trim();
+          }
+
+          if (!pdfUrl) throw new Error("PDF missing");
+
+          document.title = title;
+          // Попытка скрыть тулбар/панели (в браузерах может игнорироваться)
+          const src = pdfUrl.includes("#") ? pdfUrl : `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`;
+
+          const frame = document.getElementById("pdf-frame");
+          frame.src = src;
+
+          // Если браузер не поддерживает inline PDF — покажем fallback по таймауту
+          setTimeout(() => {
+            if (!frame.contentWindow) return;
+          }, 800);
+        } catch (e) {
+          const params = new URLSearchParams(window.location.search);
+          const direct = params.get("pdf");
+          if (direct) showFallback(direct);
+          else showFallback("/projects.html");
+        }
+      }
+
+      init();
+    </script>
+  </body>
+</html>
+

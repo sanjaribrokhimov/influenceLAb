@@ -42,6 +42,7 @@ type Project struct {
 	ID            int      `json:"id"`
 	Img           string   `json:"img"`
 	Images        []string `json:"images"`
+	PDF           string   `json:"pdf"`
 	Title         string   `json:"title"`
 	TitleUz       string   `json:"title_uz"`
 	TitleEn       string   `json:"title_en"`
@@ -209,6 +210,9 @@ func initDB() {
 	if err := ensureColumn("projects", "images", "TEXT"); err != nil {
 		log.Fatal(err)
 	}
+	if err := ensureColumn("projects", "pdf", "TEXT"); err != nil {
+		log.Fatal(err)
+	}
 	if err := ensureColumn("projects", "links", "TEXT"); err != nil {
 		log.Fatal(err)
 	}
@@ -286,6 +290,15 @@ func saveUploadedFile(file multipart.File, handler *multipart.FileHeader) (strin
 	// Публичный URL относительно корня сайта
 	urlPath := "/" + filepath.ToSlash(filepath.Join(dir, filename))
 	return urlPath, nil
+}
+
+func isPDFUpload(handler *multipart.FileHeader) bool {
+	name := strings.ToLower(strings.TrimSpace(handler.Filename))
+	if strings.HasSuffix(name, ".pdf") {
+		return true
+	}
+	ct := strings.ToLower(strings.TrimSpace(handler.Header.Get("Content-Type")))
+	return ct == "application/pdf" || strings.HasPrefix(ct, "application/pdf;")
 }
 
 func clampStrings(values []string, max int) []string {
@@ -680,7 +693,7 @@ func handleBlogByID(w http.ResponseWriter, r *http.Request) {
 func handleProjects(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		rows, err := db.Query("SELECT id, img, title, IFNULL(title_uz,''), IFNULL(title_en,''), description, IFNULL(description_uz,''), IFNULL(description_en,''), IFNULL(images,''), IFNULL(links,'') FROM projects ORDER BY id DESC")
+		rows, err := db.Query("SELECT id, img, IFNULL(pdf,''), title, IFNULL(title_uz,''), IFNULL(title_en,''), description, IFNULL(description_uz,''), IFNULL(description_en,''), IFNULL(images,''), IFNULL(links,'') FROM projects ORDER BY id DESC")
 		if err != nil {
 			http.Error(w, "DB error", http.StatusInternalServerError)
 			return
@@ -690,7 +703,7 @@ func handleProjects(w http.ResponseWriter, r *http.Request) {
 		for rows.Next() {
 			var p Project
 			var imagesJSON, linksJSON string
-			if err := rows.Scan(&p.ID, &p.Img, &p.Title, &p.TitleUz, &p.TitleEn, &p.Description, &p.DescriptionUz, &p.DescriptionEn, &imagesJSON, &linksJSON); err == nil {
+			if err := rows.Scan(&p.ID, &p.Img, &p.PDF, &p.Title, &p.TitleUz, &p.TitleEn, &p.Description, &p.DescriptionUz, &p.DescriptionEn, &imagesJSON, &linksJSON); err == nil {
 				if imagesJSON != "" {
 					_ = json.Unmarshal([]byte(imagesJSON), &p.Images)
 				}
@@ -707,6 +720,20 @@ func handleProjects(w http.ResponseWriter, r *http.Request) {
 			if err := r.ParseMultipartForm(100 << 20); err != nil {
 				http.Error(w, "Invalid form", http.StatusBadRequest)
 				return
+			}
+			pdfPath := strings.TrimSpace(r.FormValue("pdfOld"))
+			if file, handler, err := r.FormFile("pdf"); err == nil {
+				defer file.Close()
+				if !isPDFUpload(handler) {
+					http.Error(w, "Only PDF allowed", http.StatusBadRequest)
+					return
+				}
+				if path, err := saveUploadedFile(file, handler); err == nil {
+					pdfPath = path
+				} else {
+					http.Error(w, "Upload error", http.StatusInternalServerError)
+					return
+				}
 			}
 			var images []string
 			if files, ok := r.MultipartForm.File["imgs"]; ok {
@@ -747,13 +774,13 @@ func handleProjects(w http.ResponseWriter, r *http.Request) {
 			}
 			imagesJSON, _ := json.Marshal(images)
 			linksJSON, _ := json.Marshal(links)
-			res, err := db.Exec("INSERT INTO projects (img, title, title_uz, title_en, description, description_uz, description_en, images, links) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", imgSingle, title, titleUz, titleEn, desc, descUz, descEn, string(imagesJSON), string(linksJSON))
+			res, err := db.Exec("INSERT INTO projects (img, pdf, title, title_uz, title_en, description, description_uz, description_en, images, links) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", imgSingle, pdfPath, title, titleUz, titleEn, desc, descUz, descEn, string(imagesJSON), string(linksJSON))
 			if err != nil {
 				http.Error(w, "DB error", http.StatusInternalServerError)
 				return
 			}
 			id, _ := res.LastInsertId()
-			p := Project{ID: int(id), Img: imgSingle, Images: images, Title: title, Description: desc, Links: links}
+			p := Project{ID: int(id), Img: imgSingle, Images: images, PDF: pdfPath, Title: title, Description: desc, Links: links}
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(p)
 			return
@@ -771,7 +798,7 @@ func handleProjects(w http.ResponseWriter, r *http.Request) {
 		}
 		imagesJSON, _ := json.Marshal(p.Images)
 		linksJSON, _ := json.Marshal(p.Links)
-		res, err := db.Exec("INSERT INTO projects (img, title, title_uz, title_en, description, description_uz, description_en, images, links) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", imgSingle, p.Title, p.TitleUz, p.TitleEn, p.Description, p.DescriptionUz, p.DescriptionEn, string(imagesJSON), string(linksJSON))
+		res, err := db.Exec("INSERT INTO projects (img, pdf, title, title_uz, title_en, description, description_uz, description_en, images, links) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", imgSingle, p.PDF, p.Title, p.TitleUz, p.TitleEn, p.Description, p.DescriptionUz, p.DescriptionEn, string(imagesJSON), string(linksJSON))
 		if err != nil {
 			http.Error(w, "DB error", http.StatusInternalServerError)
 			return
@@ -796,7 +823,7 @@ func handleProjectByID(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		var p Project
 		var imagesJSON, linksJSON string
-		err := db.QueryRow("SELECT id, img, title, IFNULL(title_uz,''), IFNULL(title_en,''), description, IFNULL(description_uz,''), IFNULL(description_en,''), IFNULL(images,''), IFNULL(links,'') FROM projects WHERE id = ?", id).Scan(&p.ID, &p.Img, &p.Title, &p.TitleUz, &p.TitleEn, &p.Description, &p.DescriptionUz, &p.DescriptionEn, &imagesJSON, &linksJSON)
+		err := db.QueryRow("SELECT id, img, IFNULL(pdf,''), title, IFNULL(title_uz,''), IFNULL(title_en,''), description, IFNULL(description_uz,''), IFNULL(description_en,''), IFNULL(images,''), IFNULL(links,'') FROM projects WHERE id = ?", id).Scan(&p.ID, &p.Img, &p.PDF, &p.Title, &p.TitleUz, &p.TitleEn, &p.Description, &p.DescriptionUz, &p.DescriptionEn, &imagesJSON, &linksJSON)
 		if err != nil {
 			http.Error(w, "Not found", http.StatusNotFound)
 			return
@@ -821,6 +848,23 @@ func handleProjectByID(w http.ResponseWriter, r *http.Request) {
 			desc := r.FormValue("description")
 			descUz := r.FormValue("description_uz")
 			descEn := r.FormValue("description_en")
+			pdfPath := strings.TrimSpace(r.FormValue("pdfOld"))
+			if pdfPath == "" {
+				_ = db.QueryRow("SELECT IFNULL(pdf,'') FROM projects WHERE id=?", id).Scan(&pdfPath)
+			}
+			if file, handler, err := r.FormFile("pdf"); err == nil {
+				defer file.Close()
+				if !isPDFUpload(handler) {
+					http.Error(w, "Only PDF allowed", http.StatusBadRequest)
+					return
+				}
+				if path, err := saveUploadedFile(file, handler); err == nil {
+					pdfPath = path
+				} else {
+					http.Error(w, "Upload error", http.StatusInternalServerError)
+					return
+				}
+			}
 			var images []string
 			if oldJSON := strings.TrimSpace(r.FormValue("imagesOld")); oldJSON != "" {
 				_ = json.Unmarshal([]byte(oldJSON), &images)
@@ -862,7 +906,7 @@ func handleProjectByID(w http.ResponseWriter, r *http.Request) {
 			if len(images) > 0 {
 				imgSingle = images[0]
 			}
-			_, err := db.Exec("UPDATE projects SET img=?, title=?, title_uz=?, title_en=?, description=?, description_uz=?, description_en=?, images=?, links=? WHERE id=?", imgSingle, title, titleUz, titleEn, desc, descUz, descEn, string(imagesJSON), string(linksJSON), id)
+			_, err := db.Exec("UPDATE projects SET img=?, pdf=?, title=?, title_uz=?, title_en=?, description=?, description_uz=?, description_en=?, images=?, links=? WHERE id=?", imgSingle, pdfPath, title, titleUz, titleEn, desc, descUz, descEn, string(imagesJSON), string(linksJSON), id)
 			if err != nil {
 				http.Error(w, "DB error", http.StatusInternalServerError)
 				return
@@ -884,7 +928,7 @@ func handleProjectByID(w http.ResponseWriter, r *http.Request) {
 		}
 		imagesJSON, _ := json.Marshal(p.Images)
 		linksJSON, _ := json.Marshal(p.Links)
-		_, err := db.Exec("UPDATE projects SET img=?, title=?, title_uz=?, title_en=?, description=?, description_uz=?, description_en=?, images=?, links=? WHERE id=?", imgSingle, p.Title, p.TitleUz, p.TitleEn, p.Description, p.DescriptionUz, p.DescriptionEn, string(imagesJSON), string(linksJSON), id)
+		_, err := db.Exec("UPDATE projects SET img=?, pdf=?, title=?, title_uz=?, title_en=?, description=?, description_uz=?, description_en=?, images=?, links=? WHERE id=?", imgSingle, p.PDF, p.Title, p.TitleUz, p.TitleEn, p.Description, p.DescriptionUz, p.DescriptionEn, string(imagesJSON), string(linksJSON), id)
 		if err != nil {
 			http.Error(w, "DB error", http.StatusInternalServerError)
 			return

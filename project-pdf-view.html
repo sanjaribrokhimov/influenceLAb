@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Проект</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+      import * as pdfjsLib from "/assets/pdfjs/pdf.min.mjs";
+      pdfjsLib.GlobalWorkerOptions.workerSrc = "/assets/pdfjs/pdf.worker.min.mjs";
+      window.pdfjsLib = pdfjsLib;
+    </script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              "brand-blue": "#002247",
+              "brand-blue-medium": "#034AA6",
+              "brand-blue-soft": "#2977E2",
+              "brand-white": "#F0F0F0",
+              "brand-black": "#000000",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+      }
+      #pdf-pages canvas {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        background: #fff;
+      }
+    </style>
+  </head>
+  <body class="bg-white">
+    <div class="min-h-screen flex flex-col">
+      <div id="site-header"></div>
+
+      <main class="flex-1">
+        <div id="loading" class="h-full flex items-center justify-center p-6 text-gray-600">Загрузка PDF…</div>
+        <div id="pdf-wrap" class="hidden max-w-6xl mx-auto px-4 py-8 pt-[110px]">
+          <div id="pdf-pages" class="space-y-6"></div>
+        </div>
+        <div id="error" class="hidden h-full flex items-center justify-center p-6">
+          <div class="text-center">
+            <div class="text-xl font-bold mb-2">PDF не найден</div>
+            <a href="/projects.html" class="text-brand-blue-soft underline">Вернуться к проектам</a>
+          </div>
+        </div>
+      </main>
+
+      <div id="site-footer"></div>
+    </div>
+
+    <script>
+      async function loadHeader() {
+        const html = await fetch("components/header.html").then((r) => r.text());
+        document.getElementById("site-header").innerHTML = html;
+        const scripts = document.getElementById("site-header").querySelectorAll("script");
+        scripts.forEach((script) => {
+          const s = document.createElement("script");
+          s.textContent = script.textContent;
+          document.head.appendChild(s);
+        });
+        if (window.updateHeaderTranslations) window.updateHeaderTranslations();
+      }
+
+      async function loadFooter() {
+        const html = await fetch("components/footer.html").then((r) => r.text());
+        document.getElementById("site-footer").innerHTML = html;
+        const scripts = document.getElementById("site-footer").querySelectorAll("script");
+        scripts.forEach((script) => {
+          const s = document.createElement("script");
+          s.textContent = script.textContent;
+          document.head.appendChild(s);
+        });
+        if (window.updateFooterTranslations) window.updateFooterTranslations();
+      }
+
+      async function loadPDF() {
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
+        if (!id) throw new Error("Missing id");
+
+        const r = await fetch(`/api/projects/${encodeURIComponent(id)}`);
+        if (!r.ok) throw new Error("Not found");
+        const project = await r.json();
+
+        const rawPdfUrl = (project.pdf || "").trim();
+        let pdfUrl = rawPdfUrl;
+        if (!pdfUrl) throw new Error("PDF missing");
+        try {
+          pdfUrl = new URL(rawPdfUrl, window.location.origin).toString();
+        } catch (e) {}
+
+        document.title = project.title || "Проект";
+
+        if (!window.pdfjsLib) throw new Error("pdfjs missing");
+
+        const pagesEl = document.getElementById("pdf-pages");
+        pagesEl.innerHTML = "";
+
+        const wrap = document.getElementById("pdf-wrap");
+        document.getElementById("loading").classList.add("hidden");
+        wrap.classList.remove("hidden");
+
+        // wait layout so clientWidth isn't 0
+        await new Promise((res) => requestAnimationFrame(res));
+        const pdf = await window.pdfjsLib.getDocument({ url: pdfUrl }).promise;
+        const containerWidth = pagesEl.clientWidth || wrap.clientWidth || 900;
+        const dpr = window.devicePixelRatio || 1;
+
+        for (let n = 1; n <= pdf.numPages; n++) {
+          const page = await pdf.getPage(n);
+          const viewport1 = page.getViewport({ scale: 1 });
+          const scale = containerWidth / viewport1.width;
+          const viewport = page.getViewport({ scale });
+
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.floor(viewport.width * dpr);
+          canvas.height = Math.floor(viewport.height * dpr);
+          canvas.style.width = "100%";
+          canvas.style.height = "auto";
+
+          const ctx = canvas.getContext("2d", { alpha: false });
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          pagesEl.appendChild(canvas);
+          await page.render({ canvasContext: ctx, viewport }).promise;
+        }
+      }
+
+      function showError() {
+        document.getElementById("loading").classList.add("hidden");
+        document.getElementById("error").classList.remove("hidden");
+      }
+
+      (async function init() {
+        try {
+          await loadHeader();
+          await loadFooter();
+          await loadPDF();
+        } catch (e) {
+          console.error(e);
+          showError();
+        }
+      })();
+    </script>
+  </body>
+</html>
+
